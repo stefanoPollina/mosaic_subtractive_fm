@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" style="background-color:#07080c">
 <head>
@@ -433,9 +434,10 @@ canvas.display {
 .fx-card p { margin: 4px 10px 0; color: var(--dim); font-size: 10px; line-height: 1.35; }
 .fx-top { display: flex; justify-content: space-between; align-items: center; padding-right: 8px; }
 
-.page-seq { grid-template-rows: auto minmax(0, 1fr) auto; gap: 8px; }
+.page-seq { grid-template-rows: auto minmax(0, 1fr) auto auto; gap: 8px; overflow: auto; }
 .transport {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   padding: 6px 8px;
@@ -471,7 +473,7 @@ select.slim {
 .lane {
   position: relative;
   flex: 1;
-  min-height: 180px;
+  min-height: 72px;
   background: linear-gradient(#10141c, #0c1016);
   border: 1px solid #2a3142;
   border-radius: 5px;
@@ -517,6 +519,14 @@ select.slim {
 .gate-row { display: flex; align-items: center; gap: 6px; }
 .gate-row .slots { display: grid; grid-template-columns: repeat(16, minmax(0, 1fr)); gap: 4px; flex: 1; }
 .gate-row .slots button { height: 22px; }
+.page-label { min-width: 64px; text-align: center; font-size: 10px; letter-spacing: .12em; color: var(--dim); }
+.auto-row { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 6px; align-items: center; }
+.auto-row .tag { font-size: 8px; letter-spacing: .12em; color: var(--dim); }
+.auto-row .slots { display: grid; grid-template-columns: repeat(16, minmax(0, 1fr)); gap: 4px; }
+.auto-cell { height: 32px; background: #10141c; border: 1px solid #2a3142; border-radius: 4px; position: relative; touch-action: none; cursor: ns-resize; }
+.auto-cell i { position: absolute; left: 2px; right: 2px; bottom: 2px; background: var(--cyan); border-radius: 2px; pointer-events: none; min-height: 2px; }
+.auto-cell.empty i { opacity: .18; }
+.auto-cell.dim { opacity: .35; }
 
 footer.bed {
   display: grid;
@@ -1239,6 +1249,51 @@ const FACTORY = [
   })
 ];
 
+const BANK = [{"name":"Alien Tech_SEQ","master":0.78,"bendRange":2,"polyphony":8,"glide":0.24,"unison":3,"detune":19,"lfo":[{"wave":"saw","rate":0.11012008041463454,"retrig":false},{"wave":"square","rate":1.7956842843789123,"retrig":false}],"mod":[{"src":"lfo1","dest":"res","amount":0.2566666666666666,"target":"both"},{"src":"lfo1","dest":"cutoff","amount":0.2733333333333332,"target":"both"},{"src":"lfo2","dest":"pitch","amount":0,"target":"both"},{"src":"lfo1","dest":"pwm","amount":0,"target":"both"},{"src":"amp","dest":"fm","amount":0,"target":"both"},{"src":"lfo2","dest":"cutoff","amount":0,"target":"both"},{"src":"lfo1","dest":"cutoff","amount":0.22666666666666657,"target":"both"},{"src":"filter","dest":"pitch","amount":0,"target":"both"}],"layers":{"A":{"enabled":true,"level":0.5066666666666666,"character":0.45,"fmMode":"off","pdDepth":0.35,"pdCurve":"bend","fmRatio":2,"fmIndex":1.4,"osc":[{"wave":"triangle","octave":0,"semi":0,"fine":0,"level":0.7,"pwm":0.5},{"wave":"triangle","octave":-1,"semi":0,"fine":0,"level":0.4,"pwm":0.5},{"wave":"triangle","octave":-3,"semi":0,"fine":4,"level":0.12,"pwm":0.5}],"filter":{"type":"highpass","cutoff":2511.1235211150565,"res":0.8266666666666667,"comb":0.5530666666666666,"env":-0.14333333333333353,"lfo":0.5866666666666667,"key":0.31000000000000005},"amp":{"a":0.12,"d":0.4,"s":0.75,"r":0.7},"filt":{"a":0.2,"d":0.5,"s":0.4,"r":0.6}},"B":{"enabled":false,"level":0.55,"character":0,"fmMode":"off","pdDepth":0.35,"pdCurve":"bend","fmRatio":2,"fmIndex":1.4,"osc":[{"wave":"triangle","octave":0,"semi":0,"fine":-4,"level":0.6,"pwm":0.5},{"wave":"sine","octave":-1,"semi":0,"fine":0,"level":0.28,"pwm":0.5},{"wave":"saw","octave":1,"semi":0,"fine":8,"level":0,"pwm":0.5}],"filter":{"type":"lowpass","cutoff":2200,"res":0.12,"comb":0.55,"env":0.2,"lfo":0,"key":0.15},"amp":{"a":0.18,"d":0.4,"s":0.8,"r":0.7},"filt":{"a":0.008,"d":0.01903653938715879,"s":0.22,"r":0.3}}},"fx":{"drive":0.8599999999999999,"phaserOn":true,"phaserWet":0.5933333333333334,"phaserRate":0.43333333333333335,"phaserDepth":0.45,"delaySync":"1/4","delayTime":0.42,"delayFb":0.6123333333333334,"delayWet":0.5066666666666667,"multiOn":true,"multiTime":0.6024,"multiFb":0.34,"multiWet":0,"reverbWet":0.56,"reverbDecay":3.2,"shimmerOn":false,"shimmerLevel":0.12,"shimmerPitch":196,"shimmerMotion":0.07333333333333336,"compOn":true,"compThreshold":-18,"compRatio":6.5200000000000005,"compAttack":0.01,"compRelease":0.18},"seq":{"bpm":130,"swing":0,"length":8,"division":0.25,"target":"both","gateOn":false,"gateDepth":0.18999999999999995,"gates":[true,false,true,false,true,false,true,false,true,false,true,false,true,false,true,false],"steps":[{"on":true,"note":48,"vel":100,"accent":false,"slide":false},{"on":false,"note":46,"vel":100,"accent":false,"slide":false},{"on":true,"note":48,"vel":100,"accent":false,"slide":false},{"on":false,"note":43,"vel":100,"accent":false,"slide":false},{"on":true,"note":48,"vel":100,"accent":false,"slide":false},{"on":false,"note":45,"vel":100,"accent":false,"slide":false},{"on":true,"note":48,"vel":100,"accent":false,"slide":false},{"on":false,"note":47,"vel":100,"accent":false,"slide":false},{"on":true,"note":48,"vel":100,"accent":false,"slide":false},{"on":false,"note":48,"vel":100,"accent":false,"slide":false},{"on":true,"note":48,"vel":100,"accent":false,"slide":false},{"on":false,"note":42,"vel":100,"accent":false,"slide":false},{"on":true,"note":48,"vel":100,"accent":false,"slide":false},{"on":false,"note":44,"vel":100,"accent":false,"slide":false},{"on":true,"note":48,"vel":100,"accent":false,"slide":false},{"on":false,"note":41,"vel":100,"accent":false,"slide":false}]}},{"name":"Click Sub_SEQ","master":0.78,"bendRange":2,"polyphony":8,"glide":0.04,"unison":1,"detune":10,"lfo":[{"wave":"saw","rate":3.694409006018697,"retrig":false},{"wave":"saw","rate":19.999999999999996,"retrig":false}],"mod":[{"src":"wheel","dest":"cutoff","amount":0.35,"target":"both"},{"src":"filter","dest":"cutoff","amount":0.6866666666666665,"target":"both"},{"src":"amp","dest":"res","amount":0.6533333333333333,"target":"both"},{"src":"lfo1","dest":"pwm","amount":0.96,"target":"B"},{"src":"filter","dest":"pan","amount":0.7066666666666666,"target":"both"},{"src":"amp","dest":"cutoff","amount":1,"target":"B"},{"src":"filter","dest":"fm","amount":0.6533333333333333,"target":"both"},{"src":"lfo1","dest":"res","amount":0.6533333333333333,"target":"A"}],"layers":{"A":{"enabled":true,"level":0.9,"character":0,"fmMode":"off","pdDepth":0.35,"pdCurve":"bend","fmRatio":2,"fmIndex":1.4,"osc":[{"wave":"sine","octave":0,"semi":0,"fine":0,"level":0.9,"pwm":0.788},{"wave":"sine","octave":0,"semi":0,"fine":0,"level":0.18,"pwm":0.95},{"wave":"triangle","octave":0,"semi":0,"fine":0,"level":0.5133333333333333,"pwm":0.95}],"filter":{"type":"lowpass","cutoff":682.7722096716304,"res":0,"comb":0.42079999999999995,"env":0.35,"lfo":0.18,"key":0.4966666666666667},"amp":{"a":0.019558655370858574,"d":0.01622408114487936,"s":0.5033333333333333,"r":0.12},"filt":{"a":0.0894427190999916,"d":1.4205702383273797,"s":0.4533333333333333,"r":0.1}},"B":{"enabled":true,"level":0.4966666666666667,"character":0,"fmMode":"both","pdDepth":0.35,"pdCurve":"sine","fmRatio":2,"fmIndex":1.4,"osc":[{"wave":"triangle","octave":0,"semi":0,"fine":-4,"level":0.6,"pwm":0.5},{"wave":"sine","octave":-1,"semi":0,"fine":0,"level":0.28,"pwm":0.5},{"wave":"sine","octave":1,"semi":0,"fine":8,"level":0,"pwm":0.7640000000000001}],"filter":{"type":"lowpass","cutoff":692.1067840768578,"res":0.66,"comb":0.55,"env":0.2,"lfo":0,"key":0.15},"amp":{"a":0.011665455643584809,"d":0.15006294314550322,"s":0.8,"r":0.7},"filt":{"a":0.09581344425263819,"d":0.28,"s":0.52,"r":0.3}}},"fx":{"drive":0.08666666666666667,"phaserOn":false,"phaserWet":0.28,"phaserRate":0.22,"phaserDepth":0.45,"delaySync":"1/4","delayTime":0.32,"delayFb":0.3993333333333333,"delayWet":0.5066666666666667,"multiOn":true,"multiTime":0.242,"multiFb":0.1373333333333333,"multiWet":0.49333333333333335,"reverbWet":0,"reverbDecay":3.2199999999999998,"shimmerOn":false,"shimmerLevel":0.12,"shimmerPitch":196,"shimmerMotion":0.28,"compOn":false,"compThreshold":-18,"compRatio":3,"compAttack":0.01,"compRelease":0.18},"seq":{"bpm":120,"swing":0,"length":16,"division":0.25,"target":"A","gateOn":false,"gateDepth":0.85,"gates":[true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true],"steps":[{"on":true,"note":40,"vel":100,"accent":false,"slide":false},{"on":false,"note":60,"vel":100,"accent":false,"slide":false},{"on":true,"note":40,"vel":100,"accent":false,"slide":false},{"on":true,"note":41,"vel":100,"accent":false,"slide":false},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":41,"vel":100,"accent":false,"slide":false},{"on":true,"note":41,"vel":100,"accent":false,"slide":false},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":60,"vel":100,"accent":false,"slide":false}]}},{"name":"Cosine_SEQ","master":0.78,"bendRange":7,"polyphony":8,"glide":0.237,"unison":2,"detune":33,"lfo":[{"wave":"sine","rate":12.88879342118995,"retrig":true},{"wave":"sample","rate":7.079559951671375,"retrig":true}],"mod":[{"src":"wheel","dest":"cutoff","amount":0.35,"target":"both"},{"src":"filter","dest":"cutoff","amount":0.6733333333333333,"target":"both"},{"src":"lfo2","dest":"cutoff","amount":0.7066666666666666,"target":"both"},{"src":"lfo1","dest":"pwm","amount":0.6133333333333333,"target":"both"},{"src":"amp","dest":"fm","amount":0,"target":"both"},{"src":"amp","dest":"cutoff","amount":0.6400000000000001,"target":"both"},{"src":"key","dest":"cutoff","amount":0,"target":"both"},{"src":"filter","dest":"pitch","amount":0,"target":"both"}],"layers":{"A":{"enabled":true,"level":0.82,"character":0.45,"fmMode":"both","pdDepth":0.49666666666666665,"pdCurve":"pulse","fmRatio":6.555572757370312,"fmIndex":3.96,"osc":[{"wave":"square","octave":0,"semi":0,"fine":5,"level":0.4933333333333333,"pwm":0.914},{"wave":"saw","octave":-1,"semi":0,"fine":5,"level":0.5466666666666667,"pwm":0.59},{"wave":"sine","octave":2,"semi":0,"fine":0,"level":0.49333333333333335,"pwm":0.5419999999999999}],"filter":{"type":"lowpass","cutoff":98.20880459172295,"res":1,"comb":0.4242666666666665,"env":0.99,"lfo":0.8333333333333334,"key":0.48666666666666664},"amp":{"a":1.1269076455391365,"d":1.4565454989415763,"s":0.5033333333333334,"r":0.016791830433136437},"filt":{"a":1.2395875184369032,"d":0.016170265265047834,"s":0.17333333333333334,"r":5}},"B":{"enabled":true,"level":0.49666666666666665,"character":0,"fmMode":"off","pdDepth":0.35,"pdCurve":"bend","fmRatio":2,"fmIndex":1.4,"osc":[{"wave":"triangle","octave":0,"semi":0,"fine":-4,"level":0.6,"pwm":0.5},{"wave":"sine","octave":-1,"semi":0,"fine":0,"level":0.28,"pwm":0.5},{"wave":"square","octave":1,"semi":0,"fine":8,"level":0,"pwm":0.5}],"filter":{"type":"lowpass","cutoff":173.7773598950672,"res":0.4066666666666666,"comb":0.55,"env":0.6266666666666667,"lfo":0.5066666666666667,"key":0.15},"amp":{"a":0.18,"d":0.4,"s":0.8,"r":0.7},"filt":{"a":0.008,"d":0.28,"s":0.22,"r":0.3}}},"fx":{"drive":0.24,"phaserOn":true,"phaserWet":0.5333333333333334,"phaserRate":0.22,"phaserDepth":0.5033333333333333,"delaySync":"1/8","delayTime":0.6154745135714972,"delayFb":0.6973333333333334,"delayWet":0.22,"multiOn":false,"multiTime":0.31,"multiFb":0.34,"multiWet":0,"reverbWet":0.1866666666666667,"reverbDecay":1.333333333333334,"shimmerOn":false,"shimmerLevel":0.12,"shimmerPitch":196,"shimmerMotion":0.28,"compOn":false,"compThreshold":-18,"compRatio":7.253333333333333,"compAttack":0.01,"compRelease":0.18},"seq":{"bpm":120,"swing":0,"length":16,"division":0.25,"target":"A","gateOn":true,"gateDepth":0.6,"gates":[false,true,true,false,true,true,false,true,true,false,true,true,false,true,true,false],"steps":[{"on":true,"note":45,"vel":100,"accent":false,"slide":false},{"on":true,"note":45,"vel":100,"accent":false,"slide":false},{"on":false,"note":45,"vel":100,"accent":false,"slide":false},{"on":true,"note":45,"vel":100,"accent":false,"slide":false},{"on":true,"note":45,"vel":100,"accent":false,"slide":false},{"on":true,"note":45,"vel":100,"accent":false,"slide":false},{"on":false,"note":45,"vel":100,"accent":false,"slide":false},{"on":true,"note":45,"vel":100,"accent":false,"slide":false},{"on":true,"note":45,"vel":100,"accent":false,"slide":false},{"on":true,"note":45,"vel":100,"accent":false,"slide":false},{"on":true,"note":45,"vel":100,"accent":false,"slide":false},{"on":false,"note":45,"vel":100,"accent":false,"slide":false},{"on":true,"note":45,"vel":100,"accent":false,"slide":false},{"on":true,"note":45,"vel":100,"accent":false,"slide":false},{"on":false,"note":45,"vel":100,"accent":false,"slide":false},{"on":true,"note":45,"vel":100,"accent":false,"slide":false}]}},{"name":"Delay Groove FM_SEQ","master":0.78,"bendRange":2,"polyphony":8,"glide":0,"unison":1,"detune":10,"lfo":[{"wave":"sample","rate":6.462549860055739,"retrig":false},{"wave":"sample","rate":4.5,"retrig":false}],"mod":[{"src":"wheel","dest":"cutoff","amount":0.35,"target":"both"},{"src":"key","dest":"cutoff","amount":0.6599999999999999,"target":"both"},{"src":"lfo2","dest":"pitch","amount":0,"target":"both"},{"src":"lfo1","dest":"pwm","amount":0,"target":"both"},{"src":"amp","dest":"fm","amount":0.6833333333333333,"target":"both"},{"src":"lfo2","dest":"cutoff","amount":0,"target":"both"},{"src":"lfo2","dest":"cutoff","amount":0.33333333333333326,"target":"both"},{"src":"filter","dest":"pitch","amount":0,"target":"both"}],"layers":{"A":{"enabled":true,"level":0.82,"character":0,"fmMode":"fm","pdDepth":0.35,"pdCurve":"bend","fmRatio":2,"fmIndex":2.3,"osc":[{"wave":"sine","octave":0,"semi":0,"fine":0,"level":0.75,"pwm":0.5},{"wave":"sine","octave":1,"semi":0,"fine":0,"level":0.08,"pwm":0.5},{"wave":"sine","octave":0,"semi":7,"fine":0,"level":0,"pwm":0.5}],"filter":{"type":"highpass","cutoff":1568.9302744655497,"res":0.5133333333333333,"comb":0.2,"env":0.15,"lfo":0,"key":0.4},"amp":{"a":0.004,"d":0.45,"s":0,"r":0.28},"filt":{"a":0.004,"d":0.3,"s":0,"r":0.2}},"B":{"enabled":false,"level":0.55,"character":0,"fmMode":"both","pdDepth":0.35,"pdCurve":"bend","fmRatio":2,"fmIndex":1.4,"osc":[{"wave":"triangle","octave":0,"semi":0,"fine":-4,"level":0.6,"pwm":0.5},{"wave":"sine","octave":-1,"semi":0,"fine":0,"level":0.28,"pwm":0.7820000000000001},{"wave":"square","octave":1,"semi":0,"fine":8,"level":0,"pwm":0.5}],"filter":{"type":"lowpass","cutoff":14000,"res":0.8133333333333334,"comb":0.55,"env":0.2,"lfo":0,"key":0.15},"amp":{"a":0.12624798017894961,"d":0.4,"s":0.8,"r":0.7},"filt":{"a":0.01799698908227789,"d":0.28,"s":0.22,"r":0.3}}},"fx":{"drive":0.013333333333333334,"phaserOn":false,"phaserWet":0.28,"phaserRate":0.22,"phaserDepth":0.45,"delaySync":"1/8","delayTime":0.1617303165531021,"delayFb":0.456,"delayWet":0.5066666666666667,"multiOn":false,"multiTime":0.31,"multiFb":0.34,"multiWet":0,"reverbWet":0.34,"reverbDecay":3.4,"shimmerOn":false,"shimmerLevel":0.12,"shimmerPitch":196,"shimmerMotion":0.28,"compOn":false,"compThreshold":-18,"compRatio":3,"compAttack":0.01,"compRelease":0.18},"seq":{"bpm":100,"swing":0,"length":16,"division":0.25,"target":"A","gateOn":true,"gateDepth":0.85,"gates":[true,false,true,true,false,true,true,false,true,true,false,true,true,false,true,true],"steps":[{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false}]}},{"name":"Divided FM_SEQ","master":0.78,"bendRange":2,"polyphony":8,"glide":0,"unison":1,"detune":10,"lfo":[{"wave":"triangle","rate":19.999999999999996,"retrig":true},{"wave":"saw","rate":6.709392206203945,"retrig":false}],"mod":[{"src":"wheel","dest":"cutoff","amount":0.35,"target":"both"},{"src":"filter","dest":"cutoff","amount":0.6599999999999999,"target":"B"},{"src":"lfo2","dest":"pitch","amount":0,"target":"B"},{"src":"filter","dest":"pwm","amount":0.6800000000000002,"target":"B"},{"src":"amp","dest":"fm","amount":0.6833333333333333,"target":"both"},{"src":"lfo2","dest":"cutoff","amount":0,"target":"both"},{"src":"filter","dest":"cutoff","amount":0.33333333333333326,"target":"both"},{"src":"filter","dest":"pitch","amount":0,"target":"both"}],"layers":{"A":{"enabled":true,"level":0.82,"character":0,"fmMode":"fm","pdDepth":0.35,"pdCurve":"bend","fmRatio":2,"fmIndex":2.3,"osc":[{"wave":"square","octave":0,"semi":0,"fine":0,"level":0.75,"pwm":0.2300000000000001},{"wave":"square","octave":1,"semi":0,"fine":0,"level":0.5066666666666667,"pwm":0.05},{"wave":"sine","octave":0,"semi":7,"fine":0,"level":0,"pwm":0.5}],"filter":{"type":"highpass","cutoff":1568.9302744655497,"res":0.5133333333333333,"comb":0.2,"env":0.15,"lfo":0,"key":0.4},"amp":{"a":0.004,"d":0.45,"s":0,"r":0.28},"filt":{"a":0.004,"d":0.3,"s":0,"r":0.2}},"B":{"enabled":false,"level":0.55,"character":0,"fmMode":"both","pdDepth":0.35,"pdCurve":"sine","fmRatio":2,"fmIndex":1.4,"osc":[{"wave":"triangle","octave":0,"semi":0,"fine":-4,"level":0.6,"pwm":0.5},{"wave":"sine","octave":-1,"semi":0,"fine":0,"level":0.28,"pwm":0.7820000000000001},{"wave":"saw","octave":1,"semi":0,"fine":8,"level":0,"pwm":0.83}],"filter":{"type":"lowpass","cutoff":778.1341347735821,"res":0.8133333333333334,"comb":0.55,"env":0.2,"lfo":0,"key":0.15},"amp":{"a":0.12624798017894961,"d":0.4,"s":0.8,"r":0.7},"filt":{"a":0.01799698908227789,"d":0.28,"s":0.22,"r":0.3}}},"fx":{"drive":0.03333333333333333,"phaserOn":false,"phaserWet":0.28,"phaserRate":0.22,"phaserDepth":0.45,"delaySync":"1/8","delayTime":0.1617303165531021,"delayFb":0.7166666666666667,"delayWet":0.5066666666666667,"multiOn":true,"multiTime":0.31,"multiFb":0.6493333333333333,"multiWet":0,"reverbWet":0.34,"reverbDecay":3.4,"shimmerOn":false,"shimmerLevel":0.12,"shimmerPitch":196,"shimmerMotion":0.28,"compOn":false,"compThreshold":-18,"compRatio":3,"compAttack":0.01,"compRelease":0.18},"seq":{"bpm":100,"swing":0,"length":16,"division":0.25,"target":"A","gateOn":true,"gateDepth":1,"gates":[true,true,false,true,true,false,true,true,false,true,true,false,true,true,false,true],"steps":[{"on":true,"note":36,"vel":100,"accent":false,"slide":true},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":true},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":true},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":true},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":true},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":true},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":true},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":true},{"on":false,"note":36,"vel":100,"accent":false,"slide":false}]}},{"name":"Dogpants_SEQ","master":0.78,"bendRange":2,"polyphony":6,"glide":0,"unison":4,"detune":18,"lfo":[{"wave":"triangle","rate":6.999999999999998,"retrig":true},{"wave":"triangle","rate":6.982810342202747,"retrig":true}],"mod":[{"src":"wheel","dest":"cutoff","amount":0.35,"target":"both"},{"src":"vel","dest":"cutoff","amount":0.6866666666666665,"target":"both"},{"src":"lfo2","dest":"pitch","amount":0,"target":"both"},{"src":"lfo1","dest":"pwm","amount":0,"target":"both"},{"src":"amp","dest":"fm","amount":0,"target":"both"},{"src":"lfo2","dest":"res","amount":0,"target":"both"},{"src":"key","dest":"cutoff","amount":0.6266666666666667,"target":"both"},{"src":"filter","dest":"pitch","amount":0,"target":"both"}],"layers":{"A":{"enabled":true,"level":0.82,"character":0.5066666666666667,"fmMode":"pd","pdDepth":0.6366666666666667,"pdCurve":"pulse","fmRatio":2,"fmIndex":1.4,"osc":[{"wave":"saw","octave":0,"semi":0,"fine":0,"level":0.5,"pwm":0.5},{"wave":"square","octave":0,"semi":0,"fine":7,"level":0.34,"pwm":0.794},{"wave":"square","octave":-1,"semi":0,"fine":0,"level":0.12,"pwm":0.4}],"filter":{"type":"lowpass","cutoff":110.58559266049743,"res":0.5133333333333333,"comb":0.7680000000000001,"env":0.58,"lfo":0.5133333333333333,"key":0.51},"amp":{"a":0.0020000000000000005,"d":0.22,"s":0.62,"r":0.22},"filt":{"a":0.004,"d":0.26,"s":0.18,"r":0.2}},"B":{"enabled":false,"level":0.55,"character":0,"fmMode":"off","pdDepth":0.35,"pdCurve":"bend","fmRatio":2,"fmIndex":1.4,"osc":[{"wave":"triangle","octave":0,"semi":0,"fine":-4,"level":0.6,"pwm":0.5},{"wave":"sine","octave":-1,"semi":0,"fine":0,"level":0.28,"pwm":0.5},{"wave":"saw","octave":1,"semi":0,"fine":8,"level":0,"pwm":0.5}],"filter":{"type":"lowpass","cutoff":2200,"res":0.12,"comb":0.55,"env":0.2,"lfo":0,"key":0.15},"amp":{"a":0.18,"d":0.4,"s":0.8,"r":0.7},"filt":{"a":0.008,"d":0.28,"s":0.22,"r":0.3}}},"fx":{"drive":0.04666666666666667,"phaserOn":true,"phaserWet":0.5066666666666667,"phaserRate":0.5,"phaserDepth":0.51,"delaySync":"1/8d","delayTime":0.32,"delayFb":0.7023333333333334,"delayWet":0.2,"multiOn":true,"multiTime":0.5956,"multiFb":0.6546666666666667,"multiWet":0.8333333333333334,"reverbWet":0.16,"reverbDecay":3.332,"shimmerOn":false,"shimmerLevel":0.18666666666666665,"shimmerPitch":196,"shimmerMotion":0.28,"compOn":true,"compThreshold":-18,"compRatio":3,"compAttack":0.01,"compRelease":0.18},"seq":{"bpm":130,"swing":0,"length":16,"division":0.25,"target":"A","gateOn":true,"gateDepth":1,"gates":[false,true,false,true,false,true,false,true,false,true,false,true,false,true,false,true],"steps":[{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false}]}},{"name":"Pacmaan Drone_SEQ","master":0.78,"bendRange":2,"polyphony":8,"glide":0.24,"unison":4,"detune":19,"lfo":[{"wave":"saw","rate":6.802353498851243,"retrig":false},{"wave":"sine","rate":1.0683612212204883,"retrig":false}],"mod":[{"src":"lfo1","dest":"res","amount":0.6033333333333333,"target":"both"},{"src":"amp","dest":"cutoff","amount":0.6599999999999999,"target":"both"},{"src":"lfo2","dest":"pitch","amount":0,"target":"both"},{"src":"lfo1","dest":"pwm","amount":0,"target":"both"},{"src":"amp","dest":"fm","amount":0,"target":"both"},{"src":"lfo2","dest":"cutoff","amount":0,"target":"both"},{"src":"lfo1","dest":"cutoff","amount":0.22666666666666657,"target":"both"},{"src":"filter","dest":"pitch","amount":0,"target":"both"}],"layers":{"A":{"enabled":true,"level":0.5066666666666666,"character":0.45,"fmMode":"off","pdDepth":0.35,"pdCurve":"bend","fmRatio":2,"fmIndex":1.4,"osc":[{"wave":"triangle","octave":0,"semi":0,"fine":0,"level":0.7,"pwm":0.5},{"wave":"triangle","octave":-1,"semi":0,"fine":33,"level":0.4,"pwm":0.5},{"wave":"triangle","octave":-3,"semi":0,"fine":4,"level":0.12,"pwm":0.5}],"filter":{"type":"lowpass","cutoff":778.1341347735835,"res":0.8266666666666667,"comb":0.5530666666666666,"env":0.0033333333333331883,"lfo":0.5866666666666667,"key":0.31000000000000005},"amp":{"a":0.09798368747978295,"d":1.2742723386693882,"s":0.81,"r":1.6036073569374412},"filt":{"a":0.08890376010593698,"d":1.219126212809401,"s":0.4,"r":0.6}},"B":{"enabled":true,"level":0.2833333333333334,"character":0,"fmMode":"off","pdDepth":0.35,"pdCurve":"bend","fmRatio":2,"fmIndex":1.4,"osc":[{"wave":"triangle","octave":0,"semi":9,"fine":-4,"level":0.6,"pwm":0.5},{"wave":"triangle","octave":-1,"semi":-8,"fine":0,"level":0.4866666666666667,"pwm":0.20600000000000007},{"wave":"saw","octave":1,"semi":0,"fine":8,"level":0,"pwm":0.5}],"filter":{"type":"lowpass","cutoff":2200,"res":0.12,"comb":0.55,"env":0.2,"lfo":0,"key":0.15},"amp":{"a":0.11408031333845615,"d":0.4,"s":0.5,"r":0.7},"filt":{"a":0.008,"d":0.1767195773001322,"s":0.22,"r":0.015744223807493175}}},"fx":{"drive":0.8599999999999999,"phaserOn":true,"phaserWet":0.5933333333333334,"phaserRate":0.43333333333333335,"phaserDepth":0.45,"delaySync":"1/4","delayTime":0.42,"delayFb":0.6123333333333334,"delayWet":0.5066666666666667,"multiOn":true,"multiTime":0.6024,"multiFb":0.34,"multiWet":0,"reverbWet":0.56,"reverbDecay":3.2,"shimmerOn":false,"shimmerLevel":0.12,"shimmerPitch":196,"shimmerMotion":0.07333333333333336,"compOn":true,"compThreshold":-18,"compRatio":6.5200000000000005,"compAttack":0.01,"compRelease":0.18},"seq":{"bpm":130,"swing":0,"length":16,"division":0.25,"target":"both","gateOn":false,"gateDepth":0.18999999999999995,"gates":[true,false,true,false,true,false,true,false,true,false,true,false,true,false,true,false],"steps":[{"on":true,"note":46,"vel":100,"accent":false,"slide":false},{"on":true,"note":42,"vel":100,"accent":false,"slide":false},{"on":true,"note":46,"vel":100,"accent":false,"slide":false},{"on":true,"note":43,"vel":100,"accent":false,"slide":true},{"on":true,"note":48,"vel":100,"accent":false,"slide":false},{"on":true,"note":43,"vel":100,"accent":false,"slide":false},{"on":true,"note":48,"vel":100,"accent":false,"slide":false},{"on":true,"note":43,"vel":100,"accent":false,"slide":true},{"on":true,"note":48,"vel":100,"accent":false,"slide":false},{"on":true,"note":43,"vel":100,"accent":false,"slide":false},{"on":true,"note":48,"vel":100,"accent":false,"slide":false},{"on":true,"note":43,"vel":100,"accent":false,"slide":true},{"on":true,"note":48,"vel":100,"accent":false,"slide":false},{"on":true,"note":44,"vel":100,"accent":false,"slide":false},{"on":true,"note":48,"vel":100,"accent":false,"slide":false},{"on":true,"note":41,"vel":100,"accent":false,"slide":false}]}},{"name":"Glass Dub_SEQ","master":0.78,"bendRange":2,"polyphony":8,"glide":0,"unison":1,"detune":10,"lfo":[{"wave":"sine","rate":0.35,"retrig":false},{"wave":"triangle","rate":4.5,"retrig":false}],"mod":[{"src":"wheel","dest":"cutoff","amount":0.35,"target":"both"},{"src":"vel","dest":"cutoff","amount":0.18,"target":"both"},{"src":"lfo2","dest":"pitch","amount":0,"target":"both"},{"src":"lfo1","dest":"pwm","amount":0,"target":"A"},{"src":"amp","dest":"fm","amount":0.35,"target":"both"},{"src":"lfo2","dest":"cutoff","amount":0,"target":"both"},{"src":"key","dest":"cutoff","amount":0,"target":"both"},{"src":"filter","dest":"pitch","amount":0,"target":"A"}],"layers":{"A":{"enabled":true,"level":0.82,"character":0,"fmMode":"fm","pdDepth":0.35,"pdCurve":"bend","fmRatio":2,"fmIndex":2.3,"osc":[{"wave":"sine","octave":0,"semi":0,"fine":0,"level":0.75,"pwm":0.5},{"wave":"sine","octave":1,"semi":0,"fine":0,"level":0.08,"pwm":0.5},{"wave":"sine","octave":0,"semi":7,"fine":0,"level":0,"pwm":0.5}],"filter":{"type":"lowpass","cutoff":6400,"res":0.08,"comb":0.2,"env":0.15,"lfo":0,"key":0.4},"amp":{"a":0.004,"d":0.45,"s":0,"r":0.28},"filt":{"a":0.004,"d":0.3,"s":0,"r":0.2}},"B":{"enabled":false,"level":0.55,"character":0,"fmMode":"off","pdDepth":0.35,"pdCurve":"bend","fmRatio":2,"fmIndex":1.4,"osc":[{"wave":"triangle","octave":0,"semi":0,"fine":-4,"level":0.6,"pwm":0.5},{"wave":"sine","octave":-1,"semi":0,"fine":0,"level":0.28,"pwm":0.5},{"wave":"saw","octave":1,"semi":0,"fine":8,"level":0,"pwm":0.5}],"filter":{"type":"lowpass","cutoff":2200,"res":0.12,"comb":0.55,"env":0.2,"lfo":0,"key":0.15},"amp":{"a":0.18,"d":0.4,"s":0.8,"r":0.7},"filt":{"a":0.008,"d":0.28,"s":0.22,"r":0.3}}},"fx":{"drive":0.013333333333333334,"phaserOn":false,"phaserWet":0.28,"phaserRate":0.22,"phaserDepth":0.45,"delaySync":"1/8","delayTime":0.1617303165531021,"delayFb":0.456,"delayWet":0.5066666666666667,"multiOn":false,"multiTime":0.31,"multiFb":0.34,"multiWet":0,"reverbWet":0.34,"reverbDecay":3.4,"shimmerOn":false,"shimmerLevel":0.12,"shimmerPitch":196,"shimmerMotion":0.28,"compOn":false,"compThreshold":-18,"compRatio":3,"compAttack":0.01,"compRelease":0.18},"seq":{"bpm":100,"swing":0,"length":16,"division":0.25,"target":"A","gateOn":true,"gateDepth":0.85,"gates":[true,false,true,true,false,true,true,false,true,true,false,true,true,false,true,true],"steps":[{"on":true,"note":59,"vel":100,"accent":false,"slide":false},{"on":false,"note":60,"vel":100,"accent":false,"slide":false},{"on":false,"note":60,"vel":100,"accent":false,"slide":false},{"on":false,"note":60,"vel":100,"accent":false,"slide":false},{"on":true,"note":47,"vel":100,"accent":false,"slide":false},{"on":false,"note":60,"vel":100,"accent":false,"slide":false},{"on":false,"note":60,"vel":100,"accent":false,"slide":false},{"on":true,"note":59,"vel":100,"accent":false,"slide":false},{"on":false,"note":60,"vel":100,"accent":false,"slide":false},{"on":false,"note":60,"vel":100,"accent":false,"slide":false},{"on":false,"note":60,"vel":100,"accent":false,"slide":false},{"on":true,"note":47,"vel":100,"accent":false,"slide":false},{"on":false,"note":60,"vel":100,"accent":false,"slide":false},{"on":false,"note":60,"vel":100,"accent":false,"slide":false},{"on":false,"note":60,"vel":100,"accent":false,"slide":false},{"on":false,"note":60,"vel":100,"accent":false,"slide":false}]}},{"name":"Outside In_SEQ","master":0.78,"bendRange":2,"polyphony":6,"glide":0,"unison":4,"detune":18,"lfo":[{"wave":"triangle","rate":6.999999999999998,"retrig":true},{"wave":"triangle","rate":6.982810342202747,"retrig":true}],"mod":[{"src":"wheel","dest":"cutoff","amount":0.35,"target":"both"},{"src":"vel","dest":"cutoff","amount":0.6866666666666665,"target":"both"},{"src":"lfo2","dest":"pitch","amount":0,"target":"both"},{"src":"lfo1","dest":"pwm","amount":0,"target":"both"},{"src":"amp","dest":"fm","amount":0,"target":"both"},{"src":"lfo2","dest":"res","amount":0,"target":"both"},{"src":"key","dest":"cutoff","amount":0.6266666666666667,"target":"both"},{"src":"filter","dest":"pitch","amount":0,"target":"both"}],"layers":{"A":{"enabled":true,"level":0.82,"character":1,"fmMode":"fm","pdDepth":1,"pdCurve":"pulse","fmRatio":2,"fmIndex":8,"osc":[{"wave":"sine","octave":0,"semi":0,"fine":0,"level":0.5,"pwm":0.7640000000000001},{"wave":"triangle","octave":0,"semi":0,"fine":7,"level":0.34,"pwm":0.794},{"wave":"sine","octave":-1,"semi":0,"fine":0,"level":0.12,"pwm":0.4}],"filter":{"type":"lowpass","cutoff":809.1236972152158,"res":0.18000000000000005,"comb":0.16080000000000003,"env":0.58,"lfo":1,"key":0.51},"amp":{"a":0.0020000000000000005,"d":4,"s":0.62,"r":0.005000000000000002},"filt":{"a":0.0020000000000000005,"d":4,"s":0.5066666666666666,"r":0.005000000000000002}},"B":{"enabled":false,"level":0.55,"character":0,"fmMode":"off","pdDepth":0.35,"pdCurve":"bend","fmRatio":2,"fmIndex":1.4,"osc":[{"wave":"triangle","octave":0,"semi":0,"fine":-4,"level":0.6,"pwm":0.5},{"wave":"sine","octave":-1,"semi":0,"fine":0,"level":0.28,"pwm":0.5},{"wave":"saw","octave":1,"semi":0,"fine":8,"level":0,"pwm":0.5}],"filter":{"type":"lowpass","cutoff":2200,"res":0.12,"comb":0.55,"env":0.2,"lfo":0,"key":0.15},"amp":{"a":0.18,"d":0.4,"s":0.8,"r":0.7},"filt":{"a":0.008,"d":0.28,"s":0.22,"r":0.3}}},"fx":{"drive":0.04666666666666667,"phaserOn":true,"phaserWet":0.5066666666666667,"phaserRate":0.5,"phaserDepth":0.51,"delaySync":"1/8d","delayTime":0.32,"delayFb":0.7023333333333334,"delayWet":0.2,"multiOn":true,"multiTime":0.5956,"multiFb":0.6546666666666667,"multiWet":0.8333333333333334,"reverbWet":0.16,"reverbDecay":3.332,"shimmerOn":false,"shimmerLevel":0.18666666666666665,"shimmerPitch":196,"shimmerMotion":0.28,"compOn":true,"compThreshold":-18,"compRatio":3,"compAttack":0.01,"compRelease":0.18},"seq":{"bpm":130,"swing":0,"length":16,"division":0.25,"target":"both","gateOn":true,"gateDepth":1,"gates":[false,true,false,true,false,true,false,true,false,true,false,true,false,true,false,true],"steps":[{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":38,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false}]}},{"name":"Primal_SEQ","master":0.78,"bendRange":2,"polyphony":8,"glide":0,"unison":1,"detune":10,"lfo":[{"wave":"square","rate":1.0407515506018536,"retrig":true},{"wave":"saw","rate":19.999999999999996,"retrig":true}],"mod":[{"src":"wheel","dest":"cutoff","amount":0.35,"target":"both"},{"src":"filter","dest":"cutoff","amount":0.6599999999999999,"target":"B"},{"src":"lfo2","dest":"pitch","amount":0,"target":"B"},{"src":"filter","dest":"pwm","amount":0.6800000000000002,"target":"B"},{"src":"amp","dest":"fm","amount":0.6833333333333333,"target":"both"},{"src":"lfo2","dest":"cutoff","amount":0,"target":"both"},{"src":"filter","dest":"cutoff","amount":0.33333333333333326,"target":"both"},{"src":"filter","dest":"pitch","amount":0,"target":"both"}],"layers":{"A":{"enabled":true,"level":0.82,"character":0.5,"fmMode":"fm","pdDepth":0.35,"pdCurve":"bend","fmRatio":2,"fmIndex":2.3,"osc":[{"wave":"square","octave":0,"semi":0,"fine":0,"level":0.75,"pwm":0.2300000000000001},{"wave":"square","octave":1,"semi":0,"fine":0,"level":0.5,"pwm":0.506},{"wave":"sine","octave":0,"semi":8,"fine":0,"level":0,"pwm":0.5}],"filter":{"type":"highpass","cutoff":1508.84000288599,"res":0.48,"comb":0.47600000000000003,"env":0.15,"lfo":0,"key":0.8200000000000001},"amp":{"a":0.006639397303051782,"d":0.45,"s":0,"r":0.28},"filt":{"a":0.10777209438438581,"d":0.3,"s":0.5066666666666667,"r":0.2}},"B":{"enabled":false,"level":0.55,"character":0,"fmMode":"both","pdDepth":0.35,"pdCurve":"sine","fmRatio":2,"fmIndex":1.4,"osc":[{"wave":"triangle","octave":0,"semi":0,"fine":-4,"level":0.6,"pwm":0.5},{"wave":"sine","octave":-1,"semi":0,"fine":0,"level":0.28,"pwm":0.7820000000000001},{"wave":"saw","octave":1,"semi":0,"fine":8,"level":0,"pwm":0.83}],"filter":{"type":"lowpass","cutoff":778.1341347735821,"res":0.8133333333333334,"comb":0.55,"env":0.2,"lfo":0,"key":0.15},"amp":{"a":0.12624798017894961,"d":0.4,"s":0.8,"r":0.7},"filt":{"a":0.01799698908227789,"d":0.28,"s":0.22,"r":0.3}}},"fx":{"drive":0.08,"phaserOn":true,"phaserWet":0.8266666666666667,"phaserRate":0.52,"phaserDepth":0.45,"delaySync":"1/8","delayTime":0.020000000000000004,"delayFb":0,"delayWet":0.5,"multiOn":false,"multiTime":0.24879999999999997,"multiFb":0.1373333333333333,"multiWet":0,"reverbWet":0.34,"reverbDecay":3.4,"shimmerOn":false,"shimmerLevel":0.12,"shimmerPitch":196,"shimmerMotion":0.28,"compOn":false,"compThreshold":-18,"compRatio":3,"compAttack":0.01,"compRelease":0.18},"seq":{"bpm":130,"swing":0,"length":16,"division":0.25,"target":"A","gateOn":true,"gateDepth":1,"gates":[true,true,false,true,true,false,true,true,false,true,true,false,true,true,false,true],"steps":[{"on":true,"note":36,"vel":100,"accent":false,"slide":true},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":36,"vel":100,"accent":false,"slide":true},{"on":true,"note":36,"vel":100,"accent":true,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":true},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":true},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":36,"vel":100,"accent":false,"slide":true},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":true},{"on":false,"note":36,"vel":100,"accent":false,"slide":false}]}},{"name":"RDDM_SEQ","master":0.78,"bendRange":2,"polyphony":8,"glide":0,"unison":1,"detune":10,"lfo":[{"wave":"square","rate":1.0407515506018536,"retrig":true},{"wave":"saw","rate":19.999999999999996,"retrig":true}],"mod":[{"src":"wheel","dest":"cutoff","amount":0.35,"target":"both"},{"src":"filter","dest":"cutoff","amount":0.6599999999999999,"target":"B"},{"src":"lfo2","dest":"pitch","amount":0,"target":"B"},{"src":"filter","dest":"pwm","amount":0.6800000000000002,"target":"B"},{"src":"amp","dest":"fm","amount":0.6833333333333333,"target":"both"},{"src":"lfo2","dest":"cutoff","amount":0,"target":"both"},{"src":"filter","dest":"cutoff","amount":0.33333333333333326,"target":"both"},{"src":"filter","dest":"pitch","amount":0,"target":"both"}],"layers":{"A":{"enabled":true,"level":0.82,"character":0.5,"fmMode":"fm","pdDepth":0.35,"pdCurve":"bend","fmRatio":2,"fmIndex":2.3,"osc":[{"wave":"square","octave":0,"semi":0,"fine":0,"level":0.75,"pwm":0.2300000000000001},{"wave":"square","octave":1,"semi":0,"fine":0,"level":0.5,"pwm":0.506},{"wave":"sine","octave":0,"semi":8,"fine":0,"level":0,"pwm":0.5}],"filter":{"type":"highpass","cutoff":5692.441984158375,"res":0.48,"comb":0.47600000000000003,"env":0.15,"lfo":0,"key":0.8200000000000001},"amp":{"a":0.006639397303051782,"d":0.45,"s":0,"r":0.28},"filt":{"a":0.10777209438438581,"d":0.3,"s":0.5066666666666667,"r":0.2}},"B":{"enabled":false,"level":0.55,"character":0,"fmMode":"both","pdDepth":0.35,"pdCurve":"sine","fmRatio":2,"fmIndex":1.4,"osc":[{"wave":"triangle","octave":0,"semi":0,"fine":-4,"level":0.6,"pwm":0.5},{"wave":"sine","octave":-1,"semi":0,"fine":0,"level":0.28,"pwm":0.7820000000000001},{"wave":"saw","octave":1,"semi":0,"fine":8,"level":0,"pwm":0.83}],"filter":{"type":"lowpass","cutoff":778.1341347735821,"res":0.8133333333333334,"comb":0.55,"env":0.2,"lfo":0,"key":0.15},"amp":{"a":0.12624798017894961,"d":0.4,"s":0.8,"r":0.7},"filt":{"a":0.01799698908227789,"d":0.28,"s":0.22,"r":0.3}}},"fx":{"drive":0.03333333333333333,"phaserOn":false,"phaserWet":0.28,"phaserRate":0.22,"phaserDepth":0.45,"delaySync":"1/8","delayTime":0.1617303165531021,"delayFb":0.7166666666666667,"delayWet":0.5066666666666667,"multiOn":true,"multiTime":0.31,"multiFb":0.6493333333333333,"multiWet":0,"reverbWet":0.34,"reverbDecay":3.4,"shimmerOn":false,"shimmerLevel":0.12,"shimmerPitch":196,"shimmerMotion":0.28,"compOn":false,"compThreshold":-18,"compRatio":3,"compAttack":0.01,"compRelease":0.18},"seq":{"bpm":100,"swing":0,"length":16,"division":0.25,"target":"A","gateOn":true,"gateDepth":1,"gates":[true,true,false,true,true,false,true,true,false,true,true,false,true,true,false,true],"steps":[{"on":true,"note":36,"vel":100,"accent":false,"slide":true},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":36,"vel":100,"accent":false,"slide":true},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":36,"vel":100,"accent":false,"slide":true},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":true},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":true},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":36,"vel":100,"accent":false,"slide":true},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":36,"vel":100,"accent":false,"slide":true},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":true},{"on":false,"note":36,"vel":100,"accent":false,"slide":false}]}},{"name":"S-Saw_SEQ","master":0.78,"bendRange":2,"polyphony":6,"glide":0,"unison":4,"detune":18,"lfo":[{"wave":"square","rate":6.999999999999998,"retrig":false},{"wave":"sample","rate":7.2673706912061755,"retrig":true}],"mod":[{"src":"wheel","dest":"cutoff","amount":0.35,"target":"both"},{"src":"vel","dest":"cutoff","amount":0.18,"target":"both"},{"src":"lfo2","dest":"pitch","amount":0,"target":"both"},{"src":"lfo1","dest":"pwm","amount":0,"target":"A"},{"src":"amp","dest":"fm","amount":0,"target":"both"},{"src":"lfo2","dest":"cutoff","amount":0,"target":"both"},{"src":"key","dest":"cutoff","amount":0,"target":"both"},{"src":"filter","dest":"pitch","amount":0,"target":"A"}],"layers":{"A":{"enabled":true,"level":0.82,"character":0,"fmMode":"off","pdDepth":0.35,"pdCurve":"bend","fmRatio":2,"fmIndex":1.4,"osc":[{"wave":"saw","octave":0,"semi":0,"fine":0,"level":0.8,"pwm":0.5},{"wave":"saw","octave":0,"semi":0,"fine":7,"level":0.34,"pwm":0.5},{"wave":"square","octave":-1,"semi":0,"fine":0,"level":0.12,"pwm":0.4}],"filter":{"type":"lowpass","cutoff":693.17017863947,"res":0.4933333333333333,"comb":0.4,"env":0.58,"lfo":0.08,"key":0.35},"amp":{"a":0.021297219958533408,"d":0.22,"s":0.62,"r":0.22},"filt":{"a":0.004,"d":0.26,"s":0.18,"r":0.2}},"B":{"enabled":false,"level":0.55,"character":0,"fmMode":"off","pdDepth":0.35,"pdCurve":"bend","fmRatio":2,"fmIndex":1.4,"osc":[{"wave":"triangle","octave":0,"semi":0,"fine":-4,"level":0.6,"pwm":0.5},{"wave":"sine","octave":-1,"semi":0,"fine":0,"level":0.28,"pwm":0.5},{"wave":"saw","octave":1,"semi":0,"fine":8,"level":0,"pwm":0.5}],"filter":{"type":"lowpass","cutoff":2200,"res":0.12,"comb":0.55,"env":0.2,"lfo":0,"key":0.15},"amp":{"a":0.18,"d":0.4,"s":0.8,"r":0.7},"filt":{"a":0.008,"d":0.28,"s":0.22,"r":0.3}}},"fx":{"drive":0.04666666666666667,"phaserOn":true,"phaserWet":0.16,"phaserRate":0.18,"phaserDepth":0.45,"delaySync":"1/8d","delayTime":0.32,"delayFb":0.3,"delayWet":0.2,"multiOn":true,"multiTime":0.5956,"multiFb":0.34,"multiWet":0.5066666666666667,"reverbWet":0.16,"reverbDecay":2.1,"shimmerOn":false,"shimmerLevel":0.12,"shimmerPitch":196,"shimmerMotion":0.28,"compOn":true,"compThreshold":-18,"compRatio":3,"compAttack":0.01,"compRelease":0.18},"seq":{"bpm":130,"swing":0,"length":16,"division":0.25,"target":"A","gateOn":false,"gateDepth":0.85,"gates":[true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true],"steps":[{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":60,"vel":100,"accent":false,"slide":false},{"on":false,"note":60,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":60,"vel":100,"accent":false,"slide":false},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":60,"vel":100,"accent":false,"slide":false},{"on":false,"note":60,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":60,"vel":100,"accent":false,"slide":false},{"on":false,"note":60,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":60,"vel":100,"accent":false,"slide":false}]}},{"name":"Sqwarble_SEQ","master":0.78,"bendRange":2,"polyphony":8,"glide":0.24,"unison":4,"detune":19,"lfo":[{"wave":"saw","rate":6.802353498851243,"retrig":false},{"wave":"sample","rate":7.2673706912061755,"retrig":false}],"mod":[{"src":"lfo1","dest":"res","amount":0.6033333333333333,"target":"both"},{"src":"amp","dest":"cutoff","amount":0.6599999999999999,"target":"both"},{"src":"lfo2","dest":"pitch","amount":0,"target":"both"},{"src":"lfo1","dest":"pwm","amount":0,"target":"both"},{"src":"amp","dest":"fm","amount":0,"target":"both"},{"src":"lfo2","dest":"cutoff","amount":0,"target":"both"},{"src":"lfo1","dest":"cutoff","amount":0.22666666666666657,"target":"both"},{"src":"filter","dest":"pitch","amount":0,"target":"both"}],"layers":{"A":{"enabled":true,"level":0.5066666666666666,"character":0.45,"fmMode":"off","pdDepth":0.35,"pdCurve":"bend","fmRatio":2,"fmIndex":1.4,"osc":[{"wave":"triangle","octave":0,"semi":0,"fine":0,"level":0.7,"pwm":0.5},{"wave":"square","octave":-1,"semi":0,"fine":1,"level":0.4,"pwm":0.5},{"wave":"square","octave":-3,"semi":0,"fine":4,"level":0.12,"pwm":0.5}],"filter":{"type":"highpass","cutoff":271.0954441324532,"res":0.8066666666666666,"comb":0.5530666666666666,"env":-0.14333333333333353,"lfo":0.5866666666666667,"key":0.31000000000000005},"amp":{"a":0.027604641639771197,"d":0.14352234665084956,"s":0.81,"r":1.6036073569374412},"filt":{"a":0.1035000904606576,"d":0.5,"s":0.4,"r":0.6}},"B":{"enabled":true,"level":0.2833333333333334,"character":0,"fmMode":"off","pdDepth":0.35,"pdCurve":"bend","fmRatio":2,"fmIndex":1.4,"osc":[{"wave":"triangle","octave":0,"semi":9,"fine":-4,"level":0.6,"pwm":0.5},{"wave":"triangle","octave":-1,"semi":-8,"fine":0,"level":0.4866666666666667,"pwm":0.20600000000000007},{"wave":"saw","octave":1,"semi":0,"fine":8,"level":0,"pwm":0.5}],"filter":{"type":"highpass","cutoff":4443.353298962333,"res":0.48,"comb":0.55,"env":0.2,"lfo":0,"key":0.15},"amp":{"a":0.11408031333845615,"d":0.4,"s":0.5,"r":0.7},"filt":{"a":0.008,"d":0.1767195773001322,"s":0.22,"r":0.015744223807493175}}},"fx":{"drive":0.8599999999999999,"phaserOn":false,"phaserWet":0.5933333333333334,"phaserRate":0.43333333333333335,"phaserDepth":0.45,"delaySync":"free","delayTime":0.041269598950560205,"delayFb":0.6123333333333334,"delayWet":0.5066666666666667,"multiOn":true,"multiTime":0.922,"multiFb":0.66,"multiWet":0.5,"reverbWet":0.56,"reverbDecay":3.2,"shimmerOn":false,"shimmerLevel":0.12,"shimmerPitch":196,"shimmerMotion":0.07333333333333336,"compOn":false,"compThreshold":-18,"compRatio":6.5200000000000005,"compAttack":0.01,"compRelease":0.18},"seq":{"bpm":130,"swing":0,"length":16,"division":0.25,"target":"both","gateOn":true,"gateDepth":0.6566666666666666,"gates":[true,false,true,false,true,false,true,false,true,false,true,false,true,false,true,false],"steps":[{"on":true,"note":43,"vel":100,"accent":false,"slide":false},{"on":false,"note":46,"vel":100,"accent":false,"slide":false},{"on":false,"note":46,"vel":100,"accent":false,"slide":false},{"on":false,"note":43,"vel":100,"accent":false,"slide":false},{"on":true,"note":43,"vel":100,"accent":false,"slide":false},{"on":false,"note":45,"vel":100,"accent":false,"slide":false},{"on":false,"note":48,"vel":100,"accent":false,"slide":false},{"on":false,"note":47,"vel":100,"accent":false,"slide":false},{"on":true,"note":43,"vel":100,"accent":false,"slide":false},{"on":false,"note":48,"vel":100,"accent":false,"slide":false},{"on":false,"note":48,"vel":100,"accent":false,"slide":false},{"on":false,"note":42,"vel":100,"accent":false,"slide":false},{"on":true,"note":43,"vel":100,"accent":false,"slide":false},{"on":false,"note":44,"vel":100,"accent":false,"slide":false},{"on":false,"note":48,"vel":100,"accent":false,"slide":false},{"on":false,"note":41,"vel":100,"accent":false,"slide":false}]}},{"name":"S-Saw 2_SEQ","master":0.78,"bendRange":2,"polyphony":6,"glide":0,"unison":4,"detune":18,"lfo":[{"wave":"square","rate":6.999999999999998,"retrig":true},{"wave":"sample","rate":6.982810342202747,"retrig":true}],"mod":[{"src":"wheel","dest":"cutoff","amount":0.35,"target":"both"},{"src":"vel","dest":"cutoff","amount":0.6866666666666665,"target":"both"},{"src":"lfo2","dest":"pitch","amount":0,"target":"both"},{"src":"lfo1","dest":"pwm","amount":0,"target":"both"},{"src":"amp","dest":"fm","amount":0,"target":"both"},{"src":"lfo2","dest":"res","amount":0,"target":"both"},{"src":"key","dest":"cutoff","amount":0.6266666666666667,"target":"both"},{"src":"filter","dest":"pitch","amount":0,"target":"both"}],"layers":{"A":{"enabled":true,"level":0.82,"character":0.5066666666666667,"fmMode":"pd","pdDepth":0.6366666666666667,"pdCurve":"pulse","fmRatio":2,"fmIndex":1.4,"osc":[{"wave":"saw","octave":0,"semi":0,"fine":0,"level":0.5,"pwm":0.5},{"wave":"square","octave":0,"semi":0,"fine":7,"level":0.34,"pwm":0.794},{"wave":"square","octave":-1,"semi":0,"fine":0,"level":0.12,"pwm":0.4}],"filter":{"type":"highpass","cutoff":84.13474337373938,"res":0.5133333333333333,"comb":0.7680000000000001,"env":0.58,"lfo":0.5133333333333333,"key":0.51},"amp":{"a":0.0020000000000000005,"d":0.22,"s":0.62,"r":0.22},"filt":{"a":0.004,"d":0.26,"s":0.18,"r":0.2}},"B":{"enabled":false,"level":0.55,"character":0,"fmMode":"off","pdDepth":0.35,"pdCurve":"bend","fmRatio":2,"fmIndex":1.4,"osc":[{"wave":"triangle","octave":0,"semi":0,"fine":-4,"level":0.6,"pwm":0.5},{"wave":"sine","octave":-1,"semi":0,"fine":0,"level":0.28,"pwm":0.5},{"wave":"saw","octave":1,"semi":0,"fine":8,"level":0,"pwm":0.5}],"filter":{"type":"lowpass","cutoff":2200,"res":0.12,"comb":0.55,"env":0.2,"lfo":0,"key":0.15},"amp":{"a":0.18,"d":0.4,"s":0.8,"r":0.7},"filt":{"a":0.008,"d":0.28,"s":0.22,"r":0.3}}},"fx":{"drive":0.04666666666666667,"phaserOn":true,"phaserWet":0.16,"phaserRate":0.18,"phaserDepth":0.45,"delaySync":"1/8d","delayTime":0.32,"delayFb":0.3,"delayWet":0.2,"multiOn":true,"multiTime":0.5956,"multiFb":0.34,"multiWet":0.5066666666666667,"reverbWet":0.16,"reverbDecay":2.1,"shimmerOn":false,"shimmerLevel":0.12,"shimmerPitch":196,"shimmerMotion":0.28,"compOn":true,"compThreshold":-18,"compRatio":3,"compAttack":0.01,"compRelease":0.18},"seq":{"bpm":130,"swing":0,"length":16,"division":0.25,"target":"A","gateOn":false,"gateDepth":0.85,"gates":[true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true],"steps":[{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":60,"vel":100,"accent":false,"slide":false},{"on":true,"note":48,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":60,"vel":100,"accent":false,"slide":false},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":48,"vel":100,"accent":false,"slide":false},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":50,"vel":100,"accent":false,"slide":false},{"on":false,"note":60,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":51,"vel":100,"accent":false,"slide":false},{"on":false,"note":60,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":48,"vel":100,"accent":false,"slide":false}]}},{"name":"Subbed Bass_SEQ","master":0.78,"bendRange":2,"polyphony":1,"glide":0.04,"unison":1,"detune":10,"lfo":[{"wave":"sine","rate":0.35,"retrig":false},{"wave":"triangle","rate":4.5,"retrig":false}],"mod":[{"src":"wheel","dest":"cutoff","amount":0.35,"target":"both"},{"src":"vel","dest":"cutoff","amount":0.18,"target":"both"},{"src":"lfo2","dest":"pitch","amount":0,"target":"both"},{"src":"lfo1","dest":"pwm","amount":0,"target":"A"},{"src":"amp","dest":"fm","amount":0,"target":"both"},{"src":"lfo2","dest":"cutoff","amount":0,"target":"both"},{"src":"key","dest":"cutoff","amount":0,"target":"both"},{"src":"filter","dest":"pitch","amount":0,"target":"A"}],"layers":{"A":{"enabled":true,"level":0.9,"character":0,"fmMode":"off","pdDepth":0.35,"pdCurve":"bend","fmRatio":2,"fmIndex":1.4,"osc":[{"wave":"sine","octave":-1,"semi":0,"fine":0,"level":0.9,"pwm":0.5},{"wave":"square","octave":-1,"semi":0,"fine":0,"level":0.18,"pwm":0.5},{"wave":"sine","octave":-2,"semi":0,"fine":0,"level":0.22,"pwm":0.5}],"filter":{"type":"lowpass","cutoff":211.57396605658172,"res":0.47,"comb":0.2,"env":0.35,"lfo":0,"key":0.15},"amp":{"a":0.005,"d":0.18,"s":0.85,"r":0.12},"filt":{"a":0.004,"d":0.16,"s":0.2,"r":0.1}},"B":{"enabled":false,"level":0.55,"character":0,"fmMode":"off","pdDepth":0.35,"pdCurve":"bend","fmRatio":2,"fmIndex":1.4,"osc":[{"wave":"triangle","octave":0,"semi":0,"fine":-4,"level":0.6,"pwm":0.5},{"wave":"sine","octave":-1,"semi":0,"fine":0,"level":0.28,"pwm":0.5},{"wave":"saw","octave":1,"semi":0,"fine":8,"level":0,"pwm":0.5}],"filter":{"type":"lowpass","cutoff":2200,"res":0.12,"comb":0.55,"env":0.2,"lfo":0,"key":0.15},"amp":{"a":0.18,"d":0.4,"s":0.8,"r":0.7},"filt":{"a":0.008,"d":0.28,"s":0.22,"r":0.3}}},"fx":{"drive":0,"phaserOn":false,"phaserWet":0.28,"phaserRate":0.22,"phaserDepth":0.45,"delaySync":"1/4","delayTime":0.32,"delayFb":0.3993333333333333,"delayWet":0.5066666666666667,"multiOn":true,"multiTime":0.242,"multiFb":0.1373333333333333,"multiWet":0.49333333333333335,"reverbWet":0.04,"reverbDecay":2.1,"shimmerOn":false,"shimmerLevel":0.12,"shimmerPitch":196,"shimmerMotion":0.28,"compOn":false,"compThreshold":-18,"compRatio":3,"compAttack":0.01,"compRelease":0.18},"seq":{"bpm":120,"swing":0,"length":16,"division":0.25,"target":"A","gateOn":false,"gateDepth":0.85,"gates":[true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true],"steps":[{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":60,"vel":100,"accent":false,"slide":false},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":60,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":60,"vel":100,"accent":false,"slide":false}]}},{"name":"Sub Sub_SEQ","master":0.78,"bendRange":2,"polyphony":1,"glide":0.04,"unison":1,"detune":10,"lfo":[{"wave":"sample","rate":6.999999999999998,"retrig":false},{"wave":"triangle","rate":4.5,"retrig":false}],"mod":[{"src":"wheel","dest":"cutoff","amount":0.35,"target":"both"},{"src":"filter","dest":"cutoff","amount":0.6866666666666665,"target":"both"},{"src":"amp","dest":"res","amount":0.6533333333333333,"target":"both"},{"src":"lfo1","dest":"pwm","amount":0,"target":"A"},{"src":"filter","dest":"pan","amount":0.7066666666666666,"target":"both"},{"src":"lfo2","dest":"cutoff","amount":0,"target":"both"},{"src":"filter","dest":"fm","amount":0.6533333333333333,"target":"both"},{"src":"amp","dest":"res","amount":0.6533333333333333,"target":"B"}],"layers":{"A":{"enabled":true,"level":0.9,"character":0,"fmMode":"off","pdDepth":0.35,"pdCurve":"bend","fmRatio":2,"fmIndex":1.4,"osc":[{"wave":"sine","octave":-1,"semi":0,"fine":0,"level":0.9,"pwm":0.494},{"wave":"sine","octave":-1,"semi":0,"fine":0,"level":0.18,"pwm":0.95},{"wave":"sine","octave":-2,"semi":0,"fine":0,"level":0.5133333333333333,"pwm":0.95}],"filter":{"type":"lowpass","cutoff":195.6776932054442,"res":0,"comb":0.42079999999999995,"env":0.35,"lfo":0.18,"key":0.4966666666666667},"amp":{"a":0.019558655370858574,"d":0.01622408114487936,"s":0.5033333333333333,"r":0.12},"filt":{"a":0.10244704973924769,"d":0.16,"s":0.5,"r":0.1}},"B":{"enabled":false,"level":0.55,"character":0,"fmMode":"off","pdDepth":0.35,"pdCurve":"bend","fmRatio":2,"fmIndex":1.4,"osc":[{"wave":"triangle","octave":0,"semi":0,"fine":-4,"level":0.6,"pwm":0.5},{"wave":"sine","octave":-1,"semi":0,"fine":0,"level":0.28,"pwm":0.5},{"wave":"saw","octave":1,"semi":0,"fine":8,"level":0,"pwm":0.5}],"filter":{"type":"lowpass","cutoff":2200,"res":0.12,"comb":0.55,"env":0.2,"lfo":0,"key":0.15},"amp":{"a":0.18,"d":0.4,"s":0.8,"r":0.7},"filt":{"a":0.008,"d":0.28,"s":0.22,"r":0.3}}},"fx":{"drive":0.08666666666666667,"phaserOn":false,"phaserWet":0.28,"phaserRate":0.22,"phaserDepth":0.45,"delaySync":"1/4","delayTime":0.32,"delayFb":0.3993333333333333,"delayWet":0.5066666666666667,"multiOn":true,"multiTime":0.242,"multiFb":0.1373333333333333,"multiWet":0.49333333333333335,"reverbWet":0,"reverbDecay":3.2199999999999998,"shimmerOn":false,"shimmerLevel":0.12,"shimmerPitch":196,"shimmerMotion":0.28,"compOn":false,"compThreshold":-18,"compRatio":3,"compAttack":0.01,"compRelease":0.18},"seq":{"bpm":120,"swing":0,"length":16,"division":0.25,"target":"A","gateOn":false,"gateDepth":0.85,"gates":[true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true],"steps":[{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":60,"vel":100,"accent":false,"slide":false},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":60,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":60,"vel":100,"accent":false,"slide":false}]}},{"name":"Wuff FM_SEQ","master":0.78,"bendRange":2,"polyphony":8,"glide":0,"unison":1,"detune":10,"lfo":[{"wave":"square","rate":1.0407515506018536,"retrig":true},{"wave":"saw","rate":19.999999999999996,"retrig":true}],"mod":[{"src":"wheel","dest":"cutoff","amount":0.35,"target":"both"},{"src":"filter","dest":"cutoff","amount":0.6599999999999999,"target":"B"},{"src":"lfo2","dest":"pitch","amount":0,"target":"B"},{"src":"filter","dest":"pwm","amount":0.6800000000000002,"target":"B"},{"src":"amp","dest":"fm","amount":0.6833333333333333,"target":"both"},{"src":"lfo2","dest":"cutoff","amount":0,"target":"both"},{"src":"filter","dest":"cutoff","amount":0.33333333333333326,"target":"both"},{"src":"filter","dest":"pitch","amount":0,"target":"both"}],"layers":{"A":{"enabled":true,"level":0.82,"character":0.5,"fmMode":"fm","pdDepth":0.35,"pdCurve":"bend","fmRatio":2,"fmIndex":2.3,"osc":[{"wave":"triangle","octave":0,"semi":0,"fine":0,"level":0.75,"pwm":0.2300000000000001},{"wave":"triangle","octave":1,"semi":0,"fine":0,"level":0.5,"pwm":0.506},{"wave":"triangle","octave":0,"semi":8,"fine":0,"level":0,"pwm":0.5}],"filter":{"type":"highpass","cutoff":355.7184616107801,"res":0.48,"comb":0.47600000000000003,"env":0.15,"lfo":0,"key":0.8200000000000001},"amp":{"a":0.10777209438438581,"d":0.45,"s":0,"r":0.28},"filt":{"a":0.10777209438438581,"d":0.3,"s":0.5066666666666667,"r":0.2}},"B":{"enabled":false,"level":0.55,"character":0,"fmMode":"both","pdDepth":0.35,"pdCurve":"sine","fmRatio":2,"fmIndex":1.4,"osc":[{"wave":"triangle","octave":0,"semi":0,"fine":-4,"level":0.6,"pwm":0.5},{"wave":"sine","octave":-1,"semi":0,"fine":0,"level":0.28,"pwm":0.7820000000000001},{"wave":"saw","octave":1,"semi":0,"fine":8,"level":0,"pwm":0.83}],"filter":{"type":"lowpass","cutoff":778.1341347735821,"res":0.8133333333333334,"comb":0.55,"env":0.2,"lfo":0,"key":0.15},"amp":{"a":0.12624798017894961,"d":0.4,"s":0.8,"r":0.7},"filt":{"a":0.01799698908227789,"d":0.28,"s":0.22,"r":0.3}}},"fx":{"drive":0.05333333333333333,"phaserOn":true,"phaserWet":0.52,"phaserRate":0.52,"phaserDepth":0.45,"delaySync":"1/8","delayTime":0.020000000000000004,"delayFb":0,"delayWet":0.5,"multiOn":true,"multiTime":0.24879999999999997,"multiFb":0.388,"multiWet":0.16,"reverbWet":0.34,"reverbDecay":1.3466666666666667,"shimmerOn":false,"shimmerLevel":0.12,"shimmerPitch":196,"shimmerMotion":0.28,"compOn":true,"compThreshold":-33,"compRatio":10.333333333333332,"compAttack":0.0022908676527677737,"compRelease":0.11813333333333338},"seq":{"bpm":130,"swing":0,"length":16,"division":0.25,"target":"A","gateOn":true,"gateDepth":1,"gates":[true,true,false,true,true,false,true,true,false,true,true,false,true,true,false,true],"steps":[{"on":true,"note":36,"vel":100,"accent":false,"slide":true},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":36,"vel":100,"accent":false,"slide":true},{"on":false,"note":36,"vel":100,"accent":true,"slide":false},{"on":false,"note":36,"vel":100,"accent":false,"slide":true},{"on":true,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":36,"vel":100,"accent":false,"slide":true},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":true},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":false,"note":36,"vel":100,"accent":false,"slide":false},{"on":true,"note":36,"vel":100,"accent":false,"slide":true},{"on":false,"note":36,"vel":100,"accent":false,"slide":false}]}}];
+const AUTO_DESTS = [
+  { path: 'layers.A.filter.cutoff', label: 'A CUTOFF', min: 40, max: 14000, log: true },
+  { path: 'layers.A.filter.res', label: 'A RES', min: 0, max: 1 },
+  { path: 'layers.A.filter.env', label: 'A ENV', min: -1, max: 1 },
+  { path: 'layers.A.level', label: 'A LEVEL', min: 0, max: 1 },
+  { path: 'layers.A.fmIndex', label: 'A FM', min: 0, max: 8 },
+  { path: 'layers.B.filter.cutoff', label: 'B CUTOFF', min: 40, max: 14000, log: true },
+  { path: 'layers.B.filter.res', label: 'B RES', min: 0, max: 1 },
+  { path: 'layers.B.level', label: 'B LEVEL', min: 0, max: 1 },
+  { path: 'fx.drive', label: 'DRIVE', min: 0, max: 1 },
+  { path: 'fx.delayWet', label: 'DELAY', min: 0, max: 1 },
+  { path: 'fx.reverbWet', label: 'REVERB', min: 0, max: 1 },
+  { path: 'fx.phaserWet', label: 'PHASER', min: 0, max: 1 },
+  { path: 'master', label: 'VOLUME', min: 0, max: 1 }
+];
+function destSpec(path) {
+  return AUTO_DESTS.find((item) => item.path === path) || { path, label: path, min: 0, max: 1, log: false };
+}
+function laneFromRatio(path, ratio) {
+  const spec = destSpec(path);
+  const t = clamp(ratio, 0, 1);
+  if (spec.log) return Math.exp(Math.log(spec.min) + t * (Math.log(spec.max) - Math.log(spec.min)));
+  return spec.min + t * (spec.max - spec.min);
+}
+function ratioFromLane(path, value) {
+  const spec = destSpec(path);
+  if (spec.log) return (Math.log(value) - Math.log(spec.min)) / (Math.log(spec.max) - Math.log(spec.min));
+  return (value - spec.min) / (spec.max - spec.min);
+}
+function mergeAuto(autoIn) {
+  const lanesIn = autoIn && autoIn.lanes && typeof autoIn.lanes === 'object' ? autoIn.lanes : {};
+  const lanes = {};
+  Object.keys(lanesIn).forEach((key) => {
+    const row = Array.isArray(lanesIn[key]) ? lanesIn[key] : [];
+    lanes[key] = Array.from({ length: 128 }, (_, i) => (row[i] == null || row[i] === '' ? null : Number(row[i])));
+  });
+  return {
+    on: !!(autoIn && autoIn.on),
+    arm: !!(autoIn && autoIn.arm),
+    dest: autoIn && typeof autoIn.dest === 'string' ? autoIn.dest : 'layers.A.filter.cutoff',
+    lanes
+  };
+}
+
 const STORAGE = 'continuum-mosaic-presets-v1';
 const LAST = 'continuum-mosaic-last-preset';
 const LAST_STATE = 'continuum-mosaic-last-state-v2';
@@ -1322,19 +1377,30 @@ function repair(state) {
   });
   const stepsIn = state.seq.steps || [];
   const gatesIn = state.seq.gates || [];
-  state.seq.steps = Array.from({ length: 16 }, (_, i) => ({ ...base.seq.steps[i], ...(stepsIn[i] || {}) }));
-  state.seq.gates = Array.from({ length: 16 }, (_, i) => gatesIn[i] !== false);
-  state.seq.length = state.seq.length === 8 ? 8 : 16;
+  const blank = { on: false, note: 60, vel: 100, accent: false, slide: false };
+  state.seq.steps = Array.from({ length: 128 }, (_, i) => ({ ...blank, ...(base.seq.steps[i] || {}), ...(stepsIn[i] || {}) }));
+  state.seq.gates = Array.from({ length: 128 }, (_, i) => (i < gatesIn.length ? gatesIn[i] !== false : true));
+  const lengths = [8, 16, 32, 128];
+  const requested = Math.round(Number(state.seq.length) || 16);
+  state.seq.length = lengths.includes(requested) ? requested : (lengths.find((n) => n >= requested) || 128);
+  state.seq.auto = mergeAuto(null);
   return state;
 }
 
 function normalize(partial) {
+  const savedAuto = partial && partial.seq && partial.seq.auto;
   const next = repair(fill(defaultState(), partial || {}));
+  if (savedAuto) next.seq.auto = mergeAuto(savedAuto);
   if (partial && partial.name) next.name = partial.name;
   return next;
 }
 
 function recall(id, userPresets) {
+  if (id.startsWith('bank:')) {
+    const name = id.slice(5);
+    const found = BANK.find((preset) => preset.name === name);
+    return normalize(clone(found || FACTORY[0]));
+  }
   if (id.startsWith('factory:')) {
     const name = id.slice(8);
     const found = FACTORY.find((preset) => preset.name === name) || FACTORY[0];
@@ -1792,6 +1858,9 @@ function mount(stage, engine) {
   let stepGrid;
   let playBtn;
   let gateSlots;
+  let autoSlots;
+  let pageLabel;
+  let viewPage = 0;
   let pitchCap;
   let modCap;
   let nameInput;
@@ -2193,7 +2262,7 @@ function mount(stage, engine) {
     addKnob(swing, { path: 'seq.swing', label: 'SWING', min: 0, max: 0.55, def: 0, format: (v) => Math.round(v * 100) });
     transport.append(bpm, swing);
     addSelect(transport, { path: 'seq.division', options: [['1', '1/4'], ['0.5', '1/8'], ['0.25', '1/16'], ['0.1667', '1/16T']], numeric: true });
-    addSelect(transport, { path: 'seq.length', options: [['8', '8 steps'], ['16', '16 steps']], numeric: true });
+    addSelect(transport, { path: 'seq.length', options: [['8', '8 steps'], ['16', '16 steps'], ['32', '32 steps'], ['128', '8 bars']], numeric: true });
     addSelect(transport, { path: 'seq.target', options: [['A', 'Layer A'], ['B', 'Layer B'], ['both', 'A + B']] });
     stepGrid = el('div', 'steps');
     for (let i = 0; i < 16; i++) stepGrid.append(stepColumn(i));
@@ -2206,14 +2275,79 @@ function mount(stage, engine) {
       const button = el('button', 'mini', String(i + 1));
       button.type = 'button';
       button.addEventListener('click', () => {
-        state.seq.gates[i] = !state.seq.gates[i];
+        const index = viewPage * 16 + i;
+        if (index >= state.seq.length) return;
+        state.seq.gates[index] = !state.seq.gates[index];
         schedule();
         syncGates();
       });
       gateSlots.append(button);
     }
     gates.append(depth, gateSlots);
-    pageNode.append(transport, stepGrid, gates);
+    const prev = el('button', 'texty', '‹');
+    const next = el('button', 'texty', '›');
+    pageLabel = el('span', 'page-label', '1–16');
+    prev.type = 'button';
+    next.type = 'button';
+    prev.title = 'Previous 16 steps';
+    next.title = 'Next 16 steps';
+    prev.addEventListener('click', () => { viewPage = (viewPage - 1 + pageCount()) % pageCount(); syncSteps(); syncGates(); syncAuto(); });
+    next.addEventListener('click', () => { viewPage = (viewPage + 1) % pageCount(); syncSteps(); syncGates(); syncAuto(); });
+    transport.append(prev, pageLabel, next);
+    addSwitch(transport, { path: 'seq.auto.on', label: 'AUTO' });
+    addSwitch(transport, { path: 'seq.auto.arm', label: 'ARM' });
+    const destSelect = el('select', 'slim');
+    destSelect.id = 'autoDest';
+    AUTO_DESTS.forEach((item) => {
+      const option = el('option', '', item.label);
+      option.value = item.path;
+      destSelect.append(option);
+    });
+    destSelect.addEventListener('change', () => {
+      state.seq.auto.dest = destSelect.value;
+      schedule();
+      syncAuto();
+    });
+    transport.append(destSelect);
+    widgets.push({
+      path: 'seq.auto.dest',
+      paint() {
+        const dest = state.seq.auto.dest;
+        if (![...destSelect.options].some((option) => option.value === dest)) {
+          const option = el('option', '', destSpec(dest).label || dest);
+          option.value = dest;
+          destSelect.append(option);
+        }
+        destSelect.value = dest;
+      }
+    });
+    const autoWrap = el('div', 'auto-row');
+    autoWrap.title = 'Drag a bar to write this knob. Alt-click clears the step. ARM records whichever knob you move while the sequence plays.';
+    autoWrap.append(el('div', 'tag', 'KNOB LANE'));
+    autoSlots = el('div', 'slots');
+    for (let i = 0; i < 16; i++) {
+      const cell = el('div', 'auto-cell');
+      cell.append(el('i'));
+      const draw = (event) => {
+        const index = viewPage * 16 + i;
+        if (index >= state.seq.length) return;
+        if (event.altKey) { writeLane(index, null); return; }
+        const rect = cell.getBoundingClientRect();
+        const ratio = 1 - clamp((event.clientY - rect.top) / rect.height, 0, 1);
+        writeLane(index, laneFromRatio(state.seq.auto.dest, ratio));
+      };
+      cell.addEventListener('pointerdown', (event) => {
+        if (event.button !== 0) return;
+        cell.setPointerCapture(event.pointerId);
+        draw(event);
+      });
+      cell.addEventListener('pointermove', (event) => {
+        if (cell.hasPointerCapture(event.pointerId)) draw(event);
+      });
+      autoSlots.append(cell);
+    }
+    autoWrap.append(autoSlots);
+    pageNode.append(transport, stepGrid, autoWrap, gates);
     return { page: pageNode };
   }
 
@@ -2224,10 +2358,11 @@ function mount(stage, engine) {
     const name = el('em', 'nm', 'C4');
     lane.append(bar, name);
     const drag = (event) => {
+      if (viewPage * 16 + index >= state.seq.length) return;
       const rect = lane.getBoundingClientRect();
       const ratio = 1 - clamp((event.clientY - rect.top) / rect.height, 0, 1);
-      state.seq.steps[index].note = clamp(Math.round(36 + ratio * 48), 36, 84);
-      state.seq.steps[index].on = true;
+      state.seq.steps[viewPage * 16 + index].note = clamp(Math.round(24 + ratio * 60), 24, 84);
+      state.seq.steps[viewPage * 16 + index].on = true;
       schedule();
       syncStep(index);
     };
@@ -2242,21 +2377,21 @@ function mount(stage, engine) {
     const gate = el('button', 'mini gate', String(index + 1));
     gate.type = 'button';
     gate.addEventListener('click', () => {
-      state.seq.steps[index].on = !state.seq.steps[index].on;
+      state.seq.steps[viewPage * 16 + index].on = !state.seq.steps[viewPage * 16 + index].on;
       schedule();
       syncStep(index);
     });
     const accent = el('button', 'mini', 'ACC');
     accent.type = 'button';
     accent.addEventListener('click', () => {
-      state.seq.steps[index].accent = !state.seq.steps[index].accent;
+      state.seq.steps[viewPage * 16 + index].accent = !state.seq.steps[viewPage * 16 + index].accent;
       schedule();
       syncStep(index);
     });
     const slide = el('button', 'mini', 'SLD');
     slide.type = 'button';
     slide.addEventListener('click', () => {
-      state.seq.steps[index].slide = !state.seq.steps[index].slide;
+      state.seq.steps[viewPage * 16 + index].slide = !state.seq.steps[viewPage * 16 + index].slide;
       schedule();
       syncStep(index);
     });
@@ -2264,30 +2399,101 @@ function mount(stage, engine) {
     return col;
   }
 
-  function syncStep(index) {
-    const col = stepGrid.children[index];
+  function pageCount() {
+    return Math.max(1, Math.ceil((state.seq.length || 16) / 16));
+  }
+
+  function writeLane(index, value) {
+    const dest = state.seq.auto.dest;
+    if (!state.seq.auto.lanes[dest]) state.seq.auto.lanes[dest] = Array.from({ length: 128 }, () => null);
+    state.seq.auto.lanes[dest][index] = value;
+    schedule();
+    syncAuto();
+  }
+
+  function recordAuto(path, value) {
+    const auto = state.seq.auto;
+    if (!auto || !auto.arm || !sequencer.playing || playhead < 0) return;
+    const dest = pathOf(path);
+    if (!dest || dest.startsWith('seq.')) return;
+    auto.dest = dest;
+    if (!auto.lanes[dest]) auto.lanes[dest] = Array.from({ length: 128 }, () => null);
+    auto.lanes[dest][playhead] = value;
+    widgets.forEach((widget) => { if (widget.path === 'seq.auto.dest') widget.paint(); });
+    syncAuto();
+  }
+
+  function applyAuto(index) {
+    const auto = state.seq.auto;
+    if (!auto || !auto.on || !auto.lanes) return;
+    let dirty = false;
+    Object.keys(auto.lanes).forEach((path) => {
+      const value = auto.lanes[path][index];
+      if (value == null || Number.isNaN(Number(value))) return;
+      setPath(path, Number(value));
+      dirty = true;
+    });
+    if (!dirty) return;
+    widgets.forEach((widget) => {
+      const resolved = widget.path.includes('$.') ? pathOf(widget.path) : widget.path;
+      if (auto.lanes[resolved] && auto.lanes[resolved][index] != null) widget.paint();
+    });
+    if (engine.ready) engine.setState(state);
+  }
+
+  function syncStep(col) {
+    const index = viewPage * 16 + col;
+    const column = stepGrid.children[col];
     const step = state.seq.steps[index];
-    const ratio = clamp((step.note - 36) / 48, 0, 1);
-    col.querySelector('.bar').style.height = Math.max(4, ratio * 100) + '%';
-    col.querySelector('.nm').textContent = noteName(step.note);
-    col.classList.toggle('off', !step.on);
-    col.classList.toggle('dim', index >= state.seq.length);
-    col.children[1].classList.toggle('on', !!step.on);
-    col.children[2].classList.toggle('on', !!step.accent);
-    col.children[3].classList.toggle('on', !!step.slide);
+    const ratio = clamp((step.note - 24) / 60, 0, 1);
+    column.querySelector('.bar').style.height = Math.max(4, ratio * 100) + '%';
+    column.querySelector('.nm').textContent = noteName(step.note);
+    column.classList.toggle('off', !step.on);
+    column.classList.toggle('dim', index >= state.seq.length);
+    column.children[1].textContent = String(index + 1);
+    column.children[1].classList.toggle('on', !!step.on);
+    column.children[2].classList.toggle('on', !!step.accent);
+    column.children[3].classList.toggle('on', !!step.slide);
   }
 
   function syncSteps() {
+    if (viewPage >= pageCount()) viewPage = 0;
+    if (pageLabel) {
+      if ((state.seq.length || 16) >= 128) pageLabel.textContent = 'BAR ' + (viewPage + 1);
+      else pageLabel.textContent = (viewPage * 16 + 1) + '–' + Math.min(state.seq.length, viewPage * 16 + 16);
+    }
     for (let i = 0; i < 16; i++) syncStep(i);
     markPlayhead(playhead);
+    syncAuto();
   }
 
   function syncGates() {
-    [...gateSlots.children].forEach((button, i) => button.classList.toggle('on', state.seq.gates[i] !== false));
+    [...gateSlots.children].forEach((button, col) => {
+      const index = viewPage * 16 + col;
+      button.textContent = String(index + 1);
+      button.classList.toggle('on', state.seq.gates[index] !== false);
+      button.disabled = index >= state.seq.length;
+    });
+  }
+
+  function syncAuto() {
+    if (!autoSlots || !state.seq.auto) return;
+    const dest = state.seq.auto.dest;
+    const lane = (state.seq.auto.lanes && state.seq.auto.lanes[dest]) || [];
+    [...autoSlots.children].forEach((cell, col) => {
+      const index = viewPage * 16 + col;
+      const value = lane[index];
+      const empty = value == null || Number.isNaN(Number(value));
+      cell.classList.toggle('empty', empty);
+      cell.classList.toggle('dim', index >= state.seq.length);
+      const ratio = empty ? 0 : clamp(ratioFromLane(dest, Number(value)), 0, 1);
+      cell.firstChild.style.height = (empty ? 8 : Math.max(8, ratio * 100)) + '%';
+    });
   }
 
   function markPlayhead(index) {
-    [...stepGrid.children].forEach((col, i) => col.classList.toggle('now', i === index));
+    const base = viewPage * 16;
+    [...stepGrid.children].forEach((col, i) => col.classList.toggle('now', base + i === index));
   }
 
   const sequencer = {
@@ -2341,6 +2547,7 @@ function mount(stage, engine) {
     fire(index, time, interval) {
       playhead = index;
       markPlayhead(index);
+      applyAuto(index);
       const seq = state.seq;
       if (seq.gateOn) {
         const open = seq.gates[index] !== false;
@@ -2636,6 +2843,8 @@ function mount(stage, engine) {
 
   function fillMenu() {
     menu.replaceChildren();
+    menu.append(el('div', 'group', 'PRESET BANK'));
+    BANK.forEach((preset) => menu.append(menuItem('bank:' + preset.name, preset.name, false, 'BANK')));
     menu.append(el('div', 'group', 'FACTORY'));
     FACTORY.forEach((preset) => menu.append(menuItem('factory:' + preset.name, preset.name, false)));
     menu.append(el('div', 'group', 'USER'));
@@ -2649,7 +2858,7 @@ function mount(stage, engine) {
     menu.append(exp);
   }
 
-  function menuItem(id, name, removable) {
+  function menuItem(id, name, removable, tag) {
     const button = el('button', id === currentId ? 'on' : '');
     button.type = 'button';
     const label = el('span', '', name);
@@ -2665,7 +2874,7 @@ function mount(stage, engine) {
         fillMenu();
       });
       button.append(kill);
-    } else button.append(el('span', 'tag', 'FACTORY'));
+    } else button.append(el('span', 'tag', tag || 'FACTORY'));
     button.addEventListener('click', () => {
       loadPreset(id);
       menu.hidden = true;
@@ -2675,6 +2884,7 @@ function mount(stage, engine) {
 
   function catalog() {
     return [
+      ...BANK.map((preset) => ({ id: 'bank:' + preset.name, name: preset.name })),
       ...FACTORY.map((preset) => ({ id: 'factory:' + preset.name, name: preset.name })),
       ...user.map((preset) => ({ id: preset.id, name: preset.name }))
     ];
@@ -2690,6 +2900,7 @@ function mount(stage, engine) {
 
   function loadPreset(id) {
     state = recall(id, user);
+    viewPage = 0;
     currentId = id;
     saveLastId(id);
     schedule();
@@ -2841,6 +3052,7 @@ function mount(stage, engine) {
     });
     function apply(next) {
       setPath(spec.path, next);
+      recordAuto(spec.path, next);
       schedule();
       widgets.forEach((widget) => { if (widget.path === spec.path) widget.paint(); });
       if (spec.path.startsWith('seq.')) syncSteps();
