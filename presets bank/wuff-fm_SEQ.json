@@ -1,0 +1,354 @@
+{
+  "name": "Glass FM",
+  "master": 0.78,
+  "bendRange": 2,
+  "polyphony": 8,
+  "glide": 0,
+  "unison": 1,
+  "detune": 10,
+  "lfo": [
+    {
+      "wave": "square",
+      "rate": 1.0407515506018536,
+      "retrig": true
+    },
+    {
+      "wave": "saw",
+      "rate": 19.999999999999996,
+      "retrig": true
+    }
+  ],
+  "mod": [
+    {
+      "src": "wheel",
+      "dest": "cutoff",
+      "amount": 0.35,
+      "target": "both"
+    },
+    {
+      "src": "filter",
+      "dest": "cutoff",
+      "amount": 0.6599999999999999,
+      "target": "B"
+    },
+    {
+      "src": "lfo2",
+      "dest": "pitch",
+      "amount": 0,
+      "target": "B"
+    },
+    {
+      "src": "filter",
+      "dest": "pwm",
+      "amount": 0.6800000000000002,
+      "target": "B"
+    },
+    {
+      "src": "amp",
+      "dest": "fm",
+      "amount": 0.6833333333333333,
+      "target": "both"
+    },
+    {
+      "src": "lfo2",
+      "dest": "cutoff",
+      "amount": 0,
+      "target": "both"
+    },
+    {
+      "src": "filter",
+      "dest": "cutoff",
+      "amount": 0.33333333333333326,
+      "target": "both"
+    },
+    {
+      "src": "filter",
+      "dest": "pitch",
+      "amount": 0,
+      "target": "both"
+    }
+  ],
+  "layers": {
+    "A": {
+      "enabled": true,
+      "level": 0.82,
+      "character": 0.5,
+      "fmMode": "fm",
+      "pdDepth": 0.35,
+      "pdCurve": "bend",
+      "fmRatio": 2,
+      "fmIndex": 2.3,
+      "osc": [
+        {
+          "wave": "triangle",
+          "octave": 0,
+          "semi": 0,
+          "fine": 0,
+          "level": 0.75,
+          "pwm": 0.2300000000000001
+        },
+        {
+          "wave": "triangle",
+          "octave": 1,
+          "semi": 0,
+          "fine": 0,
+          "level": 0.5,
+          "pwm": 0.506
+        },
+        {
+          "wave": "triangle",
+          "octave": 0,
+          "semi": 8,
+          "fine": 0,
+          "level": 0,
+          "pwm": 0.5
+        }
+      ],
+      "filter": {
+        "type": "highpass",
+        "cutoff": 355.7184616107801,
+        "res": 0.48,
+        "comb": 0.47600000000000003,
+        "env": 0.15,
+        "lfo": 0,
+        "key": 0.8200000000000001
+      },
+      "amp": {
+        "a": 0.10777209438438581,
+        "d": 0.45,
+        "s": 0,
+        "r": 0.28
+      },
+      "filt": {
+        "a": 0.10777209438438581,
+        "d": 0.3,
+        "s": 0.5066666666666667,
+        "r": 0.2
+      }
+    },
+    "B": {
+      "enabled": false,
+      "level": 0.55,
+      "character": 0,
+      "fmMode": "both",
+      "pdDepth": 0.35,
+      "pdCurve": "sine",
+      "fmRatio": 2,
+      "fmIndex": 1.4,
+      "osc": [
+        {
+          "wave": "triangle",
+          "octave": 0,
+          "semi": 0,
+          "fine": -4,
+          "level": 0.6,
+          "pwm": 0.5
+        },
+        {
+          "wave": "sine",
+          "octave": -1,
+          "semi": 0,
+          "fine": 0,
+          "level": 0.28,
+          "pwm": 0.7820000000000001
+        },
+        {
+          "wave": "saw",
+          "octave": 1,
+          "semi": 0,
+          "fine": 8,
+          "level": 0,
+          "pwm": 0.83
+        }
+      ],
+      "filter": {
+        "type": "lowpass",
+        "cutoff": 778.1341347735821,
+        "res": 0.8133333333333334,
+        "comb": 0.55,
+        "env": 0.2,
+        "lfo": 0,
+        "key": 0.15
+      },
+      "amp": {
+        "a": 0.12624798017894961,
+        "d": 0.4,
+        "s": 0.8,
+        "r": 0.7
+      },
+      "filt": {
+        "a": 0.01799698908227789,
+        "d": 0.28,
+        "s": 0.22,
+        "r": 0.3
+      }
+    }
+  },
+  "fx": {
+    "drive": 0.05333333333333333,
+    "phaserOn": true,
+    "phaserWet": 0.52,
+    "phaserRate": 0.52,
+    "phaserDepth": 0.45,
+    "delaySync": "1/8",
+    "delayTime": 0.020000000000000004,
+    "delayFb": 0,
+    "delayWet": 0.5,
+    "multiOn": true,
+    "multiTime": 0.24879999999999997,
+    "multiFb": 0.388,
+    "multiWet": 0.16,
+    "reverbWet": 0.34,
+    "reverbDecay": 1.3466666666666667,
+    "shimmerOn": false,
+    "shimmerLevel": 0.12,
+    "shimmerPitch": 196,
+    "shimmerMotion": 0.28,
+    "compOn": true,
+    "compThreshold": -33,
+    "compRatio": 10.333333333333332,
+    "compAttack": 0.0022908676527677737,
+    "compRelease": 0.11813333333333338
+  },
+  "seq": {
+    "bpm": 130,
+    "swing": 0,
+    "length": 16,
+    "division": 0.25,
+    "target": "A",
+    "gateOn": true,
+    "gateDepth": 1,
+    "gates": [
+      true,
+      true,
+      false,
+      true,
+      true,
+      false,
+      true,
+      true,
+      false,
+      true,
+      true,
+      false,
+      true,
+      true,
+      false,
+      true
+    ],
+    "steps": [
+      {
+        "on": true,
+        "note": 36,
+        "vel": 100,
+        "accent": false,
+        "slide": true
+      },
+      {
+        "on": false,
+        "note": 36,
+        "vel": 100,
+        "accent": false,
+        "slide": false
+      },
+      {
+        "on": false,
+        "note": 36,
+        "vel": 100,
+        "accent": false,
+        "slide": true
+      },
+      {
+        "on": false,
+        "note": 36,
+        "vel": 100,
+        "accent": true,
+        "slide": false
+      },
+      {
+        "on": false,
+        "note": 36,
+        "vel": 100,
+        "accent": false,
+        "slide": true
+      },
+      {
+        "on": true,
+        "note": 36,
+        "vel": 100,
+        "accent": false,
+        "slide": false
+      },
+      {
+        "on": false,
+        "note": 36,
+        "vel": 100,
+        "accent": false,
+        "slide": true
+      },
+      {
+        "on": false,
+        "note": 36,
+        "vel": 100,
+        "accent": false,
+        "slide": false
+      },
+      {
+        "on": false,
+        "note": 36,
+        "vel": 100,
+        "accent": false,
+        "slide": false
+      },
+      {
+        "on": false,
+        "note": 36,
+        "vel": 100,
+        "accent": false,
+        "slide": false
+      },
+      {
+        "on": true,
+        "note": 36,
+        "vel": 100,
+        "accent": false,
+        "slide": true
+      },
+      {
+        "on": false,
+        "note": 36,
+        "vel": 100,
+        "accent": false,
+        "slide": false
+      },
+      {
+        "on": false,
+        "note": 36,
+        "vel": 100,
+        "accent": false,
+        "slide": false
+      },
+      {
+        "on": false,
+        "note": 36,
+        "vel": 100,
+        "accent": false,
+        "slide": false
+      },
+      {
+        "on": true,
+        "note": 36,
+        "vel": 100,
+        "accent": false,
+        "slide": true
+      },
+      {
+        "on": false,
+        "note": 36,
+        "vel": 100,
+        "accent": false,
+        "slide": false
+      }
+    ]
+  }
+}
