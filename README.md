@@ -4,33 +4,9 @@ A two-layer **subtractive / FM synthesizer that runs entirely in your browser**,
 
 It ships with a 400+ preset browser, a bass-music engine (reese, growl, sub), a step sequencer with live automation, an arpeggiator, an XY morph pad, a built-in oscilloscope and spectrum analyser, and a preset storage system that keeps a backup of every save.
 
-<!--
-Add screenshots to a docs/ folder and uncomment:
-![PLAY page](docs/play.png)
-![BANK page](docs/bank.png)
--->
+
 
 ---
-
-## Quick start
-
-**Run it locally**
-
-1. Download the HTML file.
-2. Open it in a current Chrome, Edge or other Chromium-based browser.
-3. Press **START** on the overlay (browsers only allow audio after a click or key press).
-4. Play with the on-screen keys or your computer keyboard.
-
-**Host it on GitHub Pages**
-
-1. Put the file in the repo as `index.html`.
-2. *Settings → Pages →* deploy from your main branch.
-3. Open the Pages URL. Everything runs client-side.
-
-The file is about 5 MB because the whole preset library is built in.
-
----
-
 ## Playing it
 
 | Keys | Action |
@@ -155,4 +131,4 @@ Issues and pull requests are welcome. Please describe the browser, window size a
 
 ## License
 
-*Add a licence file before publishing (for example MIT) and reference it here.*
+
