@@ -72,7 +72,7 @@ button:focus-visible, .knob:focus-visible, select:focus-visible {
 
 header.top {
   display: grid;
-  grid-template-columns: 230px minmax(0, 1fr) auto;
+  grid-template-columns: 360px minmax(0, 1fr) auto;
   gap: 12px;
   align-items: center;
   padding: 8px 12px 6px;
@@ -89,7 +89,7 @@ header.top {
 }
 .brand strong { font-size: 13px; font-weight: 650; }
 .brand em { font-size: 11px; letter-spacing: .34em; color: var(--accent); margin-top: 3px; }
-.brand small { display: block; margin-top: 3px; color: var(--dim); letter-spacing: .12em; font-size: 8px; }
+.brand small { display: block; margin-top: 3px; color: var(--dim); letter-spacing: .08em; font-size: 8px; white-space: nowrap; }
 
 .presets { display: flex; align-items: center; gap: 6px; min-width: 0; position: relative; }
 .presets .nav, .presets .texty {
@@ -2026,7 +2026,7 @@ let saveT=0;const save=()=>{clearTimeout(saveT);saveT=setTimeout(()=>{try{localS
 const E=()=>typeof engine!=='undefined'?engine:null;
 /* ---------- starter presets: one wavetable-only preset per table (Mosaic's own oscillators silent) ---------- */
 const CAT_DEST={Neuro:'Bass',FM:'Bass',Reece:'Bass',Jungle:'Bass',Sub:'Bass',Meta:'Bass',Formant:'Pad',Motion:'Atmosphere',Spectral:'Atmosphere',Chaos:'Atmosphere'};
-function starterCfg(t){const d=CAT_DEST[t.category]||'Signature',v=t.voice||{},c={table:t.id,scan:.5,M1:0,M2:0,M3:0,M4:.25,level:.6,unison:v.unison||1,detune:v.detuneCents||12};
+function starterCfg(t){const d=CAT_DEST[t.category]||'Wavetable',v=t.voice||{},c={table:t.id,scan:.5,M1:0,M2:0,M3:0,M4:.25,level:.6,unison:v.unison||1,detune:v.detuneCents||12};
  if(d==='Bass')Object.assign(c,{octave:-1,attack:.004,decay:.28,sustain:.8,release:.18,cutoff:5200,res:1.4,M2:.15});
  else if(d==='Pad'||d==='Atmosphere')Object.assign(c,{octave:0,attack:.7,decay:.6,sustain:.8,release:1.8,cutoff:7000,res:.8,unison:Math.max(c.unison,3),detune:Math.max(c.detune,14),M4:.5});
  else Object.assign(c,{octave:0,attack:.01,decay:.3,sustain:.7,release:.35,cutoff:9500,res:.9});
@@ -3012,7 +3012,8 @@ function professionalStateFromSpecBase(p) {
   n.fx.phaserOn = n.fx.phaserWet > 0.001;
   n.fx.compOn = clampPro(fx.compressor, 0, 1) > 0.01;
   // Preserve the bank's embedded pattern; loading it does not start transport.
-  const pattern = p.sequencer;
+  // The numbered Sequence presets keep the stab and drop the generated pattern.
+  const pattern = /^Sequence \d+$/.test(p.name) ? null : p.sequencer;
   if(pattern && Array.isArray(pattern.steps) && pattern.steps.length){
     n.seq.steps = window.SynthBankSpec.sequenceSteps(p,{}).map(s=>({on:s.on,note:s.note,vel:s.vel,accent:s.accent,slide:s.slide}));
     n.seq.length = n.seq.steps.length;
@@ -3033,7 +3034,8 @@ function professionalStateFromSpecBase(p) {
   const supportedDest = new Set(['cutoff','res','pitch','fm','pwm']);
   n.mod = (p.modulation || []).slice(0,8).map((m) => {
     const dest = destMap[m.destination];
-    const supported = supportedDest.has(dest) && !String(m.source).startsWith('Macro') && !['delay','reverb','chorus','pan'].includes(m.destination);
+    const envelopePitch = m.source === 'ENV3' && m.destination === 'pitch';
+    const supported = !envelopePitch && supportedDest.has(dest) && !String(m.source).startsWith('Macro') && !['delay','reverb','chorus','pan'].includes(m.destination);
     return supported ? {src:srcMap[m.source] || 'lfo1',dest,amount:clampPro(m.amount,-1,1),target:'A'} : {src:'lfo1',dest:'cutoff',amount:0,target:'A'};
   });
   // Preserve original controls/assignments and all unsupported parameters as data, not fake working engine routes.
@@ -3047,15 +3049,157 @@ const MOSAIC_SIGNATURE_IMPORTS = [];
 const MOSAIC_SIGNATURE_BATCH2 = 68;
 const MOSAIC_ENGINEERED_PRESETS = [];
 
-// Added from the user bank: presets that were not already in the library. Destination = Signature unless listed below.
+// Added from the user bank: presets that were not already in the library. Unsettled names are Experimental. SEQ stays in Sequence. Wavetable starters with an explicit Bass, Pad or Atmosphere home stay there.
 const MOSAIC_LIBRARY_PRESETS = [];
 
 MOSAIC_LIBRARY_PRESETS.push(...(globalThis.__WT_STARTERS_STATES||[]));
 const MOSAIC_LIBRARY_DEST = {"dreamcartographerv2":"Trip Hop","smokesessionv2":"Dub","smokesessionv3":"Dub","neuroreactorv2":"DnB","shadowgridv2":"Experimental","ssaw2v2":"Experimental","alientechv2":"Experimental","outsideinv2":"Experimental","rddmv2":"Experimental","primalv2":"Experimental","orbitaldropv2":"FX","dogpantsv2":"Experimental","dividedfmv2":"Experimental","aftsqv2":"Experimental","junglemachinev2":"DnB","acidlatticev2":"Lead","acidlatticev3":"Lead","acidlatticesv2":"Lead","warpgatesv2":"Experimental","lofiprophetv2":"Trip Hop","dreamcartographerv3":"Trip Hop","blackicev2":"DnB","shamanmatrixv2":"Psy","acidlatticerv2":"Lead","clicksubsv2":"Bass","darkdnbbassv2":"Bass","darkdnbbassv3":"Bass","signaldelayv2":"Experimental","etherdriftv2":"Atmosphere","etherdriftv3":"Atmosphere","ssaw2v3":"Experimental","binaryritualv2":"Experimental","subsub":"Bass","dubstyle112":"Dub","dubstyle15v2":"Dub","subassassine":"Bass","triphop012v2":"Trip Hop","aciddub305":"Dub","ruffenuffbasss":"Bass","atmosphere058e":"Atmosphere","dubwubs8":"Dub","dubwubs88":"Dub","dubwubs030":"Dub","dubwubs031":"Dub","dubwub12":"Dub","sonicsahasraras":"Soundscape","bells02":"Atmosphere","bells03":"Atmosphere","experimental06":"Atmosphere","experimental07":"Atmosphere","experimental08":"Atmosphere","experimental03":"Atmosphere","experimental04":"Atmosphere","vowelscream4":"Lead","vowelscream5":"Lead","vowelscream5v2":"Lead","vowelscream6":"Lead","vowelscream7":"Lead","bassline56":"Bass","bassline57":"Bass","bassline55":"Bass","bassline555":"Bass","bassline505":"Bass","bassline515":"Bass","bassline510":"Bass","bassline517":"Bass","vocal36":"Lead"};
 Object.assign(MOSAIC_LIBRARY_DEST, globalThis.__WT_STARTERS_DEST||{});
-// Built-in rows that load exactly the same sound as another built-in row; hidden from the browser (their data is untouched).
-const MOSAIC_HIDDEN_DUPLICATES = new Set(["engineered:Neuro Reactor SEQ", "engineered:Smoke Session SEQ"]);
-function mosaicLibraryDest(name){return MOSAIC_LIBRARY_DEST[mosaicSignatureKey(String(name).replace(/ · [A-Za-z ]+$/,''))]||'Signature';}
+// Near-copies that share oscillators, envelope, resonance and effects, and differ only by a small cutoff, are hidden.
+// One name from each cluster stays. v2, SEQ and MACRO_ACTIVE performances stay, and so do the Sequence NNN stabs.
+const MOSAIC_HIDDEN_DUPLICATES = new Set([
+  "added:Jungle Reese",
+  "added:Tribal Root",
+  "added:Jungle Pressure",
+  "added:Dub Sub Pressure",
+  "added:Psy Burrower",
+  "added:Neuro Engine",
+  "added:Broken Circuit",
+  "added:Dub Freight",
+  "added:Psytrance Acid Lead",
+  "added:Dub Echo Lead",
+  "added:Neon Serpent",
+  "added:Jah Signal",
+  "added:Ragga Horn Stab",
+  "added:Dream Frequency",
+  "added:Tribal Caller",
+  "added:Psionic Beam",
+  "added:Dream Vessel",
+  "added:Infinite Bloom",
+  "added:HipTrip Voyager",
+  "added:Deep Atmos",
+  "added:Stellar Temple",
+  "added:Sacred Fog",
+  "added:Jungle Rain",
+  "added:Zen Spark",
+  "added:Nomad String",
+  "added:BoomBap Dust Keys",
+  "added:Ghost Marimba",
+  "added:Psy Needle",
+  "added:Mirage Pluck",
+  "added:Woodland Bell",
+  "added:Tech Stab",
+  "added:Quantum Crash",
+  "added:Deep Riser",
+  "added:Voltage Burst",
+  "added:PsyBreak Neuro Edge",
+  "added:Particle Storm",
+  "added:Time Tear",
+  "added:Neural Shock",
+  "added:Signal Collapse",
+  "added:Warp Gate",
+  "added:Hidden Temple",
+  "added:Forgotten Satellite",
+  "added:Machine Dream",
+  "added:Submerged City",
+  "added:Jungle Spirits",
+  "added:Interstellar Dust",
+  "added:Deep Cavern",
+  "added:Cosmic Wind",
+  "added:Dubtech Chord Machine",
+  "added:Infinite Pulse",
+  "added:Orbital Steps",
+  "added:Tribal House Pluck",
+  "added:Hypnotic Coil",
+  "added:Jungle Machine",
+  "added:King Tubby Echo",
+  "added:Echo Chamber",
+  "added:Dubwise Organ",
+  "added:Spring Tank",
+  "added:Roots Operator",
+  "added:Steppers Bassline",
+  "added:Pressure Wave",
+  "added:Lion Sound",
+  "added:Rainforest Massive",
+  "added:Dark Warehouse",
+  "added:Concrete Lion",
+  "added:Junglist Amen Ghost",
+  "added:Break Science",
+  "added:Kingston Roller",
+  "added:Ruffneck Bass",
+  "added:Junglist Soldier",
+  "added:Sub Assassin",
+  "added:Urban Predator",
+  "added:Photon Driver",
+  "added:Dark Energy",
+  "added:Velocity X",
+  "added:Wormhole Bass",
+  "added:Machine Hunger",
+  "added:Titan Circuit",
+  "added:Metal Roller",
+  "added:Fractal Oracle",
+  "added:Recursive Vision",
+  "added:Third Eye Scanner",
+  "added:Mushroom Portal",
+  "added:PsyForest Ritual",
+  "added:Prism Engine",
+  "added:Infinite Mandala",
+  "added:DNA Spiral",
+  "added:Crystal Alien",
+  "added:Dusty Voyager",
+  "added:Street Astronomy",
+  "added:Golden Tape",
+  "added:Midnight Journey",
+  "added:Driftwood Beat",
+  "added:Moonlit Alley",
+  "added:Broken Compass",
+  "added:Tensor Bloom",
+  "added:Quantum Organism",
+  "added:Emergent Memory",
+  "added:Helix Signal",
+  "added:Recursive Seed",
+  "added:Observer Effect",
+  "added:Infinite Fold",
+  "added:Liquid Mathematics",
+  "library:129",
+  "library:132",
+  "library:143",
+  "library:144",
+  "library:146",
+  "library:113",
+  "professional:Dub 125",
+  "signature:91",
+  "professional:Warehouse Destroyer",
+  "professional:Neon Foghorn",
+  "professional:Sub Cartel",
+  "professional:Renegade Bass",
+  "professional:Taxman Reload",
+  "professional:Darkside Steppa",
+  "professional:Dubplate Growler",
+  "professional:Neuro Steppa Classic",
+  "professional:Playaz Pressure",
+  "professional:Steppa Growler",
+  "professional:Urban Yoi",
+  "professional:Warehouse Signal",
+  "professional:Jump Up Circuit"
+]);
+// A v2 / v3 / v4 written as its own word is a working edit. v2_SEQ and v2_MACRO_ACTIVE stay with those performances.
+function mosaicWorkingProject(name){
+  const raw=String(name||'').replace(/ · [A-Za-z ]+$/,'');
+  if(globalThis.__WT_STARTER_NAMES&&globalThis.__WT_STARTER_NAMES.has(raw))return false;
+  if(/(?:^|[\s_-])SEQ(?:$|[\s_-]|\s*\()/i.test(raw)||/MACRO[\s_-]?ACTIVE/i.test(raw))return false;
+  return /(?:^|[\s-])v\d+(?:$|[\s-])/i.test(raw);
+}
+function mosaicLibraryDest(name){
+  const raw=String(name||'').replace(/ · [A-Za-z ]+$/,'');
+  if(/MACRO[\s_-]?ACTIVE/i.test(raw)) return 'Automated / Macro Motion';
+  const mapped=MOSAIC_LIBRARY_DEST[mosaicSignatureKey(raw)];
+  const wt=!!(globalThis.__WT_STARTER_NAMES&&globalThis.__WT_STARTER_NAMES.has(raw));
+  if(wt) return (mapped && mapped!=='Signature' && mapped!=='Wavetable') ? mapped : 'Wavetable';
+  if(/(?:^|[\s_-])SEQ(?:$|[\s_-]|\s*\()/i.test(raw)) return 'Sequenced & Active';
+  if(mosaicWorkingProject(raw)) return 'Experimental';
+  return (mapped && mapped!=='Signature') ? mapped : 'Experimental';
+}
 function mosaicLibraryNote(id){const s=String(id);if(s.indexOf('library:')!==0)return '';const p=MOSAIC_LIBRARY_PRESETS[Number(s.slice(8))];return p?'  ·  '+((globalThis.__WT_STARTER_NAMES&&globalThis.__WT_STARTER_NAMES.has(p.name))?'WAVETABLE STARTER':'USER LIBRARY')+' — FILED UNDER '+mosaicLibraryDest(p.name).toUpperCase():'';}
 function mosaicLibraryIndex(e){if(String(e.id).indexOf('library:')!==0)return [];const nm=String(e.name).replace(/ · [A-Za-z ]+$/,''),d=mosaicLibraryDest(nm).toLowerCase(),w=(globalThis.__WT_STARTER_NAMES&&globalThis.__WT_STARTER_NAMES.has(nm));return w?['library','wavetable','wt','starter','filed under '+d,'filed:'+d]:['library','user library','filed under '+d,'filed:'+d];}
 
@@ -3242,7 +3386,8 @@ function normalizeBase(partial) {
   // Layer B can own either LFO; a preset without lfoB (every existing preset) keeps both shared with A exactly as before.
   if (partial && Array.isArray(partial.lfoB)) { const b0 = defaultState(); const own = [0, 1].map((i) => (partial.lfoB[i] ? { ...b0.lfo[i], ...partial.lfoB[i] } : null)); if (own[0] || own[1]) next.lfoB = own; }
   // User performance activation is explicit; never infer it from a renamed preset.
-  if (partial && typeof partial.performanceActive === 'boolean') next.performanceActive = partial.performanceActive;
+    if (partial && typeof partial.performanceActive === 'boolean') next.performanceActive = partial.performanceActive;
+  if (Array.isArray(next.mod)) next.mod.forEach((slot) => { if (slot && slot.src === 'amp' && slot.dest === 'pitch') slot.amount = 0; });
   return next;
 }
 
@@ -3954,7 +4099,7 @@ function mount(stage, engine) {
         <rect x="1" y="1" width="34" height="34" rx="8" fill="#10141c" stroke="#e2a84a" stroke-width="1.2"/>
         <path d="M6 20 H10 L13 10 L18 28 L23 14 L26 20 H30" fill="none" stroke="#e2a84a" stroke-width="1.4" stroke-linejoin="round"/>
       </svg>
-      <div><strong>CONTINUUM</strong><em>MOSAIC</em><small>SUBTRACTIVE · FM</small></div>`;
+      <div><strong>CONTINUUM</strong><em>MOSAIC</em><small>Hybrid Synthesis</small></div>`;
     return node;
   }
 
@@ -4023,7 +4168,7 @@ function mount(stage, engine) {
     const guideBtn=el('button','','GUIDE ▾');
     guideBtn.type='button';guideBtn.setAttribute('aria-expanded','false');
     const guidePanel=el('div','mosaic-preset-guide');guidePanel.hidden=true;
-    guidePanel.innerHTML='<strong>PRESET GUIDE</strong><p><b>_SEQ</b> — Press PLAY manually to run programmed notes and automation.</p><p><b>_MACRO_ACTIVE</b> — PLAY starts automatically for BPM-driven automation unless the preset was explicitly saved stopped. Embedded note steps run when enabled.</p><p><b>STANDARD</b> — Play notes manually, or press PLAY for an embedded pattern. A saved active performance resumes on selection.</p>';
+    guidePanel.innerHTML='<strong>PRESET GUIDE</strong><p><b>_SEQ</b> — Sequenced &amp; Active. Press PLAY manually to run programmed notes and automation.</p><p><b>_MACRO_ACTIVE</b> — Automated / Macro Motion. PLAY starts automatically for BPM-driven automation unless the preset was explicitly saved stopped. Embedded note steps run when enabled.</p><p><b>STANDARD</b> — Play notes manually, or press PLAY for an embedded pattern. A saved active performance resumes on selection.</p>';
     guideBtn.addEventListener('click',()=>{guidePanel.hidden=!guidePanel.hidden;guideBtn.setAttribute('aria-expanded',String(!guidePanel.hidden));});
     tabs.append(el('div', 'spacer'));
     tabs.append(guideBtn,guidePanel);
@@ -5085,6 +5230,8 @@ function mount(stage, engine) {
     };
     PROFESSIONAL_PRESETS.forEach(p => {
       if (edited.has(norm(p.name))) return; // engineered replacement, not an extra entry
+      // Sequence 007-style presets are short stabs. Their generated patterns are not kept, and they are filed with the plucks.
+      if (/^Sequence \d+$/.test(p.name)) { add('professional:'+p.name, p.name, 'Pluck', 'PRO'); return; }
       add('professional:'+p.name,p.name,p.professional?.category || 'Experimental','PRO');
     });
     // Recover category from original source metadata rather than forcing a Sequence category.
@@ -5107,7 +5254,8 @@ function mount(stage, engine) {
       if (!edited.has(norm(name)) && MOSAIC_ADDED_PRESETS.some(p=>p.name===name))
         add('added:'+name,name,category === 'Sequence' ? sourceCategory(name,'Experimental') : category,'');
     }));
-    FACTORY.forEach(p => { if (!edited.has(norm(p.name))) add('factory:'+p.name,p.name,classify(p.name,'Factory'),''); });
+    const factoryCategories = {"Init":"Experimental","Continuum Pad":"Pad","Acid Line":"Bass","Supersaw Lead":"Lead","Glass FM":"Pluck","PWM Keys":"Keys","Dual Strings":"Pad","Comb Drift":"Atmosphere","Soft Bell":"Pluck","Night Air":"Atmosphere","Sub Bass":"Bass","Reese":"Bass","Hoover":"Lead","Chapel Organ":"Keys","Mute Pluck":"Pluck","Fifth Bell":"Pluck","Slow Choir":"Pad","Brass Stab":"Pluck","Pulse Sweep":"FX","Spark Arp":"Sequenced & Active"};
+    FACTORY.forEach(p => { if (!edited.has(norm(p.name))) add('factory:'+p.name,p.name,factoryCategories[p.name] || p.category || classify(p.name,'Experimental'),''); });
     rows.forEach(r => {
       const match=mosaicSignatureMatch(r.name);
       if(match){r.name=match.name; r.tag=mosaicSignatureIsMacro(match)?'MACRO':(/seq/i.test(match.name)?'SEQ':r.tag);}
@@ -5127,18 +5275,44 @@ function mount(stage, engine) {
     MOSAIC_LIBRARY_PRESETS.forEach((p,i) => {
       const key=signatureKey(p.name);
       if (present.has(key)) return;
-      const dest=MOSAIC_LIBRARY_DEST[key] || 'Signature';
-      add('library:'+i,p.name,dest==='Signature'?sourceCategory(p.name,'Experimental'):dest,mosaicSignatureIsMacro(p)?'MACRO':(/seq/i.test(p.name)?'SEQ':'BANK'));
-      if (dest==='Signature') rows[rows.length-1].sig2 = true;
+      const dest=mosaicLibraryDest(p.name);
+      add('library:'+i,p.name,dest,mosaicSignatureIsMacro(p)?'MACRO':(/seq/i.test(p.name)?'SEQ':'BANK'));
       present.add(key);
     });
+    // Working copies and slight edits of an existing preset have no settled folder yet.
+    const editedKeys = new Set();
+    const remember = (n) => editedKeys.add(signatureKey(n));
+    PROFESSIONAL_PRESETS.forEach((p) => remember(p.name));
+    MOSAIC_ADDED_PRESETS.forEach((p) => remember(p.name));
+    FACTORY.forEach((p) => remember(p.name));
+    BANK.forEach((p) => remember(p.name));
+    MOSAIC_ENGINEERED_PRESETS.forEach((p) => remember(p.name));
+    MOSAIC_SIGNATURE_IMPORTS.forEach((p) => remember(p.name));
+    rows.forEach((r) => {
+      const raw = String(r.name).replace(/ · [A-Za-z ]+$/, '');
+      const libraryEdit = String(r.id).indexOf('library:') === 0 && editedKeys.has(signatureKey(raw)) && !(globalThis.__WT_STARTER_NAMES && globalThis.__WT_STARTER_NAMES.has(raw)) && !/(?:^|[\s_-])SEQ(?:$|[\s_-]|\s*\()/i.test(raw) && !/MACRO[\s_-]?ACTIVE/i.test(raw);
+      if (!mosaicWorkingProject(raw) && !libraryEdit) return;
+      r.category = 'Experimental';
+      r.sig2 = false;
+    });
     for (let i = rows.length - 1; i >= 0; i--) if (MOSAIC_HIDDEN_DUPLICATES.has(rows[i].id)) rows.splice(i, 1);
-    const order = ['Bass','Lead','Pad','Pluck','Atmosphere','Dub','Jungle','DnB','Psy','Trip Hop','FX','Experimental','Factory'];
+    const order = ['Bass','Lead','Keys','Pad','Pluck','Atmosphere','Dub','Jungle','DnB','Psy','Trip Hop','FX','Automated / Macro Motion','Experimental','Wavetable'];
     const seenNames = new Set();
     for(let i=0;i<rows.length;){const k=String(rows[i].name).toLowerCase().replace(/[^a-z0-9]/g,'');if(seenNames.has(k))rows.splice(i,1);else {seenNames.add(k);i++;}}
-    // Display-only test: put the user's SEQ and MACRO_ACTIVE presets first without modifying preset data.
-    const signatureFirst = r => isSequencedOrMacro(r) ? 0 : 1;
-    rows.sort((a,b) => signatureFirst(a)-signatureFirst(b) || (order.indexOf(a.category)<0?99:order.indexOf(a.category))-(order.indexOf(b.category)<0?99:order.indexOf(b.category)) || a.name.localeCompare(b.name,undefined,{numeric:true}));
+    const seqPerformance = (name) => /(?:^|[\s_-])SEQ(?:$|[\s_-]|\s*\()/i.test(String(name || ''));
+    const wtStarter = (name) => !!(globalThis.__WT_STARTER_NAMES && globalThis.__WT_STARTER_NAMES.has(String(name || '').replace(/ · [A-Za-z ]+$/, '')));
+    const macroMotion = (name) => /MACRO[\s_-]?ACTIVE/i.test(String(name || ''));
+    rows.forEach((r) => {
+      if (macroMotion(r.name)) { r.category = 'Automated / Macro Motion'; r.sig2 = false; return; }
+      if (wtStarter(r.name)) {
+        if (r.sig2 || /^signature$/i.test(r.category)) r.category = 'Wavetable';
+        r.sig2 = false;
+        return;
+      }
+      if (seqPerformance(r.name)) { r.category = 'Sequenced & Active'; r.sig2 = false; return; }
+      if (r.sig2 || /^signature$/i.test(r.category)) { r.category = 'Experimental'; r.sig2 = false; }
+    });
+    rows.sort((a,b) => (order.indexOf(a.category)<0?99:order.indexOf(a.category))-(order.indexOf(b.category)<0?99:order.indexOf(b.category)) || a.name.localeCompare(b.name,undefined,{numeric:true}));
     return rows; // preserve all Psy sounds; only rollout Psy sequencing is cleared on recall
   }
 
@@ -5148,7 +5322,7 @@ function mount(stage, engine) {
     menu.replaceChildren();
     let previous = null;
     unifiedCatalog().forEach(p => {
-      const displayGroup = isSequencedOrMacro(p) ? 'SIGNATURE · SEQ / MACRO ACTIVE' : p.category.toUpperCase();
+      const displayGroup = /(?:^|[\s_-])SEQ(?:$|[\s_-]|\s*\()/i.test(p.name) ? 'SEQUENCED & ACTIVE' : p.category.toUpperCase();
       if (displayGroup !== previous) { menu.append(el('div','group',displayGroup)); previous=displayGroup; }
       menu.append(menuItem(p.id,p.name,false,p.tag));
     });
@@ -5425,7 +5599,7 @@ function mount(stage, engine) {
     isNativeRoute,
     applyNativeRoutes(p) {
       if (!state.professional) return;
-      state.mod = p.modulation.slice(0, 8).map((r) => isNativeRoute(r)
+      state.mod = p.modulation.slice(0, 8).map((r) => (isNativeRoute(r) && !(r.source === 'ENV3' && r.destination === 'pitch'))
         ? { src: NATIVE_SRC[r.source], dest: NATIVE_DEST[r.destination], amount: clamp(r.amount * (NATIVE_SCALE[r.destination] || 1), -1, 1), target: 'A' }
         : { src: 'lfo1', dest: 'cutoff', amount: 0, target: 'A' });
     },
@@ -5623,18 +5797,34 @@ function mount(stage, engine) {
   const vecCache = new Map();
   let bankView = [];                   // entries behind the rows currently on screen
   const ratingOf = (e) => (bankMeta[e.name] && bankMeta[e.name].rating != null ? bankMeta[e.name].rating : (e.spec ? e.spec.metadata.rating : 5));   // library presets carry no rating data: they start at the same 5 stars as the spec bank, until you rate them
-  const CAT_ORDER = ['SIGNATURE', 'Bass', 'Lead', 'Pad', 'Pluck', 'Atmosphere', 'Soundscape', 'Sequence', 'Dub', 'Jungle', 'DnB', 'Psy', 'Trip Hop', 'FX', 'Experimental', 'Factory'];
+  const CAT_ORDER = ['Bass', 'Lead', 'Keys', 'Pad', 'Pluck', 'Atmosphere', 'Soundscape', 'Sequenced & Active', 'Automated / Macro Motion', 'Dub', 'Jungle', 'DnB', 'Psy', 'Trip Hop', 'FX', 'Experimental', 'Wavetable'];
   // One catalogue for everything: the previous banks (the old drop-down's list), the 128 specification presets, saved user presets and imports.
   function bankEntriesBase() {
-    const rows = unifiedCatalog().map((r) => ({ id: r.id, name: r.name, category: r.category, tag: r.tag || 'FACTORY', group: isSequencedOrMacro(r) ? 'SIGNATURE' : r.category }));
+    const seqName = (name) => /(?:^|[\s_-])SEQ(?:$|[\s_-]|\s*\()/i.test(String(name || ''));
+    const macroName = (name) => /MACRO[\s_-]?ACTIVE/i.test(String(name || ''));
+    const rows = unifiedCatalog().map((r) => ({ id: r.id, name: r.name, category: r.category, tag: r.tag || 'FACTORY', group: macroName(r.name) ? 'Automated / Macro Motion' : seqName(r.name) ? 'Sequenced & Active' : r.category }));
     const have = new Set(rows.map((r) => r.id));
-    presetsOf().forEach((sp) => { const id = 'professional:' + sp.name; if (!have.has(id)) rows.push({ id, name: sp.name, category: sp.category, tag: 'PRO', group: sp.category }); });
+    presetsOf().forEach((sp) => { const id = 'professional:' + sp.name; if (have.has(id) || MOSAIC_HIDDEN_DUPLICATES.has(id)) return; const stab = /^Sequence \d+$/.test(sp.name); const macro = macroName(sp.name); rows.push({ id, name: sp.name, category: macro ? 'Automated / Macro Motion' : stab ? 'Pluck' : sp.category, tag: 'PRO', group: macro ? 'Automated / Macro Motion' : stab ? 'Pluck' : sp.category }); });
     const specs = new Map(presetsOf().map((sp) => [sp.name, sp]));
     rows.forEach((r) => { if (r.id.indexOf('professional:') === 0) r.spec = specs.get(r.name); });
     const rank = (g) => { const i = CAT_ORDER.indexOf(g); return i < 0 ? 50 : i; };
     rows.sort((a, c) => rank(a.group) - rank(c.group) || a.name.localeCompare(c.name, undefined, { numeric: true }));
     user.forEach((u) => rows.push({ id: u.id, name: u.name, category: 'User', tag: 'USER', group: 'USER', user: true }));
     bankImported.forEach((sp, i) => rows.push({ id: 'spec:' + i, name: sp.name, category: sp.category, tag: 'IMPORT', group: 'IMPORTED', spec: sp }));
+    rows.forEach((r) => {
+      if (!/^signature$/i.test(r.group) && !/^signature$/i.test(r.category)) return;
+      const raw = String(r.name).replace(/ · [A-Za-z ]+$/, '');
+      const wt = !!(globalThis.__WT_STARTER_NAMES && globalThis.__WT_STARTER_NAMES.has(raw));
+      const seq = seqName(r.name);
+      const macro = macroName(r.name);
+      r.category = macro ? 'Automated / Macro Motion' : seq ? 'Sequenced & Active' : (wt ? 'Wavetable' : 'Experimental');
+      r.group = r.category;
+    });
+    rows.forEach((r) => {
+      if (r.user) return;
+      if (macroName(r.name)) { r.category = 'Automated / Macro Motion'; r.group = 'Automated / Macro Motion'; return; }
+      if (seqName(r.name) || r.group === 'Sequence') { r.category = 'Sequenced & Active'; r.group = 'Sequenced & Active'; }
+    });
     return rows;
   }
   function bankLoadEntry(e) {
@@ -5658,7 +5848,9 @@ function mount(stage, engine) {
     const pseudo = entries.map((e) => ({ name: e.name, category: e.group, description: helixHay(e), metadata: { tags: [e.category, e.tag].concat(e.spec ? e.spec.metadata.tags : [], helixTagsFor(e)), rating: ratingOf(e), author: '' } }));
     const hits = SBS.searchPresets(pseudo, { text: BK.view.text, category: BK.view.category, favourites: BK.view.fav, minRating: BK.view.min, sort: BK.view.sort, tag: BK.view.tag || undefined }, bankMeta);
     $b('#bkCount').textContent = hits.length + ' / ' + entries.length;
-    const list = $b('#bkList'); list.replaceChildren();
+    const list = $b('#bkList');
+    const keep = list.scrollTop;
+    list.replaceChildren();
     hits.forEach(({ i }) => {
       const e = entries[i], on = e.id === currentId;
       const row = el('div', 'bk-r' + (on ? ' on' : '')); row.dataset.i = i; row.setAttribute('role', 'option'); row.setAttribute('aria-selected', String(on));
@@ -5669,7 +5861,15 @@ function mount(stage, engine) {
       if (e.user) { const del = el('button', 'bk-del', '✕'); del.type = 'button'; del.dataset.del = i; del.title = 'Delete this saved preset'; del.setAttribute('aria-label', 'Delete ' + e.name); row.append(del); }
       list.append(row);
     });
-    const cur = list.querySelector('.on'); if (cur) cur.scrollIntoView({ block: 'nearest' });
+    // Rebuilding the rows resets the scroller. Put it back, and move only this list when the chosen preset is outside the window.
+    list.scrollTop = keep;
+    const cur = list.querySelector('.bk-r.on');
+    if (cur) {
+      const listRect = list.getBoundingClientRect();
+      const rowRect = cur.getBoundingClientRect();
+      if (rowRect.top < listRect.top) list.scrollTop += rowRect.top - listRect.top;
+      else if (rowRect.bottom > listRect.bottom) list.scrollTop += rowRect.bottom - listRect.bottom;
+    }
   }
   const WAVELIST = ['sine', 'triangle', 'saw', 'square'];
   function stateVec(st) { const A = st.layers.A, f = A.filter; return [Math.log(clamp(f.cutoff, 20, 20000) / 20) / Math.log(1000), f.res, st.fx.drive, st.detune / 50, Math.max(0, WAVELIST.indexOf(A.osc[0].wave)) / 3, Math.max(0, WAVELIST.indexOf(A.osc[1].wave)) / 3]; }
@@ -5788,7 +5988,7 @@ function mount(stage, engine) {
     const node = el('div', 'page page-bank'); node.dataset.page = 'bank'; bankRoot = node;
     node.innerHTML = `
       <section class="panel bk-browser"><h3>PRESET BROWSER <span id="bkCount"></span></h3>
-        <div class="hx-bar"><div class="hx-seg" id="hxBank" role="group" aria-label="Bank"><button type="button" data-b="all" class="on">ALL</button><button type="button" data-b="factory" title="Built-in presets: read-only">FACTORY</button><button type="button" data-b="user" title="Your presets">USER</button><button type="button" data-b="table">TABLE</button></div><div class="hx-seg" id="hxUser" role="group" aria-label="User bank" hidden><button type="button" data-u="mine" class="on">MY PRESETS</button><button type="button" data-u="fav">★ FAVOURITES</button><button type="button" data-u="recent">RECENT</button><button type="button" data-u="backups">BACKUPS</button></div></div>
+        <div class="hx-bar"><div class="hx-seg" id="hxBank" role="group" aria-label="Bank"><button type="button" data-b="all" class="on">ALL</button><button type="button" data-b="user" title="Your presets">USER</button><button type="button" data-b="table">TABLE</button></div><div class="hx-seg" id="hxUser" role="group" aria-label="User bank" hidden><button type="button" data-u="mine" class="on">MY PRESETS</button><button type="button" data-u="fav">★ FAVOURITES</button><button type="button" data-u="recent">RECENT</button><button type="button" data-u="backups">BACKUPS</button></div></div>
         <div class="bk-tools"><input id="bkSearch" type="search" placeholder="search name · tag · category" aria-label="Search presets">
           <select id="bkSort" aria-label="Sort presets"><option value="index">BANK ORDER</option><option value="name">NAME</option><option value="rating">RATING</option></select>
           <select id="bkMin" aria-label="Minimum rating"><option value="0">ANY ★</option><option value="3">3★ +</option><option value="4">4★ +</option><option value="5">5★</option></select>
@@ -5993,12 +6193,13 @@ function mount(stage, engine) {
   window.__helixMirror = helixMirror;
 
   /* ---------- start-up: factory bank, user bank, migration, favourites, tags, recovery ---------- */
+  function factoryStamp(base) { return HB.hash(base.map((e) => e.id + '\t' + e.group + '\t' + e.category).join('|')); }
   async function helixInit() {
     try {
       await HB.open();
       helix.settings = await HB.settingsGet();
       const base = bankEntriesBase().filter((e) => !e.user && String(e.id).indexOf('spec:') !== 0);
-      await HB.setFactory(base.map((e) => ({ id: e.id, name: e.name, category: e.category, tag: e.tag, group: e.group })), HB.hash(base.map((e) => e.id).join('|')));
+      await HB.setFactory(base.map((e) => ({ id: e.id, name: e.name, category: e.category, tag: e.tag, group: e.group })), factoryStamp(base));
       const stored = await HB.userAll(), have = new Set(user.map((u) => u.id)); let merged = 0;
       stored.forEach((p) => {
         if (!have.has(p.id)) { user.push({ id: p.id, name: p.name, state: p.presetData }); merged++; }
@@ -6111,12 +6312,14 @@ function mount(stage, engine) {
   function genreDecorate(rows) {
     let moved = false;
     rows.forEach((e) => {
+      if (!e.user && /MACRO[\s_-]?ACTIVE/i.test(e.name)) { e.category = 'Automated / Macro Motion'; e.group = 'Automated / Macro Motion'; return; }
       const g = GENRE_LABEL[String(e.category || '').toLowerCase()];
       if (!g || e.user || String(e.id).indexOf('spec:') === 0) return;                 // saved presets and imports keep the names you gave them
       const word = g.toLowerCase().replace(/\s+/g, ''), flat = String(e.name).toLowerCase().replace(/[^a-z0-9]/g, '');
       e.genre = g; e.baseName = e.name;
       if (flat.indexOf(word) < 0) e.name = e.name + ' · ' + g;
-      if (e.group !== 'SIGNATURE') e.group = 'Genre';
+      if (/^signature$/i.test(e.group) || /^signature$/i.test(e.category)) { e.category = 'Experimental'; e.group = 'Experimental'; }
+      else if (e.group !== 'Sequenced & Active' && e.group !== 'Automated / Macro Motion') e.group = 'Genre';
       if (e.name !== e.baseName && bankMeta[e.baseName] && !bankMeta[e.name]) { bankMeta[e.name] = Object.assign({}, bankMeta[e.baseName]); moved = true; }   // stars and ratings follow the new title
     });
     if (moved) saveBankMeta();
@@ -7542,6 +7745,9 @@ function mount(stage, engine) {
   globalThis.__mosaicAfterPack = (source) => {
     try {
       if (source && ctl && ctl.setBank) ctl.setBank(source);
+      const base = bankEntriesBase().filter((e) => !e.user && String(e.id).indexOf('spec:') !== 0);
+      HB.setFactory(base.map((e) => ({ id: e.id, name: e.name, category: e.category, tag: e.tag, group: e.group })), factoryStamp(base));
+      helixRebuildIndex();
       if (bankRoot) { bankRenderChips(); bankRenderList(); }
     } catch (err) { console.error(err); }
   };
