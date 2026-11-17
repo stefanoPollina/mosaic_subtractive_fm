@@ -6860,7 +6860,7 @@ function mount(stage, engine) {
     rows.forEach((r) => { if (r.id.indexOf('professional:') === 0) r.spec = specs.get(r.name); });
     const rank = (g) => { const i = CAT_ORDER.indexOf(g); return i < 0 ? 50 : i; };
     rows.sort((a, c) => rank(a.group) - rank(c.group) || a.name.localeCompare(c.name, undefined, { numeric: true }));
-    user.forEach((u) => rows.push({ id: u.id, name: u.name, category: 'User', tag: 'USER', group: 'USER', user: true }));
+    rows.unshift(...user.map((u) => ({ id: u.id, name: u.name, category: 'User', tag: 'USER', group: 'USER', user: true })));   // working prototypes lead the list
     bankImported.forEach((sp, i) => rows.push({ id: 'spec:' + i, name: sp.name, category: sp.category, tag: 'IMPORT', group: 'IMPORTED', spec: sp }));
     rows.forEach((r) => {
       if (!/^signature$/i.test(r.group) && !/^signature$/i.test(r.category)) return;
@@ -6902,8 +6902,13 @@ function mount(stage, engine) {
     const list = $b('#bkList');
     const keep = list.scrollTop;
     list.replaceChildren();
+    if (!document.getElementById('bkHeadCss')) { const st = document.createElement('style'); st.id = 'bkHeadCss'; st.textContent = '.bk-h{position:sticky;top:0;z-index:1;background:#10141c;color:#d9a441;font-size:9.5px;font-weight:700;letter-spacing:.16em;padding:6px 8px 4px;border-bottom:1px solid #2a3142;text-transform:uppercase}.bk-h span{color:#7d8597;font-weight:600;margin-left:6px}'; document.head.append(st); }
+    const heads = BK.view.sort === 'index' && !String(BK.view.text || '').trim() && !BK.view.fav && BK.view.category === 'All';
+    const groupCount = {}; if (heads) hits.forEach(({ i }) => { const g = entries[i].group; groupCount[g] = (groupCount[g] || 0) + 1; });
+    let lastGroup = null;
     hits.forEach(({ i }) => {
       const e = entries[i], on = e.id === currentId;
+      if (heads && e.group !== lastGroup) { lastGroup = e.group; const h = el('div', 'bk-h', e.group === 'USER' ? 'USER · WORKING PROTOTYPES' : e.group); h.append(el('span', '', String(groupCount[e.group]))); list.append(h); }
       const row = el('div', 'bk-r' + (on ? ' on' : '')); row.dataset.i = i; row.setAttribute('role', 'option'); row.setAttribute('aria-selected', String(on));
       const fav = el('button', 'bk-fav', bankMeta[e.name] && bankMeta[e.name].fav ? '★' : '☆'); fav.type = 'button'; fav.dataset.fav = i; fav.setAttribute('aria-label', 'Favourite ' + e.name);
       const nm = el('span', 'bk-nm', e.name), tag = el('span', 'bk-tag', e.tag), st = el('span', 'bk-st');
