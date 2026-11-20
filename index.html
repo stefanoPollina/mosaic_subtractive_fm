@@ -7777,6 +7777,23 @@ function mount(stage, engine) {
   const stamp = (t) => { const d = new Date(t); return d.toLocaleDateString([], { day: '2-digit', month: 'short' }) + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); };
   const stateSig = () => HB.hash(JSON.stringify(state));
   const sigCache = new WeakMap();
+  const baseName = (n) => String(n || '').replace(/( \(imported\))+$/, '');
+  const sigMemo = new WeakMap();   // state object -> its signature after normalising (so raw and tidied copies compare equal)
+  const contentSig = (name, st) => {
+    let v = st && typeof st === 'object' ? sigMemo.get(st) : null;
+    if (!v) { let n; try { n = normalize(clone(st)); } catch (e) { n = st; } v = JSON.stringify(Object.assign({}, n, { name: undefined })); if (st && typeof st === 'object') sigMemo.set(st, v); }
+    return HB.hash(baseName(name) + '|' + v);
+  };
+  function userHas(name, st) { const k = contentSig(name, st); return user.some((u) => contentSig(u.name, u.state) === k); }
+  window.__userHas = userHas;
+  // one-time tidy at start-up: identical copies of a user preset (same name, ignoring "(imported)", and the same sound)
+  // made by repeated imports are removed, keeping the oldest. The removed copies stay in HelixBank's deleted list.
+  function userDedupe() {
+    const seen = new Set(), keep = []; let removed = 0;
+    for (const u of user) { const k = contentSig(u.name, u.state); if (seen.has(k)) { removed++; continue; } seen.add(k); keep.push(u); }
+    if (removed) { user.length = 0; keep.forEach((u) => user.push(u)); saveUserPresets(user); statusNode.textContent = 'Removed ' + removed + ' duplicate user preset' + (removed > 1 ? 's' : ''); }
+    return removed;
+  }
   function userSig(u) { const c = sigCache.get(u.state); if (c && c.n === u.name) return c.v; const v = HB.hash(u.name + '|' + JSON.stringify(u.state)); sigCache.set(u.state, { n: u.name, v }); return v; }
   const isFactoryId = (id) => String(id).indexOf('user:') !== 0 && String(id).indexOf('spec:') !== 0 && String(id).indexOf('version:') !== 0;
   function toHelix(u) {
@@ -7820,6 +7837,7 @@ function mount(stage, engine) {
       helix.ready = true;
       await helixMirror(user);                  // migration: anything not yet in IndexedDB becomes v1; anything edited meanwhile gets a new version
       if (merged) saveUserPresets(user);
+      if (userDedupe()) await helix.queue;
       for (const f of await HB.favouritesAll()) { const m = (bankMeta[f.key] = bankMeta[f.key] || {}); if (m.fav === undefined) m.fav = f.fav; if (m.rating == null && f.rating != null) m.rating = f.rating; }
       saveBankMeta();
       helix.recent = await HB.recentAll();
@@ -8035,8 +8053,9 @@ function mount(stage, engine) {
     for (const p of parsed.presets) {
       const clash = user.find((u) => u.id === p.id);
       if (clash && userSig(clash) === HB.sigOf(p)) { skipped++; continue; }
-      const id = (!clash && String(p.id).indexOf('user:') === 0) ? p.id : 'user:' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
       const st = normalize(clone(p.presetData)); st.name = p.name;
+      if (userHas(p.name, st)) { skipped++; continue; }   // same name and sound already in the user bank
+      const id = (!clash && String(p.id).indexOf('user:') === 0) ? p.id : 'user:' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
       user.push({ id, name: p.name + (clash ? ' (imported)' : ''), state: st });
       if (p.tags && p.tags.length) { helix.tags.set(id, p.tags); HB.setTags(id, p.tags); }
       if (p.favourite) (bankMeta[p.name] = bankMeta[p.name] || {}).fav = true;
@@ -8811,14 +8830,18 @@ function mount(stage, engine) {
       if (helixHandleParsedText(text)) return;
       const data = JSON.parse(text);
       if (Array.isArray(data)) {
+        let added = 0, skipped = 0;
         data.forEach((preset, index) => {
           if (!preset || typeof preset !== 'object') return;
           const name = preset.name || 'Imported ' + (index + 1);
           const body = preset.state && preset.state.layers ? preset.state : preset;
-          user.push({ id: 'user:' + Date.now() + '-' + index, name, state: normalize(body) });
+          const st = normalize(body);
+          if (window.__userHas && window.__userHas(name, st)) { skipped++; return; }   // already in the user bank: don't add a copy
+          user.push({ id: 'user:' + Date.now() + '-' + index, name, state: st }); added++;
         });
-        saveUserPresets(user);
-        statusNode.textContent = 'Imported ' + data.length;
+        if (added) saveUserPresets(user);
+        statusNode.textContent = 'Imported ' + added + (skipped ? ' (' + skipped + ' already here)' : '');
+        if (typeof bankRenderList === 'function' && bankRoot) { bankRenderChips(); bankRenderList(); }
         return;
       }
       const body = data.state && data.state.layers ? data.state : data;
