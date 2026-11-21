@@ -1780,19 +1780,33 @@ window.onerror = function (message) {
       del: (s, k) => run(s, 'readwrite', (os) => wrap(os.delete(k))),
       all: (s) => run(s, 'readonly', (os) => wrap(os.getAll())),
       clear: (s) => run(s, 'readwrite', (os) => wrap(os.clear())),
-      index: (s, ix, val) => run(s, 'readonly', (os) => wrap(os.index(ix).getAll(val)))
+      index: (s, ix, val) => run(s, 'readonly', (os) => wrap(os.index(ix).getAll(val))),
+      count: (s) => run(s, 'readonly', (os) => wrap(os.count()))
     };
+  }
+  // Counting must never load the presets themselves (the bank notice asks every few seconds, and a big bank with its
+  // versions is thousands of records). So keep an id -> deleted tally of the user store, updated by every write.
+  let userFlags = null;
+  function instrument(b) {
+    const put = b.put, putMany = b.putMany, del = b.del, clear = b.clear;
+    const note = (s, v) => { if (s === 'user' && userFlags && v && v.id != null) userFlags.set(v.id, !!v.deleted); };
+    b.put = (s, v) => put(s, v).then((r) => { note(s, v); return r; });
+    b.putMany = (s, rows) => putMany(s, rows).then((r) => { rows.forEach((v) => note(s, v)); return r; });
+    b.del = (s, k) => del(s, k).then((r) => { if (s === 'user' && userFlags) userFlags.delete(k); return r; });
+    b.clear = (s) => clear(s).then((r) => { if (s === 'user' && userFlags) userFlags.clear(); return r; });
+    if (!b.count) b.count = (s) => b.all(s).then((r) => r.length);
+    return b;
   }
   function open() {
     if (readyPromise) return readyPromise;
     readyPromise = new Promise((resolve) => {
-      const fallback = () => { B = memoryBackend(); backend = 'memory'; resolve(backend); };
+      const fallback = () => { userFlags = null; B = instrument(memoryBackend()); backend = 'memory'; resolve(backend); };
       if (typeof indexedDB === 'undefined') return fallback();
-      openIdb().then((db) => { B = idbBackend(db); backend = 'indexeddb'; resolve(backend); }, fallback);
+      openIdb().then((db) => { userFlags = null; B = instrument(idbBackend(db)); backend = 'indexeddb'; resolve(backend); }, fallback);
     });
     return readyPromise;
   }
-  function useMemory() { B = memoryBackend(); backend = 'memory'; readyPromise = Promise.resolve(backend); settingsCache = null; return backend; }
+  function useMemory() { userFlags = null; B = instrument(memoryBackend()); backend = 'memory'; readyPromise = Promise.resolve(backend); settingsCache = null; return backend; }
 
   /* ---------- presets ---------- */
   const makePreset = (o) => Object.assign({ id: uid(), name: 'Untitled', category: 'User', author: '', created: now(), modified: now(), version: 1, favourite: false, tags: [], editable: true, syncEnabled: false, presetData: {} }, o || {});
@@ -1946,7 +1960,12 @@ window.onerror = function (message) {
     return out;
   }
   async function estimate() { try { return navigator.storage && navigator.storage.estimate ? await navigator.storage.estimate() : null; } catch (e) { return null; } }
-  async function counts() { await open(); return { user: (await userAll()).length, deleted: (await userAll(true)).length - (await userAll()).length, backups: (await B.all('backups')).length, factory: (await B.all('factory')).length }; }
+  async function counts() {
+    await open();
+    if (!userFlags) { const rows = await B.all('user'); if (!userFlags) userFlags = new Map(rows.map((p) => [p.id, !!p.deleted])); }   // first time only
+    let live = 0, dead = 0; userFlags.forEach((d) => { if (d) dead++; else live++; });
+    return { user: live, deleted: dead, backups: await B.count('backups'), factory: await B.count('factory') };
+  }
 
   const API = { VERSION, DB_NAME, FORMAT, BANK_FORMAT, EXT, STORES, DEFAULT_SETTINGS, get backend() { return backend; },
     open, useMemory, on: (ev, f) => { (listeners[ev] = listeners[ev] || []).push(f); },
