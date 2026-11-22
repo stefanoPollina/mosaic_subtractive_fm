@@ -6574,7 +6574,7 @@ function mount(stage, engine) {
       addKnob(knobs, { path: 'fx.mstWarm', label: 'WARM', min: 0, max: 1, def: 0, format: (v) => (v < 0.02 ? 'OPEN' : (16 - v * 11.5).toFixed(1) + ' kHz') });
       card.append(knobs);
     }));
-    pageNode.append(fxCard('PULSE DUCK', 'A 1/4-note sidechain pump in time with the SEQ, so the synth breathes around the kick. RELEASE sets how fast the volume comes back after each beat.', (card) => {
+    pageNode.append(fxCard('SIDECHAIN', 'A 1/4-note sidechain pump in time with the SEQ, so the synth breathes around the kick. RELEASE sets how fast the volume comes back after each beat.', (card) => {
       const top = el('div', 'fx-top'); addSwitch(top, { path: 'fx.duckOn', label: 'ON', liveLabel: true }); card.append(top);
       const knobs = el('div', 'knobs');
       addKnob(knobs, { path: 'fx.duckDepth', label: 'DEPTH', min: 0, max: 1, def: 0.7, format: (v) => Math.round(v * 100) + '%' });
@@ -6590,7 +6590,7 @@ function mount(stage, engine) {
     [['COLOUR', ['DRIVE', 'CRUSH', 'VINYL & LO-FI', 'ANALOG TAPE']],
      ['MOTION', ['FILTER', 'PSY FILTER GATE', 'PHASER', 'CHORUS', 'TREMOLO', 'RESO COMB', 'PSY FREQ SHIFT']],
      ['SPACE', ['DELAY', 'PING-PONG', 'MULTIBAND', 'DUB SPACE ECHO', 'REVERB', 'SPRING TANK', 'SHIMMER']],
-     ['MASTER', ['WIDTH', 'COMPRESSOR', 'PULSE DUCK', 'PSY MASTER']]].forEach(([label, names]) => {
+     ['MASTER', ['WIDTH', 'COMPRESSOR', 'SIDECHAIN', 'PSY MASTER']]].forEach(([label, names]) => {
       pageNode.append(el('div', 'fx-group', label));
       names.forEach((n) => { const c = cards.get(n); if (c) { pageNode.append(c); cards.delete(n); } });
     });
