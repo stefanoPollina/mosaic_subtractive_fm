@@ -2629,7 +2629,8 @@ function defaultStateBase() {
       multiWet: 0,
       busFilter: 0, busFilterRes: 0.2,
       chorusOn: false, chorusRate: 0.35, chorusDepth: 0.2, chorusMix: 0.15, chorusHp: 250,
-      mstOn: false, mstMono: 140, mstLowCut: 30, mstAir: 2.8, mstWarm: 0,
+      mstOn: false, mstMono: 140, mstLowCut: 30, mstAir: 2.8, mstWarm: 0, mstWidth: 1, mstTame: 0,
+      fsOn: false, fsShift: 4, fsFb: 0.25, fsMix: 0.35, tapeOn: false, tapeSat: 0.3, tapeHead: 0.45, tapeWow: 0.15,
       duckOn: false, duckDepth: 0.7, duckRelease: 0.55, duckShape: 0.35,
       ppOn: false, ppSync: '3/16', ppTime: 0.28, ppFb: 0.35, ppMix: 0.12, ppLp: 3500, ppHp: 300,
       crushOn: false, crushBits: 8, crushMix: 0.5,
@@ -4809,22 +4810,51 @@ class Engine {
     // reverb tone (switched into the reverb's input only while it is on)
     this.rvHp = ctx.createBiquadFilter(); this.rvHp.type = 'highpass'; this.rvHp.frequency.value = 180;
     this.rvLp = ctx.createBiquadFilter(); this.rvLp.type = 'lowpass'; this.rvLp.frequency.value = 9000; this.rvHp.connect(this.rvLp); this.rvToneOn = false;
-    // PSY MASTER (between compressor and limiter): low cut -> air shelf -> mid/side, the side high-passed below the mono frequency so the lows sum to mono with no crossover dip
+    // after the compressor, in series: PSY FREQ SHIFT -> ANALOG TAPE -> PSY MASTER -> limiter (each one passes the signal straight through when off)
+    // PSY FREQ SHIFT: a single-sideband (Bode) shifter. Two 4-stage allpass chains split the signal into a 90-degree pair, which is mixed with a cosine/sine
+    // carrier so every harmonic moves by the same number of Hz; a warm 18 ms feedback loop (low-passed at 2.2 kHz) swirls it
+    this.fsIn = ctx.createGain(); this.fsDry = ctx.createGain(); this.fsWet = ctx.createGain(); this.fsWet.gain.value = 0; this.fsOut = ctx.createGain();
+    this.comp.connect(this.fsIn); this.fsIn.connect(this.fsDry); this.fsDry.connect(this.fsOut);
+    { const sum = ctx.createGain(), hil = (list, from) => { let n = from; list.forEach((a) => { const f = ctx.createIIRFilter([a * a, 0, -1], [1, 0, -a * a]); n.connect(f); n = f; }); return n; };
+      this.fsIn.connect(sum);
+      const d1 = ctx.createDelay(0.01); d1.delayTime.value = 1 / ctx.sampleRate; sum.connect(d1);
+      const pI = hil([0.6923878, 0.9360654322959, 0.9882295226860, 0.9987488452737], d1);
+      const pQ = hil([0.4021921162426, 0.8561710882420, 0.9722909545651, 0.9952884791278], sum);
+      const mI = ctx.createGain(), mQ = ctx.createGain(); mI.gain.value = 0; mQ.gain.value = 0;
+      this.fsCos = ctx.createOscillator(); this.fsCos.setPeriodicWave(ctx.createPeriodicWave(new Float32Array([0, 1]), new Float32Array([0, 0]), { disableNormalization: true }));
+      this.fsSin = ctx.createOscillator(); this.fsSin.setPeriodicWave(ctx.createPeriodicWave(new Float32Array([0, 0]), new Float32Array([0, 1]), { disableNormalization: true }));
+      this.fsCos.frequency.value = 0; this.fsSin.frequency.value = 0; this.fsCos.connect(mI.gain); this.fsSin.connect(mQ.gain); this.fsCos.start(); this.fsSin.start();
+      pI.connect(mI); pQ.connect(mQ);
+      const shifted = ctx.createGain(); mI.connect(shifted); mQ.connect(shifted); shifted.connect(this.fsWet); this.fsWet.connect(this.fsOut);
+      const fbD = ctx.createDelay(0.2); fbD.delayTime.value = 0.018; const fbLp = ctx.createBiquadFilter(); fbLp.type = 'lowpass'; fbLp.frequency.value = 2200;
+      this.fsFb = ctx.createGain(); this.fsFb.gain.value = 0; shifted.connect(fbD); fbD.connect(fbLp); fbLp.connect(this.fsFb); this.fsFb.connect(sum); }
+    // ANALOG TAPE: soft tanh saturation (2x oversampled, unity gain for quiet signals), a tape-head low-pass and slow wow on an 8 ms delay
+    this.tpDry = ctx.createGain(); this.tpWet = ctx.createGain(); this.tpWet.gain.value = 0; this.tpOut = ctx.createGain();
+    this.fsOut.connect(this.tpDry); this.tpDry.connect(this.tpOut);
+    this.tpShaper = ctx.createWaveShaper(); this.tpShaper.oversample = '2x'; this.tpCurveK = -1;
+    this.tpHead = ctx.createBiquadFilter(); this.tpHead.type = 'lowpass'; this.tpHead.frequency.value = 10000; this.tpHead.Q.value = -3.0103;
+    this.tpWowD = ctx.createDelay(0.05); this.tpWowD.delayTime.value = 0.008;
+    this.tpWowLfo = ctx.createOscillator(); this.tpWowLfo.frequency.value = 1.4; this.tpWowAmt = ctx.createGain(); this.tpWowAmt.gain.value = 0;
+    this.tpWowLfo.connect(this.tpWowAmt); this.tpWowAmt.connect(this.tpWowD.delayTime); this.tpWowLfo.start();
+    this.fsOut.connect(this.tpShaper); this.tpShaper.connect(this.tpHead); this.tpHead.connect(this.tpWowD); this.tpWowD.connect(this.tpWet); this.tpWet.connect(this.tpOut);
+    // PSY MASTER (before the limiter): low cut -> air shelf -> warm low-pass -> high tame shelf -> mid/side, the side high-passed below the mono frequency
+    // (so the lows sum to mono with no crossover dip) and scaled by MID WIDE above it
     this.mstDry = ctx.createGain(); this.mstWet = ctx.createGain(); this.mstWet.gain.value = 0;
-    this.comp.connect(this.mstDry); this.mstDry.connect(this.limiter);
+    this.tpOut.connect(this.mstDry); this.mstDry.connect(this.limiter);
     this.mstHp = ctx.createBiquadFilter(); this.mstHp.type = 'highpass'; this.mstHp.frequency.value = 30; this.mstHp.Q.value = -3.0103;
     this.mstShelf = ctx.createBiquadFilter(); this.mstShelf.type = 'highshelf'; this.mstShelf.frequency.value = 8500; this.mstShelf.gain.value = 2.8;
     this.mstWarm = ctx.createBiquadFilter(); this.mstWarm.type = 'lowpass'; this.mstWarm.frequency.value = 16000; this.mstWarm.Q.value = -3.0103;
+    this.mstTame = ctx.createBiquadFilter(); this.mstTame.type = 'highshelf'; this.mstTame.frequency.value = 3200; this.mstTame.gain.value = 0;
     { const sp = ctx.createChannelSplitter(2), mid = ctx.createGain(), side = ctx.createGain(), sInv = ctx.createGain(), mg = ctx.createChannelMerger(2);
       mid.gain.value = 0.5; side.gain.value = 0.5; sInv.gain.value = -1;
       this.mstSide1 = ctx.createBiquadFilter(); this.mstSide2 = ctx.createBiquadFilter();
       for (const f of [this.mstSide1, this.mstSide2]) { f.type = 'highpass'; f.frequency.value = 140; f.Q.value = -3.0103; }
       const sideIn = ctx.createGain(), rNeg = ctx.createGain(); rNeg.gain.value = -1;
-      this.comp.connect(this.mstHp); this.mstHp.connect(this.mstShelf); this.mstShelf.connect(this.mstWarm); this.mstWarm.connect(sp);
+      this.tpOut.connect(this.mstHp); this.mstHp.connect(this.mstShelf); this.mstShelf.connect(this.mstWarm); this.mstWarm.connect(this.mstTame); this.mstTame.connect(sp);
       sp.connect(mid, 0); sp.connect(mid, 1);
       sp.connect(sideIn, 0); sp.connect(rNeg, 1); rNeg.connect(sideIn); sideIn.connect(side);
-      side.connect(this.mstSide1); this.mstSide1.connect(this.mstSide2);
-      mid.connect(mg, 0, 0); mid.connect(mg, 0, 1); this.mstSide2.connect(mg, 0, 0); this.mstSide2.connect(sInv); sInv.connect(mg, 0, 1);
+      side.connect(this.mstSide1); this.mstSide1.connect(this.mstSide2); this.mstWidth = ctx.createGain(); this.mstSide2.connect(this.mstWidth);
+      mid.connect(mg, 0, 0); mid.connect(mg, 0, 1); this.mstWidth.connect(mg, 0, 0); this.mstWidth.connect(sInv); sInv.connect(mg, 0, 1);
       mg.connect(this.mstWet); this.mstWet.connect(this.limiter); }
     // output safety: exactly transparent below 0.85, then bends smoothly toward full scale instead of hard-clipping at the converter
     this.safetyIn = ctx.createGain(); this.safetyIn.gain.value = 0.5;
@@ -4970,7 +5000,15 @@ class Engine {
     set(this.driveWet.gain, drive > 0.001 ? 1 : 0);
     set(this.driveDry.gain, drive > 0.001 ? 1 - drive * 0.85 : 1);
 
+    { const cl = (v, a, b, d) => Math.max(a, Math.min(b, Number.isFinite(+v) ? +v : d)), fs = !!fx.fsOn, tp = !!fx.tapeOn;
+      const hz = cl(fx.fsShift, -45, 45, 4); set(this.fsCos.frequency, hz); set(this.fsSin.frequency, hz);
+      set(this.fsDry.gain, fs ? 1 - cl(fx.fsMix, 0, 1, 0.35) * 0.45 : 1); set(this.fsWet.gain, fs ? cl(fx.fsMix, 0, 1, 0.35) : 0); set(this.fsFb.gain, fs ? cl(fx.fsFb, 0, 1, 0.25) * 0.65 : 0);
+      const k = 1 + cl(fx.tapeSat, 0, 1, 0.3) * 5.5;
+      if (Math.abs(k - this.tpCurveK) > 1e-6) { this.tpCurveK = k; const n = 2048, c = new Float32Array(n); for (let i = 0; i < n; i++) c[i] = Math.tanh(((i * 2) / (n - 1) - 1) * k) / k; this.tpShaper.curve = c; }
+      set(this.tpHead.frequency, 4500 + (1 - cl(fx.tapeHead, 0, 1, 0.45)) * 11500); set(this.tpWowAmt.gain, tp ? cl(fx.tapeWow, 0, 1, 0.15) * 0.0012 : 0);
+      set(this.tpDry.gain, tp ? 0 : 1); set(this.tpWet.gain, tp ? 1 : 0); }
     { const on = !!fx.mstOn, cl = (v, a, b, d) => Math.max(a, Math.min(b, Number.isFinite(+v) ? +v : d));
+      set(this.mstWidth.gain, cl(fx.mstWidth, 0, 2, 1)); set(this.mstTame.gain, -8 * cl(fx.mstTame, 0, 1, 0));
       set(this.mstDry.gain, on ? 0 : 1); set(this.mstWet.gain, on ? 1 : 0);
       set(this.mstHp.frequency, cl(fx.mstLowCut, 20, 65, 30)); set(this.mstShelf.gain, cl(fx.mstAir, 0, 8, 2.8)); set(this.mstWarm.frequency, 16000 - cl(fx.mstWarm, 0, 1, 0) * 11500);
       const mono = cl(fx.mstMono, 60, 260, 140); set(this.mstSide1.frequency, mono); set(this.mstSide2.frequency, mono); }
@@ -6406,12 +6444,30 @@ function mount(stage, engine) {
       addKnob(knobs, { path: 'fx.compRelease', label: 'REL', min: 0.02, max: 0.6, def: 0.18, format: (v) => Math.round(v * 1000) });
       card.append(knobs);
     }));
-    pageNode.append(fxCard('PSY MASTER', 'Club-ready low end: everything below SUB MONO is summed to mono (leads, delays and shimmer above it stay wide), LOW CUT clears rumble, PSY AIR adds a shelf at 8.5 kHz, WARM rolls the top off smoothly (16 down to 4.5 kHz) to take the fizz out of long passages.', (card) => {
+    pageNode.append(fxCard('PSY FREQ SHIFT', 'Moves every harmonic by the same number of Hz (unlike a pitch shifter), for barberpole detuning, alien dub swirls and slow phasing. Small shifts of 1 to 6 Hz move; big ones go metallic. SWIRL feeds it back through a warm 18 ms loop.', (card) => {
+      const top = el('div', 'fx-top'); addSwitch(top, { path: 'fx.fsOn', label: 'ON', liveLabel: true }); card.append(top);
+      const knobs = el('div', 'knobs');
+      addKnob(knobs, { path: 'fx.fsShift', label: 'SHIFT', min: -45, max: 45, def: 4, format: (v) => (v >= 0 ? '+' : '') + v.toFixed(1) + ' Hz' });
+      addKnob(knobs, { path: 'fx.fsFb', label: 'SWIRL', min: 0, max: 1, def: 0.25, format: (v) => Math.round(v * 100) + '%' });
+      addKnob(knobs, { path: 'fx.fsMix', label: 'MIX', min: 0, max: 1, def: 0.35, format: (v) => Math.round(v * 100) + '%' });
+      card.append(knobs);
+    }));
+    pageNode.append(fxCard('ANALOG TAPE', 'Tape warmth: soft saturation that rounds the peaks without making quiet parts louder, a tape-head low-pass to take the edge off FM and supersaws, and a slow wow.', (card) => {
+      const top = el('div', 'fx-top'); addSwitch(top, { path: 'fx.tapeOn', label: 'ON', liveLabel: true }); card.append(top);
+      const knobs = el('div', 'knobs');
+      addKnob(knobs, { path: 'fx.tapeSat', label: 'SATURATE', min: 0, max: 1, def: 0.3, format: (v) => Math.round(v * 100) + '%' });
+      addKnob(knobs, { path: 'fx.tapeHead', label: 'HEAD LP', min: 0, max: 1, def: 0.45, format: (v) => ((4500 + (1 - v) * 11500) / 1000).toFixed(1) + ' kHz' });
+      addKnob(knobs, { path: 'fx.tapeWow', label: 'WOW', min: 0, max: 1, def: 0.15, format: (v) => Math.round(v * 100) + '%' });
+      card.append(knobs);
+    }));
+    pageNode.append(fxCard('PSY MASTER', 'Club-ready low end: everything below SUB MONO is summed to mono (leads, delays and shimmer above it stay wide), LOW CUT clears rumble, PSY AIR adds a shelf at 8.5 kHz, MID WIDE sets the width above it, HIGH TAME eases everything above 3.2 kHz, WARM rolls the top off smoothly (16 down to 4.5 kHz) to take the fizz out of long passages.', (card) => {
       const top = el('div', 'fx-top'); addSwitch(top, { path: 'fx.mstOn', label: 'ON', liveLabel: true }); card.append(top);
       const knobs = el('div', 'knobs');
       addKnob(knobs, { path: 'fx.mstMono', label: 'SUB MONO', min: 60, max: 260, step: 1, def: 140, format: (v) => Math.round(v) + ' Hz' });
       addKnob(knobs, { path: 'fx.mstLowCut', label: 'LOW CUT', min: 20, max: 65, step: 1, def: 30, format: (v) => Math.round(v) + ' Hz' });
       addKnob(knobs, { path: 'fx.mstAir', label: 'PSY AIR', min: 0, max: 8, def: 2.8, format: (v) => '+' + v.toFixed(1) + ' dB' });
+      addKnob(knobs, { path: 'fx.mstWidth', label: 'MID WIDE', min: 0, max: 2, def: 1, format: (v) => Math.round(v * 100) + '%' });
+      addKnob(knobs, { path: 'fx.mstTame', label: 'HIGH TAME', min: 0, max: 1, def: 0, format: (v) => (v < 0.01 ? '0 dB' : '-' + (v * 8).toFixed(1) + ' dB') });
       addKnob(knobs, { path: 'fx.mstWarm', label: 'WARM', min: 0, max: 1, def: 0, format: (v) => (v < 0.02 ? 'OPEN' : (16 - v * 11.5).toFixed(1) + ' kHz') });
       card.append(knobs);
     }));
