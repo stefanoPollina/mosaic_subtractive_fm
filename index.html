@@ -786,7 +786,7 @@ footer.bed {
 .page-fx .fx-card .fx-top{padding:4px 2px 0!important}
 .page-fx .fx-card .fx-note{margin:auto 2px 0!important;padding-top:10px;border-top:1px solid #ffffff10;color:var(--dim);font-size:10px;line-height:1.45}
 .page-fx .fx-card .fx-note:first-of-type{margin-top:auto!important}
-.page-fx .fx-group{grid-column:1/-1;padding:14px 2px 0;font-size:10px;font-weight:800;letter-spacing:.2em;color:var(--accent);border-bottom:1px solid #ffffff10;padding-bottom:6px}
+.page-fx .fx-group{grid-column:1/-1;margin:-4px 0 -8px;padding:0 2px 3px;font-size:9px;line-height:1.2;font-weight:800;letter-spacing:.2em;color:var(--accent);border-bottom:1px solid #ffffff10}
 .page-fx .fx-about{grid-column:1/-1}
 .fx-preset-strip{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;margin:8px 0;border:1px solid #45546366;border-radius:6px}
 .fx-preset-strip span{font:10px monospace;color:#c9b184;white-space:nowrap}
@@ -6587,10 +6587,10 @@ function mount(stage, engine) {
     about.append(el('p', 'note', 'Each note is a voice in the audio worklet: three oscillators, multimode filter, two envelopes. Layers A and B are the two engines and can sound together. A safety limiter sits after the effects.'));
     // group the cards by job, in signal-sense order; anything not listed keeps its place at the end, SIGNAL info last
     const cards = new Map([...pageNode.querySelectorAll(':scope > .fx-card')].map((c) => [c.querySelector('.fx-head h3').textContent, c]));
-    [['CHARACTER', ['DRIVE', 'CRUSH', 'VINYL & LO-FI', 'ANALOG TAPE']],
-     ['FILTER & MOVEMENT', ['FILTER', 'PSY FILTER GATE', 'PHASER', 'CHORUS', 'TREMOLO', 'RESO COMB', 'PSY FREQ SHIFT']],
-     ['ECHO & SPACE', ['DELAY', 'PING-PONG', 'MULTIBAND', 'DUB SPACE ECHO', 'REVERB', 'SPRING TANK', 'SHIMMER']],
-     ['MIX & MASTER', ['WIDTH', 'COMPRESSOR', 'PULSE DUCK', 'PSY MASTER']]].forEach(([label, names]) => {
+    [['COLOUR', ['DRIVE', 'CRUSH', 'VINYL & LO-FI', 'ANALOG TAPE']],
+     ['MOTION', ['FILTER', 'PSY FILTER GATE', 'PHASER', 'CHORUS', 'TREMOLO', 'RESO COMB', 'PSY FREQ SHIFT']],
+     ['SPACE', ['DELAY', 'PING-PONG', 'MULTIBAND', 'DUB SPACE ECHO', 'REVERB', 'SPRING TANK', 'SHIMMER']],
+     ['MASTER', ['WIDTH', 'COMPRESSOR', 'PULSE DUCK', 'PSY MASTER']]].forEach(([label, names]) => {
       pageNode.append(el('div', 'fx-group', label));
       names.forEach((n) => { const c = cards.get(n); if (c) { pageNode.append(c); cards.delete(n); } });
     });
