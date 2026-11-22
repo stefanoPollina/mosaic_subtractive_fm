@@ -3958,6 +3958,12 @@ const PSY_LFOSEQ_PRESETS = (() => {
     s.fx.drive = 0.2; s.fx.chorusOn = true; s.fx.chorusMix = 0.28; s.fx.ppOn = true; s.fx.ppSync = '3/16'; s.fx.ppFb = 0.45; s.fx.ppMix = 0.3; s.fx.ppHp = 300;
     s.fx.reverbWet = 0.42; s.fx.reverbDecay = 4.2; s.fx.shimmerOn = true; s.fx.shimmerLevel = 0.26; s.fx.shimmerPitch = 261; s.fx.shimmerMotion = 0.55;
     s.fx.duckOn = true; s.fx.duckDepth = 0.7; s.fx.duckRelease = 0.55; s.fx.mstOn = true;
+    // WT1008 MorningGoaEuphoria blended an octave up as a bell halo; MOTION sparkles its scan on the off-beats
+    s.wtLab = { on: true, table: 'WT1008', mode: 'blend', follow: 'A', octave: 1, level: 0.42, scan: 0.25, M1: 0.65, M2: 0, M3: 0, M4: 0,
+      attack: 0.004, decay: 0.22, sustain: 0.25, release: 0.14, cutoff: 12000, res: 0.8, unison: 5, detune: 20, poly: 12, fmDepth: 0,
+      motion: { on: true, scene: 0.06, mode: 'all', rate: '1/16', swing: 0, slew: 0.1, lanes: [
+        { name: 'Off-Beat Bell Sparkle', unit: 'u', steps: [0, 4, 8, 10, 0, 5, 9, 10, 0, 4, 8, 10, 2, 7, 10, 10], targets: [{ dest: 'scan', depth: 0.75 }] }
+      ] } };
     const eu = [0, 4, 7, 11, 12, 14, 19, 24], mask = [1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1], hook = [0, 0, 4, 2, 3, 4, 6, 0, 1, 2, 4, 5, 7, 0, 6, 4];
     s.seq.bpm = 142; s.seq.length = 64; s.seq.target = 'both';
     s.seq.steps = Array.from({ length: 64 }, (_, i) => { const bar = Math.floor(i / 16), st = i % 16, on = mask[st] === 1, lift = bar === 1 ? 7 : bar === 2 ? 12 : 0;
