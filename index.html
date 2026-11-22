@@ -6332,15 +6332,24 @@ function mount(stage, engine) {
   let bouncing = false, bouncePending = null;
   // Browsers only let a page start a download shortly after a click; a long bounce outlives that, so its files
   // wait for the next click on the button (which then reads SAVE). The plugin saves through its own dialog.
+  // One file per click: a page that downloads two files at once trips Chrome's "multiple downloads" block, and
+  // once that is refused every later download from the site is blocked too. The plugin saves through its own dialog.
+  const kindOf = (f) => /\.mid$/.test(f.name) ? 'MIDI' : 'WAV';
+  function offerNext(btn, label) {
+    const f = bouncePending && bouncePending.files[0];
+    if (!f) { bouncePending = null; btn.textContent = label; btn.classList.remove('busy'); return false; }
+    btn.textContent = 'SAVE ' + kindOf(f); btn.classList.add('busy'); return true;
+  }
   function deliver(files, btn, label) {
-    const now = window.MosaicPlugin || !navigator.userActivation || navigator.userActivation.isActive;
-    if (now) { files.forEach((f) => download(f.blob, f.name)); return false; }
-    bouncePending = { files, label }; btn.textContent = 'SAVE'; btn.classList.add('busy');
-    statusNode.textContent = 'Bounce ready: click SAVE to download ' + files.map((f) => f.name).join(' and ');
-    return true;
+    if (window.MosaicPlugin) { files.forEach((f) => download(f.blob, f.name)); return false; }
+    const rest = files.slice();
+    if (!navigator.userActivation || navigator.userActivation.isActive) { const f = rest.shift(); download(f.blob, f.name); statusNode.textContent = 'Saved ' + f.name + (rest.length ? ' · click SAVE ' + kindOf(rest[0]) + ' for the ' + kindOf(rest[0]) : ''); }
+    else statusNode.textContent = 'Bounce ready · click SAVE ' + kindOf(rest[0]);
+    bouncePending = { files: rest, label };
+    return offerNext(btn, label);
   }
   async function seqBounce(cycles, loopReady, wantMidi, btn) {
-    if (bouncePending) { const p = bouncePending; bouncePending = null; p.files.forEach((f) => download(f.blob, f.name)); btn.textContent = p.label; btn.classList.remove('busy'); statusNode.textContent = 'Saved ' + p.files.map((f) => f.name).join(' and '); return; }
+    if (bouncePending) { const f = bouncePending.files.shift(); if (f) { download(f.blob, f.name); statusNode.textContent = 'Saved ' + f.name; } offerNext(btn, bouncePending.label); return; }
     if (bouncing) return; bouncing = true;
     let waiting = false; const files = [];
     const label = btn.textContent, say = (t) => { btn.textContent = t; statusNode.textContent = t; };
