@@ -2629,7 +2629,7 @@ function defaultStateBase() {
       multiWet: 0,
       busFilter: 0, busFilterRes: 0.2,
       chorusOn: false, chorusRate: 0.35, chorusDepth: 0.2, chorusMix: 0.15, chorusHp: 250,
-      mstOn: false, mstMono: 140, mstLowCut: 30, mstAir: 2.8,
+      mstOn: false, mstMono: 140, mstLowCut: 30, mstAir: 2.8, mstWarm: 0,
       duckOn: false, duckDepth: 0.7, duckRelease: 0.55, duckShape: 0.35,
       ppOn: false, ppSync: '3/16', ppTime: 0.28, ppFb: 0.35, ppMix: 0.12, ppLp: 3500, ppHp: 300,
       crushOn: false, crushBits: 8, crushMix: 0.5,
@@ -3978,6 +3978,41 @@ const PSY_LFOSEQ_PRESETS = (() => {
   }));
   return P;
 })();
+/* No shrill trance: short bites (FM and filter envelopes on each note) stay, but brightness that lasts over bars is reined in.
+   DRIP pitch sweeps capped and chirp kept light (3D, which forces full chirp, becomes BOTH); nothing held two octaves up; noise kept down in
+   leads; slow filter rides, shimmer and PSY AIR halved; step patterns that sit above F4 drop an octave. */
+PSY_LFOSEQ_PRESETS.forEach((s) => {
+  ['A', 'B'].forEach((id) => {
+    const L = s.layers[id]; if (!L) return;
+    const f = L.filter || {};
+    if ((L.fmMode === 'fm' || L.fmMode === 'both') && L.osc && L.osc[0] && /saw|square/.test(L.osc[0].wave)) L.fmIndex = Math.min(1.2, L.fmIndex == null ? 1.4 : L.fmIndex);
+    if (f.type === 'drip') {
+      if (f.fm != null) f.fm = Math.min(0.35, f.fm);
+      if (f.res != null) f.res = Math.min(0.72, f.res);
+      if (f.sweep != null) f.sweep = Math.max(-0.8, Math.min(0.8, f.sweep));   // constant droplet chirps were the main source of sustained fizz
+      if (f.chirp != null) f.chirp = Math.min(0.4, f.chirp);
+      if (f.dripMode === '3d') f.dripMode = 'both';
+    }
+    (L.osc || []).forEach((o) => {
+      if (o.octave >= 2) o.octave = 1;
+      if ((o.wave === 'pink' || o.wave === 'noise') && (L.amp && L.amp.a < 0.3)) o.level *= 0.4;
+    });
+  });
+  (s.lfo || []).forEach((l) => {
+    const slow = (l.seq && l.seq.on && /^(1\/1|2\/1|4\/1)$/.test(l.seq.div)) || (!(l.seq && l.seq.on) && (l.rate || 1) < 1);
+    (l.routes || []).forEach((r) => {
+      if (slow && r.d === 'cutoff') r.a *= 0.5;
+      if (r.d === 'sweep') r.a *= 0.5;
+    });
+  });
+  if (s.fx) {
+    if (s.fx.shimmerOn) s.fx.shimmerLevel = Math.min(0.15, (s.fx.shimmerLevel || 0) * 0.5);
+    if (s.fx.mstOn) { s.fx.mstAir = Math.min(s.fx.mstAir == null ? 2.8 : s.fx.mstAir, 1); s.fx.mstWarm = 0.4; }
+    if (s.fx.ppOn) s.fx.ppLp = Math.min(s.fx.ppLp || 3500, 2400);
+  }
+  const len = s.seq.length || 16, on = s.seq.steps.slice(0, len).filter((x) => x && x.on);
+  if (on.length && Math.max(...on.map((x) => x.note)) > 65) s.seq.steps.forEach((x) => { if (x) x.note = Math.max(0, x.note - 12); });
+});
 MOSAIC_LIBRARY_PRESETS.push(...PSY_LFOSEQ_PRESETS);
 PSY_LFOSEQ_PRESETS.forEach((p) => { MOSAIC_LIBRARY_DEST[mosaicSignatureKey(p.name)] = 'LFO SEQ'; });
 CONTINUUM_PACK_PRESETS.forEach((p) => { MOSAIC_LIBRARY_DEST[mosaicSignatureKey(p.name)] = p.dest; });
@@ -4779,12 +4814,13 @@ class Engine {
     this.comp.connect(this.mstDry); this.mstDry.connect(this.limiter);
     this.mstHp = ctx.createBiquadFilter(); this.mstHp.type = 'highpass'; this.mstHp.frequency.value = 30; this.mstHp.Q.value = -3.0103;
     this.mstShelf = ctx.createBiquadFilter(); this.mstShelf.type = 'highshelf'; this.mstShelf.frequency.value = 8500; this.mstShelf.gain.value = 2.8;
+    this.mstWarm = ctx.createBiquadFilter(); this.mstWarm.type = 'lowpass'; this.mstWarm.frequency.value = 16000; this.mstWarm.Q.value = -3.0103;
     { const sp = ctx.createChannelSplitter(2), mid = ctx.createGain(), side = ctx.createGain(), sInv = ctx.createGain(), mg = ctx.createChannelMerger(2);
       mid.gain.value = 0.5; side.gain.value = 0.5; sInv.gain.value = -1;
       this.mstSide1 = ctx.createBiquadFilter(); this.mstSide2 = ctx.createBiquadFilter();
       for (const f of [this.mstSide1, this.mstSide2]) { f.type = 'highpass'; f.frequency.value = 140; f.Q.value = -3.0103; }
       const sideIn = ctx.createGain(), rNeg = ctx.createGain(); rNeg.gain.value = -1;
-      this.comp.connect(this.mstHp); this.mstHp.connect(this.mstShelf); this.mstShelf.connect(sp);
+      this.comp.connect(this.mstHp); this.mstHp.connect(this.mstShelf); this.mstShelf.connect(this.mstWarm); this.mstWarm.connect(sp);
       sp.connect(mid, 0); sp.connect(mid, 1);
       sp.connect(sideIn, 0); sp.connect(rNeg, 1); rNeg.connect(sideIn); sideIn.connect(side);
       side.connect(this.mstSide1); this.mstSide1.connect(this.mstSide2);
@@ -4936,7 +4972,7 @@ class Engine {
 
     { const on = !!fx.mstOn, cl = (v, a, b, d) => Math.max(a, Math.min(b, Number.isFinite(+v) ? +v : d));
       set(this.mstDry.gain, on ? 0 : 1); set(this.mstWet.gain, on ? 1 : 0);
-      set(this.mstHp.frequency, cl(fx.mstLowCut, 20, 65, 30)); set(this.mstShelf.gain, cl(fx.mstAir, 0, 8, 2.8));
+      set(this.mstHp.frequency, cl(fx.mstLowCut, 20, 65, 30)); set(this.mstShelf.gain, cl(fx.mstAir, 0, 8, 2.8)); set(this.mstWarm.frequency, 16000 - cl(fx.mstWarm, 0, 1, 0) * 11500);
       const mono = cl(fx.mstMono, 60, 260, 140); set(this.mstSide1.frequency, mono); set(this.mstSide2.frequency, mono); }
     const phaser = fx.phaserOn ? fx.phaserWet : 0;
     set(this.phaserWet.gain, phaser);
@@ -6370,12 +6406,13 @@ function mount(stage, engine) {
       addKnob(knobs, { path: 'fx.compRelease', label: 'REL', min: 0.02, max: 0.6, def: 0.18, format: (v) => Math.round(v * 1000) });
       card.append(knobs);
     }));
-    pageNode.append(fxCard('PSY MASTER', 'Club-ready low end: everything below SUB MONO is summed to mono (leads, delays and shimmer above it stay wide), LOW CUT clears rumble, PSY AIR adds a shelf at 8.5 kHz.', (card) => {
+    pageNode.append(fxCard('PSY MASTER', 'Club-ready low end: everything below SUB MONO is summed to mono (leads, delays and shimmer above it stay wide), LOW CUT clears rumble, PSY AIR adds a shelf at 8.5 kHz, WARM rolls the top off smoothly (16 down to 4.5 kHz) to take the fizz out of long passages.', (card) => {
       const top = el('div', 'fx-top'); addSwitch(top, { path: 'fx.mstOn', label: 'ON', liveLabel: true }); card.append(top);
       const knobs = el('div', 'knobs');
       addKnob(knobs, { path: 'fx.mstMono', label: 'SUB MONO', min: 60, max: 260, step: 1, def: 140, format: (v) => Math.round(v) + ' Hz' });
       addKnob(knobs, { path: 'fx.mstLowCut', label: 'LOW CUT', min: 20, max: 65, step: 1, def: 30, format: (v) => Math.round(v) + ' Hz' });
       addKnob(knobs, { path: 'fx.mstAir', label: 'PSY AIR', min: 0, max: 8, def: 2.8, format: (v) => '+' + v.toFixed(1) + ' dB' });
+      addKnob(knobs, { path: 'fx.mstWarm', label: 'WARM', min: 0, max: 1, def: 0, format: (v) => (v < 0.02 ? 'OPEN' : (16 - v * 11.5).toFixed(1) + ' kHz') });
       card.append(knobs);
     }));
     pageNode.append(fxCard('PSY DUCK', 'A 1/4-note sidechain pump in time with the SEQ, so the synth breathes around the kick. RELEASE sets how fast the volume comes back after each beat.', (card) => {
@@ -6986,79 +7023,67 @@ function mount(stage, engine) {
     const A = s.layers && s.layers.A; if (!A) return;
     const n = Math.min(64, len), mk = (fn) => Array.from({ length: 64 }, (_, i) => fn(i % n));
     const routes = (list) => { const r = Array.from({ length: LFO_ROUTES }, () => ({ d: 'off', a: 0, t: 'own' })); list.forEach((x, i) => { r[i] = x; }); return r; };
+    const lane = (slot, wave, list, sq) => { s.lfo[slot] = lfoFill(Object.assign({}, s.lfo[slot], { wave, routes: routes(list), seq: Object.assign({ on: true, div: '1/16', length: n, bi: false, slew: 0 }, sq) }), slot); };
+    const grid = (bits) => { if (s.lfoSeq && s.lfoSeq.on && Array.isArray(s.lfoSeq.grid)) s.lfoSeq.grid = s.lfoSeq.grid.map((m) => (m | 0) | bits); };
     const curated = { 'fo-call': 'phrygian', 'goa-spiral': 'hijaz', 'forest-3o4': 'forest' };
     style = curated[style] || style;
-    if (style === 'ecstatic') {
-      s.unison = 4; s.detune = 18;
-      Object.assign(A.filter, { type: 'lowpass', cutoff: 1450, res: 0.38, env: 0.72, lfo: 0.25, key: 0.45, slope: 0.5 });
-      Object.assign(s.fx, { chorusOn: true, chorusMix: 0.28, ppOn: true, ppSync: '3/16', ppFb: 0.45, ppMix: 0.3, reverbWet: 0.42, reverbDecay: 4.2, shimmerOn: true, shimmerLevel: 0.26, shimmerMotion: 0.55 });
-      s.lfo[2] = lfoFill(Object.assign({}, s.lfo[2], { wave: 'sine', routes: routes([{ d: 'cutoff', a: 0.55, t: 'A' }, { d: 'pan', a: 0.65, t: 'A' }, { d: 'pwm', a: 0.4, t: 'A' }]),
-        seq: { on: true, div: '1/8', length: n, bi: false, slew: 0.4, pattern: 'PSY GEN euphoric arch', steps: mk((i) => ({ m: 'step', v: Math.sin((i / n) * Math.PI) * 0.85 + 0.15 })) } }), 2);
-      if (s.lfoSeq && s.lfoSeq.on && Array.isArray(s.lfoSeq.grid)) s.lfoSeq.grid = s.lfoSeq.grid.map((m) => (m | 0) | 4);
-      return;
-    }
-    if (style === 'serotonin') {
-      s.unison = 4; s.detune = 20;
-      Object.assign(A.filter, { type: 'lowpass', cutoff: 1200, res: 0.34, env: 0.65, lfo: 0.35, key: 0.45, slope: 0.5 });
-      Object.assign(s.fx, { chorusOn: true, chorusMix: 0.32, ppOn: true, ppSync: '3/16', ppFb: 0.48, ppMix: 0.32, reverbWet: 0.46, reverbDecay: 4.5, shimmerOn: true, shimmerLevel: 0.3, shimmerMotion: 0.6 });
-      const chop = [1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1];
-      s.lfo[2] = lfoFill(Object.assign({}, s.lfo[2], { wave: 'square', routes: routes([{ d: 'gate', a: 0.85, t: 'A' }, { d: 'pan', a: 0.72, t: 'A' }, { d: 'cutoff', a: 0.45, t: 'A' }]),
-        seq: { on: true, div: '1/16', length: n, bi: false, slew: 0.08, pattern: 'PSY GEN trance gate', steps: mk((i) => ({ m: 'step', v: i >= n - 8 ? 1 : chop[i % 16] })) } }), 2);
-      if (s.lfoSeq && s.lfoSeq.on && Array.isArray(s.lfoSeq.grid)) s.lfoSeq.grid = s.lfoSeq.grid.map((m) => (m | 0) | 4);
-      return;
-    }
-    if (style === 'psybreaks') {
-      s.seq.bpm = 134; s.seq.swing = 0.14; s.unison = 2; s.detune = 12;
-      Object.assign(A.filter, { type: 'drip', cutoff: 380, res: 0.74, env: 0.78, ping: 0.92, sweep: 2.4, fall: 0.075, bubble: 0.8, fm: 0.55, dripMode: 'both', chirp: 0.65, dwidth: 0.9, density: 0.5, dsize: 0.62, dguard: 0.5 });
-      Object.assign(s.fx, { drive: 0.35, phaserOn: true, phaserRate: 0.16, phaserWet: 0.35, delaySync: '1/8d', delayFb: 0.48, delayWet: 0.28, ppOn: true, ppSync: '3/16', ppFb: 0.52, ppMix: 0.3, reverbWet: 0.38, reverbDecay: 3.6 });
-      const skank = [0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0];
-      s.lfo[2] = lfoFill(Object.assign({}, s.lfo[2], { wave: 'square', routes: routes([{ d: 'drip', a: 0.92, t: 'A' }, { d: 'bubble', a: 0.55, t: 'A' }, { d: 'pan', a: 0.65, t: 'A' }]),
-        seq: { on: true, div: '1/16', length: n, bi: false, slew: 0.06, pattern: 'PSY GEN dub skank drips', steps: mk((i) => ({ m: 'step', v: skank[i % 16] })) } }), 2);
-      if (s.lfoSeq && s.lfoSeq.on && Array.isArray(s.lfoSeq.grid)) s.lfoSeq.grid = s.lfoSeq.grid.map((m) => (m | 0) | 4);
-      return;
-    }
-    if (style === 'dubvoid') {
-      s.seq.bpm = 132; s.seq.swing = 0.15; s.unison = 3; s.detune = 16;
-      Object.assign(A.filter, { type: 'drip', cutoff: 350, res: 0.76, env: 0.64, ping: 0.96, sweep: 2.1, fall: 0.085, bubble: 0.82, fm: 0.4, dripMode: 'rain', chirp: 0.95, dwidth: 1.0, density: 0.38, dsize: 0.42, dguard: 0.45 });
-      Object.assign(s.fx, { drive: 0.18, phaserOn: true, phaserRate: 0.09, phaserWet: 0.34, delaySync: '1/8d', delayFb: 0.56, delayWet: 0.34, ppOn: true, ppSync: '3/16', ppFb: 0.58, ppMix: 0.36, reverbWet: 0.56, reverbDecay: 5.8, shimmerOn: true, shimmerLevel: 0.24, shimmerMotion: 0.58 });
-      const mask = [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0];
-      s.lfo[2] = lfoFill(Object.assign({}, s.lfo[2], { wave: 'triangle', routes: routes([{ d: 'drip', a: 0.88, t: 'A' }, { d: 'pan', a: 0.85, t: 'A' }, { d: 'dsize', a: 0.5, t: 'A' }]),
-        seq: { on: true, div: '1/16', length: n, bi: true, slew: 0.15, pattern: 'PSY GEN void droplets', steps: mk((i) => ({ m: i % 16 === 15 ? 'rand' : 'step', v: mask[i % 16] })) } }), 2);
-      if (s.lfoSeq && s.lfoSeq.on && Array.isArray(s.lfoSeq.grid)) s.lfoSeq.grid = s.lfoSeq.grid.map((m) => (m | 0) | 4);
-      return;
+    // warm by default: ping-pong repeats rolled off at 2.1 kHz, shimmer kept low (3D drip is avoided: it forces full chirp)
+    Object.assign(s.fx, { ppLp: 2100, ppHp: 280 }); s.fx.shimmerLevel = Math.min(0.15, s.fx.shimmerLevel || 0.15);
+    if (style === 'bass') {
+      Object.assign(A.filter, { type: 'lowpass', cutoff: 165, res: 0.18, env: 0.76, slope: 1 });
+      lane(2, s.lfo[2].wave, [{ d: 'cutoff', a: 0.2, t: 'A' }, { d: 'drive', a: 0.22, t: 'A' }], { slew: 0.1, pattern: 'PSY GEN bass push', steps: mk((i) => ({ m: 'step', v: i % 16 === 15 ? 0.95 : i % 4 === 3 ? 0.75 : 0.2 })) });
+      grid(4); return;
     }
     if (style === 'subbuild') {
       s.polyphony = 1; s.unison = 1; s.glide = 0.03;
-      Object.assign(A.filter, { type: 'lowpass', cutoff: 95, res: 0.3, env: 0.68, lfo: 0.15, key: 0.15, slope: 1 });
-      Object.assign(s.fx, { drive: 0.25, compOn: true, compThreshold: -13, compRatio: 5 });
-      s.lfo[2] = lfoFill(Object.assign({}, s.lfo[2], { wave: 'saw', routes: routes([{ d: 'cutoff', a: 0.78, t: 'A' }, { d: 'drive', a: 0.65, t: 'A' }, { d: 'fm', a: 0.55, t: 'A' }]),
-        seq: { on: true, div: '1/16', length: n, bi: false, slew: 0.25, pattern: 'PSY GEN sub pressure', steps: mk((i) => { const fin = i >= n - Math.max(2, Math.round(n / 4)) && i < n - 2; return { m: fin ? 'mul' : 'step', r: fin ? 2 : 1, v: Math.pow(i / Math.max(1, n - 1), 1.3) }; }) } }), 2);
-      if (s.lfoSeq && s.lfoSeq.on && Array.isArray(s.lfoSeq.grid)) s.lfoSeq.grid = s.lfoSeq.grid.map((m) => (m | 0) | 4);
-      return;
+      Object.assign(A.filter, { type: 'lowpass', cutoff: 90, res: 0.28, env: 0.65, lfo: 0.15, key: 0.15, slope: 1 });
+      Object.assign(s.fx, { drive: 0.22, compOn: true, compThreshold: -13, compRatio: 5 });
+      lane(2, 'saw', [{ d: 'cutoff', a: 0.68, t: 'A' }, { d: 'drive', a: 0.55, t: 'A' }, { d: 'fm', a: 0.42, t: 'A' }], { slew: 0.28, pattern: 'PSY GEN sub pressure',
+        steps: mk((i) => { const fin = i >= n - Math.max(2, Math.round(n / 4)) && i < n - 2; return { m: fin ? 'mul' : 'step', r: fin ? 2 : 1, v: Math.pow(i / Math.max(1, n - 1), 1.3) }; }) });
+      grid(4); return;
+    }
+    if (style === 'ecstatic') {
+      s.unison = 4; s.detune = 15;
+      Object.assign(A.filter, { type: 'lowpass', cutoff: 880, res: 0.3, env: 0.62, lfo: 0.22, key: 0.35, slope: 1 });
+      Object.assign(s.fx, { chorusOn: true, chorusMix: 0.26, ppOn: true, ppSync: '3/16', ppFb: 0.44, ppMix: 0.28, reverbWet: 0.4, reverbDecay: 4.0, shimmerOn: true, shimmerLevel: 0.15, shimmerMotion: 0.5 });
+      lane(2, 'sine', [{ d: 'cutoff', a: 0.45, t: 'A' }, { d: 'pan', a: 0.6, t: 'A' }, { d: 'pwm', a: 0.35, t: 'A' }], { div: '1/8', slew: 0.45, pattern: 'PSY GEN euphoric arch', steps: mk((i) => ({ m: 'step', v: Math.sin((i / n) * Math.PI) * 0.8 + 0.15 })) });
+      grid(4); return;
+    }
+    if (style === 'serotonin') {
+      s.unison = 4; s.detune = 16;
+      Object.assign(A.filter, { type: 'lowpass', cutoff: 820, res: 0.28, env: 0.58, lfo: 0.3, key: 0.35, slope: 1 });
+      Object.assign(s.fx, { chorusOn: true, chorusMix: 0.3, ppOn: true, ppSync: '3/16', ppFb: 0.46, ppMix: 0.3, reverbWet: 0.44, reverbDecay: 4.2, shimmerOn: true, shimmerLevel: 0.15, shimmerMotion: 0.55 });
+      const chop = [1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1];
+      lane(2, 'square', [{ d: 'gate', a: 0.85, t: 'A' }, { d: 'pan', a: 0.68, t: 'A' }, { d: 'cutoff', a: 0.38, t: 'A' }], { slew: 0.1, pattern: 'PSY GEN trance gate', steps: mk((i) => ({ m: 'step', v: i >= n - 8 ? 1 : chop[i % 16] })) });
+      grid(4); return;
+    }
+    if (style === 'psybreaks' || style === 'dubvoid') {
+      const v = style === 'dubvoid';
+      Object.assign(s.seq, { bpm: v ? 132 : 134, swing: v ? 0.15 : 0.14 }); s.unison = v ? 3 : 2; s.detune = v ? 15 : 12;
+      Object.assign(A.filter, { type: 'drip', cutoff: v ? 320 : 350, res: 0.68, env: 0.62, ping: 0.9, sweep: v ? 0.7 : 0.8, fall: 0.085, bubble: 0.78, fm: 0.3, dripMode: v ? 'rain' : 'both', chirp: 0.45,
+        dwidth: v ? 1.0 : 0.88, density: v ? 0.36 : 0.48, dsize: v ? 0.48 : 0.62, dguard: 0.55 });
+      Object.assign(s.fx, { drive: v ? 0.16 : 0.3, phaserOn: true, phaserRate: v ? 0.09 : 0.16, phaserWet: 0.32, delaySync: '1/8d', delayFb: v ? 0.54 : 0.46, delayWet: v ? 0.32 : 0.26,
+        ppOn: true, ppSync: '3/16', ppFb: v ? 0.54 : 0.48, ppMix: v ? 0.32 : 0.28, reverbWet: v ? 0.52 : 0.36, reverbDecay: v ? 5.4 : 3.5, shimmerOn: v, shimmerLevel: 0.15 });
+      const mask = v ? [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0] : [0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0];
+      lane(2, v ? 'triangle' : 'square', [{ d: 'drip', a: 0.86, t: 'A' }, { d: 'bubble', a: 0.5, t: 'A' }, { d: 'pan', a: 0.72, t: 'A' }], { bi: v, slew: v ? 0.15 : 0.06, pattern: v ? 'PSY GEN void droplets' : 'PSY GEN dub skank drips',
+        steps: mk((i) => ({ m: v && i % 16 === 15 ? 'rand' : 'step', v: mask[i % 16] })) });
+      grid(4); return;
     }
     if (style === 'riser') {
-      Object.assign(A.filter, { type: 'drip', cutoff: 340, res: 0.78, env: 0.85, ping: 0.95, sweep: 3.4, fall: 0.045, bubble: 0.75, fm: 0.75, dripMode: '3d', chirp: 0.9, dwidth: 0.95, density: 0.6, dsize: 0.5, dguard: 0.6 });
-      Object.assign(s.fx, { shimmerOn: true, shimmerLevel: 0.28, reverbWet: 0.44, ppOn: true, ppSync: '3/16', ppMix: 0.32 });
-      s.lfo[2] = lfoFill(Object.assign({}, s.lfo[2], { wave: 'saw', routes: routes([{ d: 'cutoff', a: 0.85, t: 'A' }, { d: 'fm', a: 0.8, t: 'A' }, { d: 'drip', a: 0.95, t: 'A' }]),
-        seq: { on: true, div: '1/16', length: n, bi: false, slew: 0.25, pattern: 'PSY GEN riser ramp', steps: mk((i) => { const fin = i >= n - Math.max(1, Math.round(n / 4)); return { m: fin ? 'mul' : 'step', r: fin ? 2 : 1, v: i / Math.max(1, n - 1) }; }) } }), 2);
-      if (s.lfoSeq && s.lfoSeq.on && Array.isArray(s.lfoSeq.grid)) s.lfoSeq.grid = s.lfoSeq.grid.map((m) => (m | 0) | 4);
-      return;
+      Object.assign(A.filter, { type: 'drip', cutoff: 310, res: 0.68, env: 0.72, ping: 0.88, sweep: 1.0, fall: 0.055, bubble: 0.7, fm: 0.42, dripMode: 'both', chirp: 0.5, dwidth: 0.92, density: 0.55, dsize: 0.52, dguard: 0.65 });
+      Object.assign(s.fx, { shimmerOn: true, shimmerLevel: 0.15, reverbWet: 0.42, ppOn: true, ppSync: '3/16', ppMix: 0.3 });
+      lane(2, 'saw', [{ d: 'cutoff', a: 0.68, t: 'A' }, { d: 'fm', a: 0.55, t: 'A' }, { d: 'drip', a: 0.9, t: 'A' }], { slew: 0.25, pattern: 'PSY GEN riser ramp',
+        steps: mk((i) => { const fin = i >= n - Math.max(1, Math.round(n / 4)); return { m: fin ? 'mul' : 'step', r: fin ? 2 : 1, v: i / Math.max(1, n - 1) }; }) });
+      grid(4); return;
     }
-    if (style === 'bass') {
-      Object.assign(A.filter, { type: 'lowpass', cutoff: 175, res: 0.18, env: 0.78, slope: 1 });
-      s.lfo[2] = lfoFill(Object.assign({}, s.lfo[2], { routes: routes([{ d: 'cutoff', a: 0.22, t: 'A' }, { d: 'drive', a: 0.25, t: 'A' }]),
-        seq: { on: true, div: '1/16', length: n, bi: false, slew: 0.1, pattern: 'PSY GEN bass push', steps: mk((i) => ({ m: 'step', v: i % 16 === 15 ? 1 : i % 4 === 3 ? 0.8 : 0.2 })) } }), 2);
-    } else {
-      const modes = { phrygian: '3d', hijaz: 'both', forest: 'stream', hitech: 'storm' }, every = style === 'forest' ? 3 : style === 'hitech' ? 2 : 4;
-      Object.assign(A.filter, { type: 'drip', cutoff: style === 'forest' ? 410 : style === 'hitech' ? 680 : 520, res: style === 'hijaz' ? 0.82 : 0.75, env: 0.68, ping: 0.92,
-        sweep: style === 'hijaz' ? -2.4 : 2.6, fall: style === 'hitech' ? 0.038 : 0.062, bubble: 0.68, fm: 0.58, dripMode: modes[style] || '3d', chirp: 0.8, dwidth: 0.9, density: 0.55, dsize: 0.48, dguard: 0.55 });
-      s.lfo[2] = lfoFill(Object.assign({}, s.lfo[2], { wave: 'square', routes: routes([{ d: 'drip', a: 0.95, t: 'A' }, { d: 'fm', a: 0.6, t: 'A' }, { d: 'pan', a: 0.75, t: 'A' }]),
-        seq: { on: true, div: '1/16', length: n, bi: false, slew: 0, pattern: 'PSY GEN drip kicks', steps: mk((i) => ({ m: style === 'hitech' && i % 4 === 3 ? 'rand' : 'step', v: i % every === every - 1 ? 1 : 0 })) } }), 2);
-      s.lfo[3] = lfoFill(Object.assign({}, s.lfo[3], { wave: 'triangle', routes: routes([{ d: 'sweep', a: 0.65, t: 'A' }, { d: 'dsize', a: 0.55, t: 'A' }, { d: 'bubble', a: 0.45, t: 'A' }]),
-        seq: { on: true, div: '1/8', length: n, bi: true, slew: 0.35, pattern: 'PSY GEN sweep', steps: mk((i) => ({ m: i % 8 === 7 ? 'rand' : 'step', v: Math.sin((i / n) * Math.PI * 2) * 0.5 + 0.5 })) } }), 3);
-    }
-    // if the LFO SEQ arrangement is running, let LFO 3 and 4 play in every row
-    if (s.lfoSeq && s.lfoSeq.on && Array.isArray(s.lfoSeq.grid)) s.lfoSeq.grid = s.lfoSeq.grid.map((m) => (m | 0) | (style === 'bass' ? 4 : 12));
+    // phrygian, hijaz, forest, hi-tech: liquid rather than glassy (3D's forced full chirp is swapped for BOTH)
+    const modes = { phrygian: 'both', hijaz: 'both', forest: 'stream', hitech: 'storm' }, every = style === 'forest' ? 3 : style === 'hitech' ? 2 : 4;
+    Object.assign(A.filter, { type: 'drip', cutoff: style === 'forest' ? 370 : style === 'hitech' ? 520 : 440, res: style === 'hijaz' ? 0.74 : 0.68, env: 0.62, ping: 0.88,
+      sweep: style === 'hijaz' ? -0.8 : 0.8, fall: style === 'hitech' ? 0.048 : 0.068, bubble: 0.65, fm: 0.34, dripMode: modes[style] || 'both', chirp: style === 'hitech' ? 0.55 : 0.45,
+      dwidth: 0.88, density: style === 'forest' ? 0.6 : 0.5, dsize: 0.5, dguard: 0.6 });
+    lane(2, 'square', [{ d: 'drip', a: 0.9, t: 'A' }, { d: 'fm', a: 0.45, t: 'A' }, { d: 'pan', a: 0.72, t: 'A' }], { pattern: 'PSY GEN drip kicks', steps: mk((i) => ({ m: style === 'hitech' && i % 4 === 3 ? 'rand' : 'step', v: i % every === every - 1 ? 1 : 0 })) });
+    lane(3, 'triangle', [{ d: 'sweep', a: 0.25, t: 'A' }, { d: 'dsize', a: 0.5, t: 'A' }, { d: 'bubble', a: 0.42, t: 'A' }], { div: '1/8', bi: true, slew: 0.35, pattern: 'PSY GEN sweep', steps: mk((i) => ({ m: i % 8 === 7 ? 'rand' : 'step', v: Math.sin((i / n) * Math.PI * 2) * 0.5 + 0.5 })) });
+    grid(12);
   }
   // a type-0 MIDI file of the pattern: 480 ticks per quarter, the SEQ tempo, slides held to 112% of a step so legato synths glide
   function psyMidi(seq) {
