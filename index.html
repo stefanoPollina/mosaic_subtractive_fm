@@ -3879,6 +3879,29 @@ const PSY_LFOSEQ_PRESETS = (() => {
     });
     s.lfoSeq = arrange([[0, 2], [0, 2], [0, 2], [0, 2]]);
   }));
+  // 13. Ethereal Dub Void: a stripped-back sub pulse with wide rain drips on A, glassy comb-filtered air on B, long dub space, 132 BPM with swing.
+  P.push(preset('LFOSEQ Psy Ethereal Dub Void', (s) => {
+    s.polyphony = 3; s.glide = 0.08; s.unison = 3; s.detune = 16;
+    s.layers.A.level = 0.82; s.layers.A.character = 0.45; s.layers.A.fmMode = 'fm'; s.layers.A.fmRatio = 2.0; s.layers.A.fmIndex = 0.65;
+    s.layers.A.osc = [osc('sine', -1, 0, 0, 0.9, 0.5), osc('triangle', 0, 0, -4, 0.42, 0.5), osc('sine', 1, 7, 4, 0.18, 0.5)];
+    s.layers.A.filter = { type: 'drip', cutoff: 340, res: 0.76, env: 0.62, lfo: 0.25, key: 0.35, ping: 0.96, sweep: 2.1, fall: 0.085, bubble: 0.82, fm: 0.38, dripMode: 'rain', chirp: 0.95, dwidth: 1.0, density: 0.38, dsize: 0.42, dguard: 0.45 };
+    s.layers.A.amp = env(0.015, 0.32, 0.2, 0.35); s.layers.A.filt = env(0.02, 0.28, 0.1, 0.3);
+    s.layers.B = layer({ enabled: true, level: 0.46, character: 0.65, osc: [osc('triangle', 1, 7, -6, 0.55, 0.5), osc('sine', 2, 2, 6, 0.45, 0.5), osc('pink', 0, 0, 0, 0.2, 0.9)],
+      filter: { type: 'comb', cutoff: 320, res: 0.4, comb: 0.84, env: 0.2, lfo: 0.35, key: 0.5 }, amp: env(0.65, 0.8, 0.78, 1.8) });
+    s.fx.drive = 0.16; s.fx.phaserOn = true; s.fx.phaserRate = 0.09; s.fx.phaserDepth = 0.48; s.fx.phaserWet = 0.34; s.fx.delaySync = '1/8d'; s.fx.delayFb = 0.56; s.fx.delayWet = 0.34;
+    s.fx.ppOn = true; s.fx.ppSync = '3/16'; s.fx.ppFb = 0.58; s.fx.ppMix = 0.36; s.fx.ppHp = 300; s.fx.reverbWet = 0.56; s.fx.reverbDecay = 5.8;
+    s.fx.shimmerOn = true; s.fx.shimmerLevel = 0.24; s.fx.shimmerPitch = 293; s.fx.shimmerMotion = 0.58; s.fx.mstOn = true;
+    const mask = [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0], sc = [0, 0, 7, 10, 12, 14, 15, 19];
+    s.seq.bpm = 132; s.seq.swing = 0.15; s.seq.length = 64; s.seq.target = 'both';
+    s.seq.steps = Array.from({ length: 64 }, (_, i) => { const bar = Math.floor(i / 16), st = i % 16, on = mask[st] === 1 || (bar === 1 && st === 6) || (bar === 3 && st === 14);
+      return { on, note: 38 + (st === 0 ? 0 : sc[(i + bar * 3) % sc.length]), vel: st === 0 ? 114 : 84, accent: st === 0 || st === 10, slide: on && (st === 3 || st === 13) }; });
+    lfos(s, {
+      0: L({ wave: 'sine', rate: 0.08, routes: [R('bubble', 0.45, 'A')] }),
+      2: L({ wave: 'triangle', routes: [R('drip', 0.88, 'A'), R('pan', 0.85, 'A'), R('dsize', 0.5, 'A')],
+        seq: seq(Array.from({ length: 64 }, (_, i) => { const bar = Math.floor(i / 16), st = i % 16; return { m: bar === 2 && st % 4 === 3 ? 'rand' : 'step', v: (mask[st] === 1 || (bar === 3 && st === 14)) ? 1 : 0 }; }), { length: 64, bi: true, slew: 0.15, pattern: 'Void droplets 64' }) })
+    });
+    s.lfoSeq = arrange([[0, 2], [0, 2], [0, 2], [0, 2]]);
+  }));
   return P;
 })();
 MOSAIC_LIBRARY_PRESETS.push(...PSY_LFOSEQ_PRESETS);
@@ -6426,7 +6449,7 @@ function mount(stage, engine) {
     // PSY SEQ GEN: writes a psytrance pattern into the SEQ (16/32/64 steps, 4-bar phrasing), and ↓ .MID saves the pattern's notes as a MIDI clip at once
     const psyStyle = el('select', 'slim'); psyStyle.title = 'Pattern style for PSY GEN';
     [['bass', 'ROLLING BASS'], ['phrygian', 'PHRYGIAN LEAD'], ['hijaz', 'HIJAZ ACID 303'], ['forest', 'FOREST GLITCH'], ['hitech', 'HI-TECH LASER'],
-     ['fo-call', 'FULL-ON CALL & RESPONSE (32)'], ['goa-spiral', 'GOA HIJAZ SPIRAL (32)'], ['forest-3o4', 'FOREST 3-OVER-4 (32)'], ['riser', 'DOPAMINE RISER'], ['ecstatic', 'ECSTATIC PLATEAU'], ['serotonin', 'SEROTONIN GATE'], ['psybreaks', 'PSYBREAKS DUB']].forEach(([v, t]) => { const o = el('option', '', t); o.value = v; psyStyle.append(o); });
+     ['fo-call', 'FULL-ON CALL & RESPONSE (32)'], ['goa-spiral', 'GOA HIJAZ SPIRAL (32)'], ['forest-3o4', 'FOREST 3-OVER-4 (32)'], ['riser', 'DOPAMINE RISER'], ['ecstatic', 'ECSTATIC PLATEAU'], ['serotonin', 'SEROTONIN GATE'], ['psybreaks', 'PSYBREAKS DUB'], ['dubvoid', 'DUB VOID (ETHEREAL)']].forEach(([v, t]) => { const o = el('option', '', t); o.value = v; psyStyle.append(o); });
     psyStyle.value = 'phrygian';
     const psyRoot = el('select', 'slim'); psyRoot.title = 'Root note';
     [['D', 38], ['D#', 39], ['E', 40], ['F', 41], ['F#', 42], ['G', 43], ['G#', 44], ['A', 45]].forEach(([n, m]) => { const o = el('option', '', n); o.value = m; psyRoot.append(o); });
@@ -6864,6 +6887,10 @@ function mount(stage, engine) {
         const groove = [1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1], dub = [0, 0, 3, 5, 7, 10, 12, 15], on = (last && k >= 12) || groove[k] === 1;
         const acc = k === 0 || k === 6 || k === 10 || (last && k >= 12);
         out.push({ on, note: root + (k === 0 ? 0 : pick(dub)), vel: acc ? 125 : 90, accent: acc, slide: on && (k === 3 || k === 13 || Math.random() < 0.25) });
+      } else if (style === 'dubvoid') {
+        // stripped-back dub-breaks pulse: 4-5 notes a bar, floating 5ths, 9ths and 12ths, the odd ghost note
+        const mask = [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0], sc = [0, 0, 7, 10, 12, 14, 15, 19], ghost = (bar % 4 === 1 && k === 6) || (bar % 4 === 3 && k === 14), on = mask[k] === 1 || ghost;
+        out.push({ on, note: root + (k === 0 ? 0 : pick(sc)), vel: k === 0 ? 114 : ghost ? 72 : 86, accent: k === 0 || k === 10, slide: on && (k === 3 || k === 13) });
       } else if (style === 'forest') {
         const call = bar % 2 === 0, on = Math.random() < (call ? 0.65 : 0.45), acc = i % 3 === 0 || Math.random() < 0.3;
         out.push({ on, note: root + 12 + (call ? pick(PSY_SCALES.forest) : pick(PSY_SCALES.octaves)), vel: acc ? 118 : 82, accent: acc, slide: on && Math.random() < 0.45 });
@@ -6907,6 +6934,16 @@ function mount(stage, engine) {
       const skank = [0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0];
       s.lfo[2] = lfoFill(Object.assign({}, s.lfo[2], { wave: 'square', routes: routes([{ d: 'drip', a: 0.92, t: 'A' }, { d: 'bubble', a: 0.55, t: 'A' }, { d: 'pan', a: 0.65, t: 'A' }]),
         seq: { on: true, div: '1/16', length: n, bi: false, slew: 0.06, pattern: 'PSY GEN dub skank drips', steps: mk((i) => ({ m: 'step', v: skank[i % 16] })) } }), 2);
+      if (s.lfoSeq && s.lfoSeq.on && Array.isArray(s.lfoSeq.grid)) s.lfoSeq.grid = s.lfoSeq.grid.map((m) => (m | 0) | 4);
+      return;
+    }
+    if (style === 'dubvoid') {
+      s.seq.bpm = 132; s.seq.swing = 0.15; s.unison = 3; s.detune = 16;
+      Object.assign(A.filter, { type: 'drip', cutoff: 350, res: 0.76, env: 0.64, ping: 0.96, sweep: 2.1, fall: 0.085, bubble: 0.82, fm: 0.4, dripMode: 'rain', chirp: 0.95, dwidth: 1.0, density: 0.38, dsize: 0.42, dguard: 0.45 });
+      Object.assign(s.fx, { drive: 0.18, phaserOn: true, phaserRate: 0.09, phaserWet: 0.34, delaySync: '1/8d', delayFb: 0.56, delayWet: 0.34, ppOn: true, ppSync: '3/16', ppFb: 0.58, ppMix: 0.36, reverbWet: 0.56, reverbDecay: 5.8, shimmerOn: true, shimmerLevel: 0.24, shimmerMotion: 0.58 });
+      const mask = [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0];
+      s.lfo[2] = lfoFill(Object.assign({}, s.lfo[2], { wave: 'triangle', routes: routes([{ d: 'drip', a: 0.88, t: 'A' }, { d: 'pan', a: 0.85, t: 'A' }, { d: 'dsize', a: 0.5, t: 'A' }]),
+        seq: { on: true, div: '1/16', length: n, bi: true, slew: 0.15, pattern: 'PSY GEN void droplets', steps: mk((i) => ({ m: i % 16 === 15 ? 'rand' : 'step', v: mask[i % 16] })) } }), 2);
       if (s.lfoSeq && s.lfoSeq.on && Array.isArray(s.lfoSeq.grid)) s.lfoSeq.grid = s.lfoSeq.grid.map((m) => (m | 0) | 4);
       return;
     }
