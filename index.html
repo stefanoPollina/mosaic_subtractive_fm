@@ -2262,12 +2262,12 @@ const BRIEF_LANES=[
  {name:'Hijaz Scale Arpeggio',unit:'st',steps:[0,12,7,4,1,5,7,12,8,7,4,1,0,4,7,10],targets:[{dest:'pitch',depth:12},{dest:'pan',depth:.4,alt:true}]},
  {name:'Trance Gate Chop',unit:'u',steps:[10,0,10,10,0,10,0,10,10,0,10,0,10,10,0,10],targets:[{dest:'level',depth:1}]},
  {name:'Quantum Glitch Random',unit:'u',steps:[R,R,0,R,R,0,R,R,0,R,R,0,R,R,R,10],targets:[{dest:'fm',depth:.8},{dest:'pitch',depth:24},{dest:'pan',depth:.8}]},
- {name:'Hi-Tech Laser Ratchet',unit:'u',steps:[10,7,4,1,10,7,4,1,10,R,10,R,10,10,10,10],targets:[{dest:'fm',depth:.9},{dest:'pitch',depth:24}]},
- {name:'Forest Mycelium Polyrhythm',unit:'u',steps:[10,0,0,6,0,0,10,0,0,6,0,0,10,0,8,0],targets:[{dest:'scan',depth:.8},{dest:'cutoff',depth:.55}]},
- {name:'Phrygian Dominant Lead',unit:'st',steps:[0,1,4,5,7,8,10,12,10,8,7,5,4,1,0,12],targets:[{dest:'pitch',depth:12},{dest:'pan',depth:.65,alt:true}]},
+ {name:'Hi-Tech Laser Ratchet',unit:'u',steps:[10,2,10,0,8,10,0,R,10,3,10,0,9,10,R,0],targets:[{dest:'fm',depth:.9},{dest:'pitch',depth:24}]},
+ {name:'Forest Mycelium Polyrhythm',unit:'u',steps:[9,0,4,9,0,4,9,0,4,9,0,4,9,0,7,R],targets:[{dest:'scan',depth:.8},{dest:'cutoff',depth:.55}]},
+ {name:'Phrygian Dominant Lead',unit:'st',steps:[0,1,4,5,7,8,10,12,13,16,19,12,7,5,1,0],targets:[{dest:'pitch',depth:12},{dest:'pan',depth:.65,alt:true}]},
  {name:'Dark Psy Grid Chaos',unit:'u',steps:[10,R,0,R,10,0,R,R,10,R,0,10,R,R,0,R],targets:[{dest:'fm',depth:.95},{dest:'scan',depth:.85},{dest:'pan',depth:.9}]},
- {name:'Full-On Octave Bounce',unit:'st',steps:[0,12,0,12,0,12,0,24,0,12,0,12,0,12,7,12],targets:[{dest:'pitch',depth:12},{dest:'cutoff',depth:.45}]},
- {name:'Stereo Ping-Pong Gate',unit:'u',steps:[10,0,10,0,10,0,10,10,10,0,10,0,10,0,10,10],targets:[{dest:'level',depth:1},{dest:'pan',depth:.85,alt:true}]}
+ {name:'Full-On Octave Bounce',unit:'st',steps:[0,0,12,0,0,12,0,24,0,0,12,0,7,12,0,12],targets:[{dest:'pitch',depth:12},{dest:'cutoff',depth:.45}]},
+ {name:'Stereo Ping-Pong Gate',unit:'u',steps:[10,0,8,10,0,8,10,0,10,0,8,10,0,8,10,0],targets:[{dest:'level',depth:1},{dest:'pan',depth:.85,alt:true}]}
 ];
 const HIJAZ=[0,1,4,5,7,8,10,12];
 const clampN=(x,a,b,d)=>{x=Number(x);return isFinite(x)?Math.max(a,Math.min(b,x)):d};
