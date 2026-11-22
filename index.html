@@ -774,7 +774,7 @@ footer.bed {
 /* Preserve the original vertical access to controls when the expanded voice row needs more height. */
 .pages{overflow-x:hidden;overflow-y:auto}
 .page-play{height:auto;min-height:100%;grid-template-rows:minmax(210px,1.2fr) minmax(185px,1fr) minmax(94px,auto)}
-.page-fx{gap:12px!important;padding:12px!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr))!important;align-items:stretch}
+.page-fx{gap:12px!important;padding:12px!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;align-items:stretch}@media(max-width:1180px){.page-fx{grid-template-columns:repeat(2,minmax(0,1fr))!important}}.page-fx .fx-card.fx-wide{grid-column:span 2}
 .page-fx .fx-card{min-width:0;box-sizing:border-box;overflow:hidden;padding:12px!important}
 .page-fx .fx-card .fx-top{justify-content:flex-start;gap:10px;padding:8px 12px 4px!important;min-width:0}
 .page-fx .fx-card .fx-top button{position:static!important;max-width:100%;margin:0!important}
@@ -2645,6 +2645,9 @@ function defaultStateBase() {
       combOn: false, combTune: 0.35, combFb: 0.55, combMix: 0.35, lofiOn: false, lofiGrit: 0.35, lofiBits: 0.4, lofiLp: 0.45, springOn: false, springBoing: 0.55, springDecay: 0.5, springMix: 0.32,
       envOn: false, envSens: 0.65, envRes: 0.48, envRange: 0.55, ensOn: false, ensRate: 0.32, ensDepth: 0.55, ensMix: 0.42,
       djOn: false, djKillLow: false, djKillMid: false, djKillHigh: false, djHpf: 0, djLpf: 1, djCeil: 0.79,
+      rotOn: false, rotSpeed: 0.35, rotDepth: 0.65, rotMix: 0.55, vowOn: false, vowPos: 0.35, vowRate: 0.28, vowRes: 0.55,
+      apOn: false, apDiv: 0.5, apDepth: 0.7, apShape: 0.25, bpOn: false, bpRate: 0.58, bpFb: 0.48, bpMix: 0.45, rtOn: false, rtTune: 0.28, rtColor: 0.45, rtMix: 0.35,
+      tcOn: false, tcSub: 0.45, tcTube: 0.35, tcSilk: 0.35, nyOn: false, nySmash: 0.65, nyBody: 0.45, nyMix: 0.3, tlOn: false, tlAngle: 0.38, tlFocus: 0.4, tlTrim: 0.5, tlMono: false,
       sirOn: false, sirDub: 0.55, sirGrit: 0.45, sirMix: 0.45, sirHold: false,
       fgOn: false, fgSteps: [1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1], fgCut: 0.42, fgRes: 0.35, fgDepth: 0.85, tapeOn: false, tapeSat: 0.3, tapeHead: 0.45, tapeWow: 0.15,
       duckOn: false, duckDepth: 0.7, duckRelease: 0.55, duckShape: 0.35,
@@ -5356,11 +5359,49 @@ class Engine {
     // DUB SIREN: a dark band-pass into 12-bit style grit and a 145 ms slapback that feeds back through a 2.6 kHz low-pass, plus a held siren
     // (triangle with a 5.5 Hz saw wobble) that dives from 560 Hz to 190 Hz while HOLD: SIREN is down
     this.srDry = ctx.createGain(); this.srWet = ctx.createGain(); this.srWet.gain.value = 0; this.srOut = ctx.createGain(); this.srKey = '';
-    this.enOut.connect(this.srDry); this.srDry.connect(this.srOut);
+    // MOTION stages after ENSEMBLE, each passing straight through when off (dry 1, wet 0):
+    // VINTAGE ROTARY -> VOWEL MORPH -> STEREO AUTO-PAN -> BARBERPOLE PHASER -> WARM RING TREM
+    { const stage = (src) => { const dry = ctx.createGain(), wet = ctx.createGain(), out = ctx.createGain(); wet.gain.value = 0; src.connect(dry); dry.connect(out); wet.connect(out); return { dry, wet, out }; };
+      const bq = (type, f, q) => { const b = ctx.createBiquadFilter(); b.type = type; b.frequency.value = f; if (q != null) b.Q.value = q; return b; };
+      // VINTAGE ROTARY: a 3.2 kHz horn whose left and right copies swing in Doppler delay and level in opposite directions
+      this.rot = stage(this.enOut);
+      { const lp = bq('lowpass', 3200), sp = ctx.createChannelSplitter(2), mg = ctx.createChannelMerger(2), dL = ctx.createDelay(0.05), dR = ctx.createDelay(0.05); dL.delayTime.value = dR.delayTime.value = 0.006;
+        const gL = ctx.createGain(), gR = ctx.createGain(); this.rotOsc = ctx.createOscillator(); this.rotOsc.frequency.value = 1.8; const inv = ctx.createGain(); inv.gain.value = -1;
+        this.rotDep = ctx.createGain(); this.rotDep.gain.value = 0; this.rotAm = ctx.createGain(); this.rotAm.gain.value = 0;
+        this.rotOsc.connect(this.rotDep); this.rotOsc.connect(this.rotAm); this.rotDep.connect(dL.delayTime); this.rotAm.connect(gL.gain);
+        const depI = ctx.createGain(), amI = ctx.createGain(); this.rotDep.connect(inv); inv.connect(depI); depI.connect(dR.delayTime); this.rotAm.connect(amI); amI.gain.value = -1; amI.connect(gR.gain);
+        this.enOut.connect(lp); lp.connect(sp); sp.connect(dL, 0); sp.connect(dR, 1); dL.connect(gL); dR.connect(gR); gL.connect(mg, 0, 0); gR.connect(mg, 0, 1); mg.connect(this.rot.wet); this.rotOsc.start(); }
+      // VOWEL MORPH: two band-passes (the first two formants, oo -> oh -> ah -> eh, below 2.6 kHz) plus a 900 Hz low-pass body, swept by a slow LFO
+      this.vow = stage(this.rot.out);
+      { this.vowF1 = bq('bandpass', 450, 4.5); this.vowF2 = bq('bandpass', 1100, 5); const body = bq('lowpass', 900);
+        this.vowOsc = ctx.createOscillator(); this.vowOsc.frequency.value = 0.4; this.vowM1 = ctx.createGain(); this.vowM2 = ctx.createGain(); this.vowM1.gain.value = this.vowM2.gain.value = 0;
+        this.vowOsc.connect(this.vowM1); this.vowM1.connect(this.vowF1.frequency); this.vowOsc.connect(this.vowM2); this.vowM2.connect(this.vowF2.frequency); this.vowOsc.start();
+        for (const f of [this.vowF1, this.vowF2, body]) { this.rot.out.connect(f); f.connect(this.vow.wet); } }
+      // STEREO AUTO-PAN: tempo-synced, the lows below 160 Hz stay where they were (24 dB split)
+      this.ap = stage(this.vow.out);
+      { const lo1 = bq('lowpass', 160, -3.0103), lo2 = bq('lowpass', 160, -3.0103), hi1 = bq('highpass', 160, -3.0103), hi2 = bq('highpass', 160, -3.0103);
+        const sp = ctx.createChannelSplitter(2), mg = ctx.createChannelMerger(2), gL = ctx.createGain(), gR = ctx.createGain(); this.apOsc = ctx.createOscillator(); this.apOsc.frequency.value = 1;
+        this.apDep = ctx.createGain(); this.apDep.gain.value = 0; const inv = ctx.createGain(); inv.gain.value = -1;
+        this.apOsc.connect(this.apDep); this.apDep.connect(gL.gain); this.apDep.connect(inv); inv.connect(gR.gain); this.apOsc.start();
+        this.vow.out.connect(lo1); lo1.connect(lo2); lo2.connect(this.ap.wet);
+        this.vow.out.connect(hi1); hi1.connect(hi2); hi2.connect(sp); sp.connect(gL, 0); sp.connect(gR, 1); gL.connect(mg, 0, 0); gR.connect(mg, 0, 1); mg.connect(this.ap.wet); }
+      // BARBERPOLE PHASER: six all-passes spaced across 160 Hz - 2.24 kHz that glide endlessly up (or down), with feedback damped at 2.8 kHz
+      this.bp = stage(this.ap.out);
+      { const inG = ctx.createGain(); this.bpStages = Array.from({ length: 6 }, (_, i) => bq('allpass', 160 * Math.pow(14, i / 6), 1.6));
+        const lp = bq('lowpass', 2800), loop = ctx.createDelay(0.01); loop.delayTime.value = 128 / ctx.sampleRate; this.bpFb = ctx.createGain(); this.bpFb.gain.value = 0;
+        this.ap.out.connect(inG); let n = inG; for (const a of this.bpStages) { n.connect(a); n = a; } n.connect(lp); lp.connect(this.bp.wet); lp.connect(loop); loop.connect(this.bpFb); this.bpFb.connect(inG);
+        this.bpPhase = 0; this.bpLast = ctx.currentTime; }
+      // WARM RING TREM: a sine carrier (2 - 220 Hz) ring-modulating the signal low-passed at 2.6 kHz, then rolled off again by WARMTH
+      this.rt = stage(this.bp.out);
+      { const pre = bq('lowpass', 2600), vca = ctx.createGain(); vca.gain.value = 0; this.rtOsc = ctx.createOscillator(); this.rtOsc.frequency.value = 55; this.rtDep = ctx.createGain(); this.rtDep.gain.value = 0;
+        this.rtPost = bq('lowpass', 1800); this.rtOsc.connect(this.rtDep); this.rtDep.connect(vca.gain); this.rtOsc.start();
+        this.bp.out.connect(pre); pre.connect(vca); vca.connect(this.rtPost); this.rtPost.connect(this.rt.wet); }
+      this.mvOut = this.rt.out; }
+    this.mvOut.connect(this.srDry); this.srDry.connect(this.srOut);
     { this.srBp = ctx.createBiquadFilter(); this.srBp.type = 'bandpass'; this.srBp.frequency.value = 790; this.srBp.Q.value = 1.8;
       this.srCrush = ctx.createWaveShaper(); const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2600;
       const slap = ctx.createDelay(0.5); slap.delayTime.value = 0.145; this.srFb = ctx.createGain(); this.srFb.gain.value = 0;
-      this.enOut.connect(this.srBp); this.srBp.connect(this.srCrush); this.srCrush.connect(lp); lp.connect(slap); slap.connect(this.srFb); this.srFb.connect(lp);
+      this.mvOut.connect(this.srBp); this.srBp.connect(this.srCrush); this.srCrush.connect(lp); lp.connect(slap); slap.connect(this.srFb); this.srFb.connect(lp);
       lp.connect(this.srWet); slap.connect(this.srWet);
       this.srOsc = ctx.createOscillator(); this.srOsc.type = 'triangle'; this.srOsc.frequency.value = 560;
       const wob = ctx.createOscillator(); wob.type = 'sawtooth'; wob.frequency.value = 5.5; const wobG = ctx.createGain(); wobG.gain.value = 140; wob.connect(wobG); wobG.connect(this.srOsc.frequency);
@@ -5376,7 +5417,7 @@ class Engine {
     // PSY MASTER (before the limiter): low cut -> air shelf -> warm low-pass -> high tame shelf -> mid/side, the side high-passed below the mono frequency
     // (so the lows sum to mono with no crossover dip) and scaled by MID WIDE above it
     this.mstDry = ctx.createGain(); this.mstWet = ctx.createGain(); this.mstWet.gain.value = 0;
-    this.djIn = ctx.createGain(); this.tpOut.connect(this.mstDry); this.mstDry.connect(this.djIn);
+    this.djIn = ctx.createGain(); this.mtIn = ctx.createGain(); this.tpOut.connect(this.mstDry); this.mstDry.connect(this.mtIn);
     this.mstHp = ctx.createBiquadFilter(); this.mstHp.type = 'highpass'; this.mstHp.frequency.value = 30; this.mstHp.Q.value = -3.0103;
     this.mstShelf = ctx.createBiquadFilter(); this.mstShelf.type = 'highshelf'; this.mstShelf.frequency.value = 8500; this.mstShelf.gain.value = 2.8;
     this.mstWarm = ctx.createBiquadFilter(); this.mstWarm.type = 'lowpass'; this.mstWarm.frequency.value = 16000; this.mstWarm.Q.value = -3.0103;
@@ -5391,7 +5432,27 @@ class Engine {
       sp.connect(sideIn, 0); sp.connect(rNeg, 1); rNeg.connect(sideIn); sideIn.connect(side);
       side.connect(this.mstSide1); this.mstSide1.connect(this.mstSide2); this.mstWidth = ctx.createGain(); this.mstSide2.connect(this.mstWidth);
       mid.connect(mg, 0, 0); mid.connect(mg, 0, 1); this.mstWidth.connect(mg, 0, 0); this.mstWidth.connect(sInv); sInv.connect(mg, 0, 1);
-      mg.connect(this.mstWet); this.mstWet.connect(this.djIn); }
+      mg.connect(this.mstWet); this.mstWet.connect(this.mtIn); }
+    // MASTER: TUBE CONSOLE -> NY PARALLEL GLUE -> MASTER TILT & MONO, then DJ ISOLATOR
+    { const bq = (type, f, q, g) => { const b = ctx.createBiquadFilter(); b.type = type; b.frequency.value = f; if (q != null) b.Q.value = q; if (g != null) b.gain.value = g; return b; };
+      // TUBE CONSOLE: a 55 Hz low shelf, soft asymmetric (even-harmonic) tube saturation at unity small-signal gain, and a transformer roll-off 5.5 - 16 kHz
+      this.tcDry = ctx.createGain(); this.tcWet = ctx.createGain(); this.tcWet.gain.value = 0; const tcOut = ctx.createGain(); this.tcKey = -1;
+      this.tcShelf = bq('lowshelf', 55, null, 2.7); this.tcShaper = ctx.createWaveShaper(); this.tcShaper.oversample = '2x'; this.tcSilk = bq('lowpass', 11000, 0.55);
+      this.mtIn.connect(this.tcDry); this.tcDry.connect(tcOut); this.mtIn.connect(this.tcShelf); this.tcShelf.connect(this.tcShaper); this.tcShaper.connect(this.tcSilk); this.tcSilk.connect(this.tcWet); this.tcWet.connect(tcOut);
+      // NY PARALLEL GLUE: the mix stays; a low-passed copy is squashed hard and blended in underneath
+      const nyOut = ctx.createGain(); this.nyLp = bq('lowpass', 3200); this.nyComp = ctx.createDynamicsCompressor(); this.nyComp.knee.value = 6; this.nyComp.attack.value = 0.008; this.nyComp.release.value = 0.14;
+      this.nyComp.threshold.value = -25; this.nyComp.ratio.value = 12; this.nyWet = ctx.createGain(); this.nyWet.gain.value = 0;
+      tcOut.connect(nyOut); tcOut.connect(this.nyLp); this.nyLp.connect(this.nyComp); this.nyComp.connect(this.nyWet); this.nyWet.connect(nyOut);
+      // MASTER TILT & MONO: low shelf 320 Hz against high shelf 1.8 kHz (the high side capped at +3.5 dB), a 95 Hz sub focus, MONO CHECK, output trim
+      this.tlDry = ctx.createGain(); this.tlWet = ctx.createGain(); this.tlWet.gain.value = 0; const tlOut = ctx.createGain();
+      this.tlLow = bq('lowshelf', 320, null, 0); this.tlHigh = bq('highshelf', 1800, null, 0); this.tlFocus = bq('peaking', 95, 0.9, 0);
+      nyOut.connect(this.tlDry); this.tlDry.connect(tlOut); nyOut.connect(this.tlLow); this.tlLow.connect(this.tlHigh); this.tlHigh.connect(this.tlFocus); this.tlFocus.connect(this.tlWet); this.tlWet.connect(tlOut);
+      const sp = ctx.createChannelSplitter(2), mg = ctx.createChannelMerger(2); this.tlSum = ctx.createGain(); this.tlSum.gain.value = 0; this.tlTrim = ctx.createGain();
+      const pL = ctx.createGain(), pR = ctx.createGain(); tlOut.connect(sp); sp.connect(pL, 0); sp.connect(pR, 1);
+      const sum = ctx.createGain(); sp.connect(sum, 0); sp.connect(sum, 1); sum.gain.value = 0.5; sum.connect(this.tlSum);
+      this.tlPassL = pL; this.tlPassR = pR;
+      pL.connect(mg, 0, 0); pR.connect(mg, 0, 1); this.tlSum.connect(mg, 0, 0); this.tlSum.connect(mg, 0, 1);
+      mg.connect(this.tlTrim); this.tlTrim.connect(this.djIn); }
     // DJ ISOLATOR & MASTER (last before the limiter): straight through until a KILL is pressed, then a crossfade onto a 3-band
     // Linkwitz-Riley split (180 Hz / 2.8 kHz, 24 dB) with a gain per band; then the DJ high-pass and low-pass sweeps; LIMIT CEIL sets the limiter
     { const bq = (type, f) => { const b = ctx.createBiquadFilter(); b.type = type; b.frequency.value = f; b.Q.value = -3.0103; return b; };
@@ -5540,6 +5601,15 @@ class Engine {
     }
   }
 
+  // BARBERPOLE PHASER glide: each all-pass rides its own place on a 160 Hz - 2.24 kHz spiral; one that runs off the top re-enters at the bottom
+  barberTick() {
+    if (!this.ctx || !this.bpOnNow) return;
+    const t = this.ctx.currentTime, dt = Math.min(0.1, Math.max(0, t - this.bpLast)); this.bpLast = t;
+    this.bpPhase = ((this.bpPhase + (this.bpSpeed || 0) * dt) % 1 + 1) % 1;
+    this.bpStages.forEach((a, i) => { const p = (this.bpPhase + i / 6) % 1, hz = 160 * Math.pow(14, p), cur = a.frequency.value;
+      if (Math.abs(Math.log(hz / Math.max(1, cur))) > 1.5) { a.frequency.cancelScheduledValues(t); a.frequency.setValueAtTime(hz, t); } else a.frequency.setTargetAtTime(hz, t, 0.015); });
+  }
+
   applyFx() {
     const ctx = this.ctx;
     const fx = this.state.fx;
@@ -5570,6 +5640,40 @@ class Engine {
       const en = !!fx.ensOn, er = 0.1 + cl(fx.ensRate, 0, 1, 0.32) * 2.4, ed = en ? cl(fx.ensDepth, 0, 1, 0.55) * 0.0038 : 0, em = cl(fx.ensMix, 0, 1, 0.42);
       set(this.enLfo1.frequency, er); set(this.enLfo2.frequency, er * 1.47); set(this.enDepL.gain, ed); set(this.enDepR.gain, -ed);
       set(this.enWet.gain, en ? em : 0); set(this.enDry.gain, en ? 1 - em * 0.35 : 1);
+      { const on = (k) => !!fx[k], v = (k, d) => cl(fx[k], 0, 1, d), bpmNow = (this.state.seq && this.state.seq.bpm) || this.state.bpm || 130, beatS = 60 / Math.max(40, Math.min(240, bpmNow));
+        // VINTAGE ROTARY
+        const ro = on('rotOn'), rd = v('rotDepth', 0.65), rm = v('rotMix', 0.55);
+        set(this.rotOsc.frequency, 0.4 + Math.pow(v('rotSpeed', 0.35), 1.8) * 6.8); set(this.rotDep.gain, ro ? rd * 0.0018 : 0); set(this.rotAm.gain, ro ? rd * 0.35 : 0);
+        set(this.rot.wet.gain, ro ? rm : 0); set(this.rot.dry.gain, ro ? 1 - rm * 0.45 : 1);
+        // VOWEL MORPH
+        const vo = on('vowOn'), vp = v('vowPos', 0.35), vr = v('vowRate', 0.28), vq = 2.5 + v('vowRes', 0.55) * 7.5, manual = vr < 0.04;
+        set(this.vowF1.frequency, 280 + vp * 460); set(this.vowF2.frequency, 820 + vp * 1050); set(this.vowF1.Q, vq); set(this.vowF2.Q, vq * 1.1);
+        set(this.vowOsc.frequency, manual ? 0.001 : 0.08 + Math.pow(vr, 1.6) * 3.5); set(this.vowM1.gain, manual ? 0 : 160); set(this.vowM2.gain, manual ? 0 : 420);
+        set(this.vow.wet.gain, vo ? 0.85 : 0); set(this.vow.dry.gain, vo ? 0.25 : 1);
+        // STEREO AUTO-PAN (1/8, 3/16, 1/4, 1/2, 1 bar per full left-right-left orbit)
+        const ao = on('apOn'), idx = Math.min(4, Math.floor(v('apDiv', 0.5) * 4.99)), beatsPer = [0.5, 0.75, 1, 2, 4][idx];
+        this.apOsc.type = v('apShape', 0.25) > 0.5 ? 'triangle' : 'sine'; set(this.apOsc.frequency, 1 / (beatS * beatsPer)); set(this.apDep.gain, ao ? v('apDepth', 0.7) * 0.48 : 0);
+        set(this.ap.wet.gain, ao ? 1 : 0); set(this.ap.dry.gain, ao ? 0 : 1);
+        // BARBERPOLE PHASER (its glide runs on a timer, below)
+        const bo = on('bpOn'), bm = v('bpMix', 0.45); set(this.bpFb.gain, bo ? v('bpFb', 0.48) * 0.72 : 0); set(this.bp.wet.gain, bo ? bm : 0); set(this.bp.dry.gain, bo ? 1 - bm * 0.35 : 1);
+        this.bpSpeed = (v('bpRate', 0.58) - 0.5) * 1.4; this.bpOnNow = bo;
+        if (bo && !this.bpTimer) this.bpTimer = setInterval(() => this.barberTick(), 25); else if (!bo && this.bpTimer) { clearInterval(this.bpTimer); this.bpTimer = 0; }
+        // WARM RING TREM
+        const rto = on('rtOn'), rtm = v('rtMix', 0.35); set(this.rtOsc.frequency, 2 + Math.pow(v('rtTune', 0.28), 2.2) * 218); set(this.rtDep.gain, rto ? 0.85 : 0);
+        set(this.rtPost.frequency, 900 + v('rtColor', 0.45) * 2100); set(this.rt.wet.gain, rto ? rtm : 0); set(this.rt.dry.gain, rto ? 1 - rtm * 0.4 : 1);
+        // TUBE CONSOLE
+        const tco = on('tcOn'), tt = v('tcTube', 0.35); set(this.tcShelf.gain, v('tcSub', 0.45) * 6); set(this.tcSilk.frequency, 5500 + (1 - v('tcSilk', 0.35)) * 10500);
+        if (Math.abs(tt - this.tcKey) > 1e-6) { this.tcKey = tt; const n = 2048, k = 1 + tt * 4.2, c = new Float32Array(n); for (let i = 0; i < n; i++) { const x = (i * 2) / (n - 1) - 1; c[i] = Math.tanh((x + 0.08 * tt * x * x) * k) / k * (k / (1 + (k - 1) * 0.6)); } this.tcShaper.curve = c; }
+        set(this.tcWet.gain, tco ? 1 : 0); set(this.tcDry.gain, tco ? 0 : 1);
+        // NY PARALLEL GLUE
+        const sm = v('nySmash', 0.65); set(this.nyComp.ratio, 4 + sm * 12); set(this.nyComp.threshold, -16 - sm * 14); set(this.nyLp.frequency, 1600 + (1 - v('nyBody', 0.45)) * 3200);
+        set(this.nyWet.gain, on('nyOn') ? v('nyMix', 0.3) * 0.85 : 0);
+        // MASTER TILT & MONO
+        const tlo = on('tlOn'), tilt = (v('tlAngle', 0.38) - 0.5) * 10, mono = tlo && on('tlMono');
+        set(this.tlLow.gain, -tilt); set(this.tlHigh.gain, Math.min(3.5, tilt * 0.75)); set(this.tlFocus.gain, v('tlFocus', 0.4) * 4.5);
+        set(this.tlWet.gain, tlo ? 1 : 0); set(this.tlDry.gain, tlo ? 0 : 1);
+        set(this.tlPassL.gain, mono ? 0 : 1); set(this.tlPassR.gain, mono ? 0 : 1); set(this.tlSum.gain, mono ? 1 : 0);
+        set(this.tlTrim.gain, Math.pow(10, (tlo ? (v('tlTrim', 0.5) - 0.5) * 12 : 0) / 20)); }
       const so = !!fx.sirOn, sh = !!fx.sirHold, sd = cl(fx.sirDub, 0, 1, 0.55), sg = cl(fx.sirGrit, 0, 1, 0.45), slv = Math.max(4, Math.round(64 - (0.25 + sg * 0.55) * 56)), sdr = 1 + sg * 3.5, skey = slv + ':' + sdr.toFixed(3);
       if (skey !== this.srKey) { this.srKey = skey; const n = 2048, c = new Float32Array(n); for (let i = 0; i < n; i++) c[i] = Math.round(Math.tanh(((i * 2) / (n - 1) - 1) * sdr) / sdr * slv) / slv; this.srCrush.curve = c; }
       set(this.srBp.frequency, 340 + sd * 820); set(this.srFb.gain, so || sh ? 0.2 + sd * 0.58 : 0); set(this.srWet.gain, so || sh ? cl(fx.sirMix, 0, 1, 0.45) * 1.2 : 0);
@@ -7037,6 +7141,25 @@ function mount(stage, engine) {
       addKnob(knobs, { path: 'fx.envRange', label: 'RANGE', min: 0, max: 1, def: 0.55, format: (v) => Math.round(580 + v * 2600) + ' Hz' });
       card.append(knobs);
     }));
+    // a standard 3-knob card with an ON switch (and optional extra controls after the knobs)
+    const simpleCard = (title, copy, onPath, knobsSpec, extra) => fxCard(title, copy, (card) => {
+      const top = el('div', 'fx-top'); addSwitch(top, { path: onPath, label: 'ON', liveLabel: true }); card.append(top);
+      const knobs = el('div', 'knobs'); knobsSpec.forEach((k) => addKnob(knobs, Object.assign({ min: 0, max: 1 }, k))); card.append(knobs);
+      if (extra) extra(card);
+    });
+    const pct = (v) => Math.round(v * 100) + '%';
+    pageNode.append(simpleCard('VINTAGE ROTARY', 'A two-speed rotating speaker: the horn (rolled off at 3.2 kHz) swings in Doppler pitch and level between left and right. ROTOR runs from a slow chorale (0.4 Hz) to a fast tremolo (7 Hz). Rich 3D movement for pads, organs and dub chords.', 'fx.rotOn', [
+      { path: 'fx.rotSpeed', label: 'ROTOR', def: 0.35, format: (v) => (0.4 + Math.pow(v, 1.8) * 6.8).toFixed(1) + ' Hz' }, { path: 'fx.rotDepth', label: 'DOPPLER', def: 0.65, format: pct }, { path: 'fx.rotMix', label: 'MIX', def: 0.55, format: pct }]));
+    pageNode.append(simpleCard('VOWEL MORPH', 'A talking filter: two vocal formants move from "oo" through "oh" and "ah" to "eh", all below 2.6 kHz. Set VOWEL by hand (LFO at MANUAL) or let the LFO talk; THROAT sets how sharp the formants are.', 'fx.vowOn', [
+      { path: 'fx.vowPos', label: 'VOWEL', def: 0.35, format: (v) => v < 0.25 ? 'OO' : v < 0.5 ? 'OH' : v < 0.75 ? 'AH' : 'EH' }, { path: 'fx.vowRate', label: 'LFO', def: 0.28, format: (v) => v < 0.04 ? 'MANUAL' : (0.08 + Math.pow(v, 1.6) * 3.5).toFixed(2) + ' Hz' },
+      { path: 'fx.vowRes', label: 'THROAT', def: 0.55, format: pct }]));
+    pageNode.append(simpleCard('STEREO AUTO-PAN', 'Orbits the sound left and right in time with the tempo (one full orbit per 1/8, 3/16, 1/4, 1/2 or a bar). Everything below 160 Hz stays where it is, so the sub never wanders.', 'fx.apOn', [
+      { path: 'fx.apDiv', label: 'SYNC', def: 0.5, format: (v) => ['1/8', '3/16', '1/4', '1/2', '1 BAR'][Math.min(4, Math.floor(v * 4.99))] }, { path: 'fx.apDepth', label: 'ORBIT', def: 0.7, format: pct },
+      { path: 'fx.apShape', label: 'WAVE', def: 0.25, format: (v) => v > 0.5 ? 'TRI' : 'SINE' }]));
+    pageNode.append(simpleCard('BARBERPOLE PHASER', 'An endless phaser: six notches glide up (SPIRAL right of centre) or down (left) forever, across 160 Hz - 2.2 kHz, with feedback damped at 2.8 kHz so it never whistles. At the centre it stands still.', 'fx.bpOn', [
+      { path: 'fx.bpRate', label: 'SPIRAL', def: 0.58, format: (v) => { const sp = (v - 0.5) * 1.4; return (sp >= 0 ? '↑' : '↓') + Math.abs(sp).toFixed(2); } }, { path: 'fx.bpFb', label: 'RESONATE', def: 0.48, format: pct }, { path: 'fx.bpMix', label: 'MIX', def: 0.45, format: pct }]));
+    pageNode.append(simpleCard('WARM RING TREM', 'A ring modulator kept warm: at low CARRIER settings it is a deep tremolo, higher up it adds wooden, bell-like harmonics and bubbly dub pulses. The input is cut above 2.6 kHz and WARMTH rolls the result off again (0.9 - 3 kHz).', 'fx.rtOn', [
+      { path: 'fx.rtTune', label: 'CARRIER', def: 0.28, format: (v) => Math.round(2 + Math.pow(v, 2.2) * 218) + ' Hz' }, { path: 'fx.rtColor', label: 'WARMTH', def: 0.45, format: (v) => ((900 + v * 2100) / 1000).toFixed(1) + ' kHz' }, { path: 'fx.rtMix', label: 'MIX', def: 0.35, format: pct }]));
     pageNode.append(fxCard('ENSEMBLE', 'A warm stereo ensemble in the style of old bucket-brigade chorus units: two lines swept at different rates in opposite directions, rolled off at 3.4 kHz so the swirl stays lush, never fizzy. Turns mono leads and chords wide.', (card) => {
       const top = el('div', 'fx-top'); addSwitch(top, { path: 'fx.ensOn', label: 'ON', liveLabel: true }); card.append(top);
       const knobs = el('div', 'knobs');
@@ -7150,8 +7273,16 @@ function mount(stage, engine) {
       ['pointerup', 'pointercancel'].forEach((ev) => box.addEventListener(ev, () => { drag = false; }));
       const center = el('button', 'seq-act', 'CENTER'); center.type = 'button'; center.addEventListener('click', () => apply(0.35, 0.25));
       const row = el('div', 'xy-row'); row.append(read, center);
-      card.append(box, row); paint();
+      card.append(box, row); card.classList.add('fx-wide'); paint();
     }));
+    pageNode.append(simpleCard('TUBE CONSOLE', 'Mix-bus glue: a low shelf at 55 Hz for sub punch, soft tube saturation (even harmonics, no level jump) and a transformer roll-off (SILK, 16 down to 5.5 kHz) to keep the top silky.', 'fx.tcOn', [
+      { path: 'fx.tcSub', label: '55 Hz', def: 0.45, format: (v) => '+' + (v * 6).toFixed(1) + ' dB' }, { path: 'fx.tcTube', label: 'TUBE', def: 0.35, format: pct }, { path: 'fx.tcSilk', label: 'SILK', def: 0.35, format: (v) => ((5500 + (1 - v) * 10500) / 1000).toFixed(1) + ' kHz' }]));
+    pageNode.append(simpleCard('NY PARALLEL GLUE', 'Parallel compression: a copy of the mix is low-passed (BODY, 1.6 - 4.8 kHz) and squashed hard (SMASH), then blended in under the untouched mix, so breaks and basslines punch through big dub tails without spiky hats.', 'fx.nyOn', [
+      { path: 'fx.nySmash', label: 'SMASH', def: 0.65, format: (v) => Math.round(4 + v * 12) + ':1' }, { path: 'fx.nyBody', label: 'BODY', def: 0.45, format: (v) => ((1600 + (1 - v) * 3200) / 1000).toFixed(1) + ' kHz' }, { path: 'fx.nyMix', label: 'BLEND', def: 0.3, format: pct }]));
+    pageNode.append(simpleCard('MASTER TILT & MONO', 'TILT leans the whole mix warmer (left) or brighter (right) around 320 Hz - 1.8 kHz, with the bright side capped at +3.5 dB; SUB FOCUS lifts 95 Hz; TRIM sets the output. MONO CHECK sums to mono to test how the mix holds up on a club system.', 'fx.tlOn', [
+      { path: 'fx.tlAngle', label: 'TILT', def: 0.38, format: (v) => { const d = (v - 0.5) * 10; return (d >= 0 ? '+' : '') + d.toFixed(1) + ' dB'; } }, { path: 'fx.tlFocus', label: 'SUB FOCUS', def: 0.4, format: (v) => '+' + (v * 4.5).toFixed(1) + ' dB' },
+      { path: 'fx.tlTrim', label: 'TRIM', def: 0.5, format: (v) => { const d = (v - 0.5) * 12; return (d >= 0 ? '+' : '') + d.toFixed(1) + ' dB'; } }],
+      (card) => { const row = el('div', 'fx-top'); addSwitch(row, { path: 'fx.tlMono', label: 'MONO CHECK' }); row.firstChild.style.width = '100%'; card.append(row); }));
     pageNode.append(fxCard('PSY MASTER', 'Club-ready low end: everything below SUB MONO is summed to mono (leads, delays and shimmer above it stay wide), LOW CUT clears rumble, PSY AIR adds a shelf at 8.5 kHz, MID WIDE sets the width above it, HIGH TAME eases everything above 3.2 kHz, WARM rolls the top off smoothly (16 down to 4.5 kHz) to take the fizz out of long passages.', (card) => {
       const top = el('div', 'fx-top'); addSwitch(top, { path: 'fx.mstOn', label: 'ON', liveLabel: true }); card.append(top);
       const knobs = el('div', 'knobs');
@@ -7177,9 +7308,9 @@ function mount(stage, engine) {
     // group the cards by job, in signal-sense order; anything not listed keeps its place at the end, SIGNAL info last
     const cards = new Map([...pageNode.querySelectorAll(':scope > .fx-card')].map((c) => [c.querySelector('.fx-head h3').textContent, c]));
     [['COLOUR', ['DRIVE', 'CRUSH', 'VINYL & LO-FI', 'ANALOG TAPE']],
-     ['MOTION', ['FILTER', 'ENVELOPE FILTER', 'PSY FILTER GATE', 'PHASER', 'CHORUS', 'ENSEMBLE', 'TREMOLO', 'RESO COMB', 'PSY FREQ SHIFT']],
+     ['MOTION', ['FILTER', 'ENVELOPE FILTER', 'PSY FILTER GATE', 'PHASER', 'CHORUS', 'ENSEMBLE', 'TREMOLO', 'RESO COMB', 'PSY FREQ SHIFT', 'VINTAGE ROTARY', 'VOWEL MORPH', 'STEREO AUTO-PAN', 'BARBERPOLE PHASER', 'WARM RING TREM', 'X/Y MORPH']],
      ['SPACE', ['DELAY', 'PING-PONG', 'MULTIBAND', 'DUB SPACE ECHO', 'DUB SIREN', 'REVERB', 'SPRING TANK', 'SHIMMER']],
-     ['MASTER', ['WIDTH', 'COMPRESSOR', 'SIDECHAIN', 'PSY MASTER', 'DJ ISOLATOR', 'X/Y MORPH']]].forEach(([label, names]) => {
+     ['MASTER', ['WIDTH', 'COMPRESSOR', 'SIDECHAIN', 'PSY MASTER', 'DJ ISOLATOR', 'TUBE CONSOLE', 'NY PARALLEL GLUE', 'MASTER TILT & MONO']]].forEach(([label, names]) => {
       pageNode.append(el('div', 'fx-group', label));
       names.forEach((n) => { const c = cards.get(n); if (c) { pageNode.append(c); cards.delete(n); } });
     });
