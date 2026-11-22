@@ -786,6 +786,7 @@ footer.bed {
 .page-fx .fx-card .fx-top{padding:4px 2px 0!important}
 .page-fx .fx-card .fx-note{margin:auto 2px 0!important;padding-top:10px;border-top:1px solid #ffffff10;color:var(--dim);font-size:10px;line-height:1.45}
 .page-fx .fx-card .fx-note:first-of-type{margin-top:auto!important}
+.xy-box{position:relative;height:150px;margin-top:4px;background:rgba(0,0,0,.25);border:1px solid var(--line,#353a47);border-radius:8px;cursor:crosshair;touch-action:none;overflow:hidden}.xy-box .xy-v,.xy-box .xy-h{position:absolute;background:var(--line,#262a34);pointer-events:none}.xy-box .xy-v{left:50%;top:0;bottom:0;width:1px}.xy-box .xy-h{top:50%;left:0;right:0;height:1px}.xy-dot{position:absolute;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent);pointer-events:none}.xy-row{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:11px}.xy-row .xy-read{flex:1;opacity:.8}.xy-row .seq-act{padding:3px 10px}
 .desk-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px;padding-top:8px;border-top:1px solid var(--line, #2d313d);font-size:11px}.desk-bar .desk-status{flex:1 1 100%;min-width:0;opacity:.8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.desk-bar .seq-act{padding:3px 8px;flex:1}
 .page-fx .fx-group{grid-column:1/-1;margin:-4px 0 -8px;padding:0 2px 3px;font-size:9px;line-height:1.2;font-weight:800;letter-spacing:.2em;color:var(--accent);border-bottom:1px solid #ffffff10}
 .page-fx .fx-about{grid-column:1/-1}
@@ -2640,7 +2641,7 @@ function defaultStateBase() {
       busFilter: 0, busFilterRes: 0.2,
       chorusOn: false, chorusRate: 0.35, chorusDepth: 0.2, chorusMix: 0.15, chorusHp: 250,
       mstOn: false, mstMono: 140, mstLowCut: 30, mstAir: 2.8, mstWarm: 0, mstWidth: 1, mstTame: 0,
-      fsOn: false, fsShift: 4, fsFb: 0.25, fsMix: 0.35, dubOn: false, dubDiv: 1, dubFb: 0.58, dubMix: 0.38, dubThrow: false,
+      fsOn: false, fsShift: 4, fsFb: 0.25, fsMix: 0.35, xyX: 0.35, xyY: 0.35, dubOn: false, dubDiv: 1, dubFb: 0.58, dubMix: 0.38, dubThrow: false,
       combOn: false, combTune: 0.35, combFb: 0.55, combMix: 0.35, lofiOn: false, lofiGrit: 0.35, lofiBits: 0.4, lofiLp: 0.45, springOn: false, springBoing: 0.55, springDecay: 0.5, springMix: 0.32,
       envOn: false, envSens: 0.65, envRes: 0.48, envRange: 0.55, ensOn: false, ensRate: 0.32, ensDepth: 0.55, ensMix: 0.42,
       djOn: false, djKillLow: false, djKillMid: false, djKillHigh: false, djHpf: 0, djLpf: 1, djCeil: 0.79,
@@ -4143,6 +4144,327 @@ const PSY_LFOSEQ_PRESETS = (() => {
     s.seq.steps = Array.from({ length: 64 }, (_, i) => { const bar = Math.floor(i / 16), st = i % 16, acc = st === 2 || st === 6 || st === 10 || (bar === 3 && st >= 12);
       return { on: true, note: 38 + deg[st], vel: acc ? 124 : 88, accent: acc, slide: st === 5 || st === 13 || (bar === 3 && st === 14) }; });
   }));
+  // 27-45. 90s chill-out, world-dub and tribal-breaks pack. Pads marked PLAYABLE have no sequence: hold chords on the keys.
+  const M = (src, dest, amount, target) => ({ src, dest, amount, target });
+  const breath = (a) => seq(Array.from({ length: 64 }, (_, i) => ({ m: 'step', v: Math.sin((i / 64) * Math.PI) * a + 0.15 })), { div: '1/8', length: 64, slew: 0.45, pattern: 'Slow breath swell' });
+  const playable = (s) => { s.seq.length = 16; s.seq.steps = Array.from({ length: 16 }, () => ({ on: false, note: 50, vel: 100, accent: false, slide: false })); };
+  const groove = (s, bpm, swing, len, fn, target) => { s.seq.bpm = bpm; s.seq.swing = swing; s.seq.length = len; if (target) s.seq.target = target;
+    s.seq.steps = Array.from({ length: len }, (_, i) => fn(Math.floor(i / 16), i % 16, i)); };
+  const space = (s, o) => Object.assign(s.fx, { delaySync: '1/8d', ppOn: true, ppSync: '3/16' }, o);
+  // level lift for soft pads and sparse grooves: oscillators and layers up, filters untouched (so they get louder, not brighter)
+  const lift = (s, k) => ['A', 'B'].forEach((id) => { const Ly = s.layers[id]; if (!Ly || (id === 'B' && !Ly.enabled)) return; Ly.level = Math.min(1, (Ly.level || 0.8) * k);
+    (Ly.osc || []).forEach((o) => { if (o && o.level > 0) o.level = Math.min(1, o.level * k); }); });
+  P.push(preset('LFOSEQ Psy Solstice Dub Choir 94', (s) => {   // PLAYABLE
+    s.polyphony = 5; s.glide = 0.08; s.unison = 4; s.detune = 15;
+    Object.assign(s.layers.A, { level: 0.84, character: 0.55 });
+    s.layers.A.osc = [osc('saw', -1, 0, -7, 0.8, 0.5), osc('saw', 0, 0, 7, 0.75, 0.5), osc('triangle', 0, 7, 0, 0.45, 0.5)];
+    s.layers.A.filter = { type: 'lowpass', cutoff: 640, res: 0.28, env: 0.35, lfo: 0.35, key: 0.3, slope: 1 };
+    s.layers.A.amp = env(0.95, 1.4, 0.88, 2.2); s.layers.A.filt = env(1.2, 1.2, 0.65, 2.0);
+    s.layers.B = layer({ enabled: true, level: 0.52, osc: [osc('triangle', 0, 0, -4, 0.75, 0.5), osc('sine', 1, 0, 4, 0.45, 0.5), osc('pink', 0, 0, 0, 0.16, 0.85)],
+      filter: { type: 'formant', cutoff: 480, res: 0.52, vowel: 0.15, env: 0.25, lfo: 0.4, key: 0.25 }, amp: env(1.3, 1.5, 0.85, 2.4) });
+    lfos(s, { 0: L({ wave: 'sine', rate: 0.06 }) });
+    s.mod = [M('lfo1', 'cutoff', 0.42, 'A'), M('lfo1', 'vowel', 0.38, 'B'), M('lfo1', 'pan', 0.45, 'B')];
+    space(s, { chorusOn: true, chorusRate: 0.2, chorusMix: 0.32, delayFb: 0.48, delayWet: 0.28, ppFb: 0.5, ppMix: 0.3, ppLp: 1900, ppHp: 240, reverbWet: 0.52, reverbDecay: 5.2 });
+    playable(s);
+    lift(s, 1.4);
+  }));
+  P.push(preset('LFOSEQ Psy Alien Acid Skank 93', (s) => {
+    s.polyphony = 2; s.glide = 0.045; s.unison = 2; s.detune = 12;
+    Object.assign(s.layers.A, { level: 0.88, character: 0.55, fmMode: 'fm', fmRatio: 1.0, fmIndex: 0.35 });
+    s.layers.A.osc = [osc('square', -1, 0, -4, 0.85, 0.32), osc('saw', 0, 0, 4, 0.65, 0.5), osc('sine', -2, 0, 0, 0.55, 0.5)]; s.layers.A.osc[0].sub = 0.45;
+    s.layers.A.filter = { type: 'lowpass', cutoff: 480, res: 0.62, env: 0.68, lfo: 0.22, key: 0.3, slope: 1 };
+    s.layers.A.amp = env(0.004, 0.21, 0.18, 0.12); s.layers.A.filt = env(0.004, 0.18, 0.1, 0.1);
+    s.layers.B = layer({ enabled: true, level: 0.48, osc: [osc('triangle', 0, 7, -5, 0.75, 0.5), osc('triangle', 0, 10, 5, 0.65, 0.5), osc('sine', 0, 0, 0, 0, 0.5)],
+      filter: { type: 'lowpass', cutoff: 780, res: 0.38, env: 0.55, lfo: 0.25, key: 0.3, slope: 1 }, amp: env(0.008, 0.2, 0, 0.16) });
+    const skank = [0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0];
+    lfos(s, { 0: L({ wave: 'sine', rate: 0.1 }), 2: L({ wave: 'square', rate: 1, routes: [R('gate', 0.9, 'B'), R('cutoff', 0.32, 'A'), R('pan', 0.55, 'B')],
+      seq: seq(Array.from({ length: 64 }, (_, i) => ({ m: 'step', v: skank[i % 16] })), { length: 64, slew: 0.06, pattern: 'Off-beat skank gate' }) }) });
+    s.lfoSeq = arrange([[0, 2], [0, 2], [0, 2], [0, 2]]);
+    space(s, { drive: 0.28, phaserOn: true, phaserRate: 0.16, phaserWet: 0.3, delayFb: 0.46, delayWet: 0.26, ppFb: 0.48, ppMix: 0.28, ppLp: 1950, ppHp: 250, reverbWet: 0.38, reverbDecay: 3.8 });
+    const mask = [1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1], pool = [0, 0, 3, 5, 7, 10, 12];
+    groove(s, 134, 0.15, 64, (bar, st, i) => { const on = mask[st] === 1 || (bar === 3 && st >= 12), acc = st === 0 || st === 3 || st === 10 || (bar === 3 && st >= 12);
+      return { on, note: 38 + (bar === 2 ? 5 : 0) + (st === 0 ? 0 : pool[(i * 3 + bar) % pool.length]), vel: acc ? 122 : 90, accent: acc, slide: on && (st === 2 || st === 11) }; }, 'both');
+  }));
+  P.push(preset('LFOSEQ Psy Dub Caravan 95', (s) => {
+    s.polyphony = 2; s.glide = 0.035; s.unison = 3; s.detune = 13;
+    Object.assign(s.layers.A, { level: 0.86, character: 0.5, fmMode: 'pd', pdDepth: 0.25, pdCurve: 'sine' });
+    s.layers.A.osc = [osc('saw', 0, 0, -5, 0.8, 0.5), osc('triangle', 0, 7, 5, 0.65, 0.5), osc('sine', -1, 0, 0, 0.5, 0.5)];
+    s.layers.A.filter = { type: 'lowpass', cutoff: 560, res: 0.44, env: 0.64, lfo: 0.28, key: 0.3, slope: 1 };
+    s.layers.A.amp = env(0.004, 0.2, 0.2, 0.12); s.layers.A.filt = env(0.004, 0.18, 0.12, 0.1);
+    s.layers.B = layer({ enabled: true, level: 0.72, osc: [osc('triangle', -1, 0, 0, 0.85, 0.5), osc('sine', -2, 0, 0, 0.75, 0.5), osc('sine', 0, 0, 0, 0, 0.5)],
+      filter: { type: 'lowpass', cutoff: 185, res: 0.18, env: 0.55, lfo: 0.1, key: 0.15, slope: 1 }, amp: env(0.003, 0.22, 0.18, 0.1) });
+    lfos(s, { 0: L({ wave: 'sine', rate: 0.07 }), 2: L({ wave: 'sine', rate: 1, routes: [R('cutoff', 0.38, 'A'), R('pan', 0.52, 'A')], seq: breath(0.8) }) });
+    s.lfoSeq = arrange([[0, 2], [0, 2], [0, 2], [0, 2]]);
+    space(s, { drive: 0.26, chorusOn: true, chorusMix: 0.28, delayFb: 0.45, delayWet: 0.26, ppFb: 0.46, ppMix: 0.28, ppLp: 1900, ppHp: 250, reverbWet: 0.4, reverbDecay: 4.0 });
+    const sc = [0, 0, 1, 4, 5, 7, 8, 10, 12], mask = [1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0];
+    groove(s, 136, 0.12, 64, (bar, st, i) => { const on = mask[st] === 1 || (bar === 3 && st >= 12), acc = st % 4 === 0;
+      return { on, note: 40 + (st === 0 ? 0 : sc[(i * 2 + bar) % sc.length]), vel: acc ? 122 : 88, accent: acc, slide: on && (st === 3 || st === 7 || st === 11) }; }, 'both');
+  }));
+  P.push(preset('LFOSEQ Psy Time-Stretch Choir 94', (s) => {   // PLAYABLE
+    s.polyphony = 4; s.glide = 0.09; s.unison = 4; s.detune = 16;
+    Object.assign(s.layers.A, { level: 0.84, character: 0.65 });
+    s.layers.A.osc = [osc('saw', -1, 0, -6, 0.8, 0.5), osc('triangle', 0, 0, 6, 0.75, 0.5), osc('sine', 0, 7, 0, 0.45, 0.5)];
+    s.layers.A.filter = { type: 'formant', cutoff: 520, res: 0.58, vowel: 0.25, env: 0.25, lfo: 0.45, key: 0.3 };
+    s.layers.A.amp = env(1.1, 1.4, 0.88, 2.2); s.layers.A.filt = env(1.2, 1.2, 0.7, 2.0);
+    s.layers.B = layer({ enabled: true, level: 0.44, osc: [osc('pink', 0, 0, 0, 0.75, 0.88), osc('triangle', 0, 0, 0, 0.5, 0.5), osc('sine', 0, 0, 0, 0, 0.5)],
+      filter: { type: 'lowpass', cutoff: 1400, res: 0.3, env: 0.2, lfo: 0.35, key: 0.4, slope: 1 }, amp: env(1.4, 1.5, 0.85, 2.4) });
+    // LFO 1: slow vowel tide; LFO 2: a 3.8 Hz loop flutter, like a sampler's cyclic time-stretch
+    lfos(s, { 0: L({ wave: 'sine', rate: 0.07 }), 1: L({ wave: 'triangle', rate: 3.8 }) });
+    s.mod = [M('lfo1', 'vowel', 0.48, 'A'), M('lfo2', 'vowel', 0.18, 'A'), M('lfo2', 'gate', 0.22, 'B'), M('lfo1', 'pan', 0.5, 'B')];
+    space(s, { chorusOn: true, chorusRate: 0.22, chorusMix: 0.34, ppFb: 0.52, ppMix: 0.32, ppLp: 1850, ppHp: 240, reverbWet: 0.54, reverbDecay: 5.5 });
+    playable(s);
+    lift(s, 1.4);
+  }));
+  P.push(preset('LFOSEQ Psy Sound System Siren FX', (s) => {   // PLAYABLE: hold a note (D2-D3) to fire the siren
+    s.polyphony = 1; s.glide = 0.14; s.unison = 2; s.detune = 10;
+    Object.assign(s.layers.A, { level: 0.88, character: 0.5 });
+    s.layers.A.osc = [osc('triangle', 0, 0, -4, 0.9, 0.5), osc('sine', 0, 0, 4, 0.65, 0.5), osc('square', -1, 0, 0, 0.22, 0.4)];
+    s.layers.A.filter = { type: 'lowpass', cutoff: 950, res: 0.45, env: 0.4, lfo: 0.3, key: 0.35, slope: 1 };
+    s.layers.A.amp = env(0.02, 0.6, 0.95, 1.4); s.layers.A.filt = env(0.05, 0.8, 0.6, 1.2);
+    s.layers.B.enabled = false;
+    // LFO 1: the downward dive (saw, restarted on each note); LFO 2: the 6.5 Hz trill
+    lfos(s, { 0: L({ wave: 'saw', rate: 0.35, retrig: true }), 1: L({ wave: 'square', rate: 6.5, retrig: true }) });
+    s.mod = [M('lfo1', 'pitch', -0.75, 'A'), M('lfo2', 'pitch', 0.28, 'A'), M('lfo1', 'cutoff', -0.45, 'A')];
+    space(s, { drive: 0.32, delayFb: 0.62, delayWet: 0.34, ppFb: 0.64, ppMix: 0.36, ppLp: 1800, ppHp: 260, reverbWet: 0.52, reverbDecay: 5.0 });
+    playable(s);
+  }));
+  P.push(preset('LFOSEQ Psy Himalayan Dub Journey 95', (s) => {
+    s.polyphony = 2; s.glide = 0.055; s.unison = 2; s.detune = 12;
+    Object.assign(s.layers.A, { level: 0.84, character: 0.5, fmMode: 'fm', fmRatio: 2.0, fmIndex: 0.32 });
+    s.layers.A.osc = [osc('triangle', 0, 0, -5, 0.85, 0.5), osc('saw', 0, 0, 5, 0.55, 0.5), osc('sine', 1, 0, 0, 0.22, 0.5)];
+    s.layers.A.filter = { type: 'lowpass', cutoff: 580, res: 0.42, env: 0.62, lfo: 0.25, key: 0.35, slope: 1 };
+    s.layers.A.amp = env(0.008, 0.26, 0.2, 0.22); s.layers.A.filt = env(0.008, 0.22, 0.1, 0.18);
+    s.layers.B = layer({ enabled: true, level: 0.78, osc: [osc('sine', -2, 0, 0, 0.95, 0.5), osc('triangle', -1, 0, 0, 0.55, 0.5), osc('sine', 0, 0, 0, 0, 0.5)],
+      filter: { type: 'lowpass', cutoff: 160, res: 0.12, env: 0.35, lfo: 0, key: 0.15, slope: 1 }, amp: env(0.012, 0.32, 0.85, 0.24) });
+    lfos(s, { 0: L({ wave: 'sine', rate: 0.06 }), 2: L({ wave: 'sine', rate: 1, routes: [R('cutoff', 0.36, 'A'), R('pan', 0.55, 'A')], seq: breath(0.8) }) });
+    s.lfoSeq = arrange([[0, 2], [0, 2], [0, 2], [0, 2]]);
+    space(s, { drive: 0.22, phaserOn: true, phaserRate: 0.11, phaserWet: 0.28, delayFb: 0.52, delayWet: 0.3, ppFb: 0.54, ppMix: 0.32, ppLp: 1900, ppHp: 240, reverbWet: 0.46, reverbDecay: 4.6 });
+    const mask = [1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1], sc = [0, 0, 1, 4, 5, 7, 8, 10, 12];
+    groove(s, 126, 0.15, 64, (bar, st, i) => { const on = mask[st] === 1 || (bar === 3 && st >= 12), acc = st === 0 || st === 6 || st === 10;
+      return { on, note: 38 + (st === 0 ? 0 : sc[(i * 2 + bar * 3) % sc.length]), vel: acc ? 120 : 86, accent: acc, slide: on && (st === 3 || st === 10 || st === 13) }; }, 'both');
+  }));
+  P.push(preset('LFOSEQ Psy Monastery Dawn Dub 95', (s) => {
+    s.polyphony = 3; s.glide = 0.08; s.unison = 3; s.detune = 14;
+    s.layers.A.level = 0.82;
+    s.layers.A.osc = [osc('triangle', 0, 0, -4, 0.9, 0.5), osc('sine', 1, 7, 4, 0.45, 0.5), osc('sine', -1, 0, 0, 0.65, 0.5)];
+    s.layers.A.filter = { type: 'drip', cutoff: 380, res: 0.72, env: 0.58, lfo: 0.25, key: 0.35, ping: 0.92, sweep: 1.8, fall: 0.09, bubble: 0.75, fm: 0.28,
+      dripMode: 'rain', chirp: 0.38, dwidth: 0.95, density: 0.42, dsize: 0.52, dguard: 0.5 };
+    s.layers.A.amp = env(0.015, 0.38, 0.25, 0.4); s.layers.A.filt = env(0.02, 0.32, 0.12, 0.35);
+    s.layers.B = layer({ enabled: true, level: 0.52, osc: [osc('saw', -1, 0, -5, 0.75, 0.5), osc('triangle', 0, 7, 5, 0.65, 0.5), osc('pink', 0, 0, 0, 0.14, 0.85)],
+      filter: { type: 'formant', cutoff: 440, res: 0.55, vowel: 0.2, env: 0.2, lfo: 0.45, key: 0.25 }, amp: env(0.8, 1.2, 0.85, 1.8) });
+    const bowl = [1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0];
+    lfos(s, { 0: L({ wave: 'sine', rate: 0.08, routes: [R('vowel', 0.45, 'B')] }), 2: L({ wave: 'triangle', rate: 1, routes: [R('drip', 0.85, 'A'), R('pan', 0.72, 'A')],
+      seq: seq(Array.from({ length: 64 }, (_, i) => ({ m: 'step', v: bowl[i % 16] })), { length: 64, bi: true, slew: 0.15, pattern: 'Singing-bowl drips' }) }) });
+    s.lfoSeq = arrange([[0, 2], [0, 2], [0, 2], [0, 2]]);
+    space(s, { delayFb: 0.56, delayWet: 0.34, ppFb: 0.58, ppMix: 0.36, ppLp: 1850, ppHp: 230, reverbWet: 0.56, reverbDecay: 5.6 });
+    const notes = [0, 0, 5, 7, 10, 12, 14];
+    groove(s, 122, 0.15, 64, (bar, st, i) => { const on = bowl[st] === 1 || (bar === 3 && st === 13);
+      return { on, note: 38 + (st === 0 ? 0 : notes[(i + bar * 2) % notes.length]), vel: st === 0 ? 114 : 84, accent: st === 0 || st === 8, slide: on && (st === 3 || st === 11) }; }, 'both');
+    lift(s, 1.4);
+  }));
+  P.push(preset('LFOSEQ Psy Solar Swirl 94', (s) => {
+    s.polyphony = 2; s.glide = 0.045; s.unison = 3; s.detune = 13;
+    Object.assign(s.layers.A, { level: 0.86, character: 0.55, fmMode: 'pd', pdDepth: 0.28, pdCurve: 'sine' });
+    s.layers.A.osc = [osc('saw', 0, 0, -6, 0.85, 0.5), osc('square', 0, 0, 6, 0.5, 0.35), osc('triangle', -1, 0, 0, 0.55, 0.5)];
+    s.layers.A.filter = { type: 'lowpass', cutoff: 540, res: 0.52, env: 0.65, lfo: 0.35, key: 0.35, slope: 1 };
+    s.layers.A.amp = env(0.005, 0.22, 0.22, 0.15); s.layers.A.filt = env(0.005, 0.2, 0.12, 0.12);
+    s.layers.B = layer({ enabled: true, level: 0.7, osc: [osc('sine', -2, 0, 0, 0.9, 0.5), osc('triangle', -1, 0, 0, 0.6, 0.5), osc('sine', 0, 0, 0, 0, 0.5)],
+      filter: { type: 'lowpass', cutoff: 190, res: 0.18, env: 0.45, lfo: 0.1, key: 0.15, slope: 1 }, amp: env(0.006, 0.26, 0.3, 0.16) });
+    lfos(s, { 0: L({ wave: 'sine', rate: 0.05 }), 2: L({ wave: 'sine', rate: 1, routes: [R('cutoff', 0.45, 'A'), R('pan', 0.65, 'A'), R('pwm', 0.35, 'A')], seq: breath(0.85) }) });
+    s.lfoSeq = arrange([[0, 2], [0, 2], [0, 2], [0, 2]]);
+    space(s, { drive: 0.25, phaserOn: true, phaserRate: 0.14, phaserDepth: 0.72, phaserWet: 0.42, delayFb: 0.5, delayWet: 0.28, ppFb: 0.52, ppMix: 0.3, ppLp: 1900, ppHp: 240, reverbWet: 0.44, reverbDecay: 4.4 });
+    const mask = [1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0], sc = [0, 0, 2, 3, 5, 7, 9, 10, 12];
+    groove(s, 132, 0.14, 64, (bar, st, i) => { const on = mask[st] === 1 || (bar === 3 && st >= 12), acc = st === 0 || st === 3 || st === 6 || st === 10;
+      return { on, note: 38 + (bar === 2 ? 5 : 0) + (st === 0 ? 0 : sc[(i * 3 + bar) % sc.length]), vel: acc ? 120 : 88, accent: acc, slide: on && (st === 2 || st === 6 || st === 11) }; }, 'both');
+  }));
+  P.push(preset('LFOSEQ Psy Desert Mirage Swirl 94', (s) => {
+    s.polyphony = 3; s.glide = 0.05; s.unison = 2; s.detune = 12;
+    s.layers.A.level = 0.88;
+    s.layers.A.osc = [osc('saw', -1, 0, -4, 0.85, 0.5), osc('triangle', -1, 0, 4, 0.65, 0.5), osc('sine', -2, 0, 0, 0.6, 0.5)]; s.layers.A.osc[0].sub = 0.5;
+    s.layers.A.filter = { type: 'lowpass', cutoff: 480, res: 0.46, env: 0.64, lfo: 0.25, key: 0.3, slope: 1 };
+    s.layers.A.amp = env(0.005, 0.22, 0.25, 0.14); s.layers.A.filt = env(0.005, 0.19, 0.12, 0.12);
+    s.layers.B = layer({ enabled: true, level: 0.48, osc: [osc('triangle', 0, 3, -5, 0.7, 0.5), osc('triangle', 0, 7, 5, 0.7, 0.5), osc('sine', 0, 10, 0, 0.45, 0.5)],
+      filter: { type: 'comb', cutoff: 340, res: 0.42, comb: 0.82, env: 0.3, lfo: 0.4, key: 0.4 }, amp: env(0.01, 0.2, 0, 0.18) });
+    const skank = [0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0], bass = [1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1];
+    lfos(s, { 0: L({ wave: 'sine', rate: 0.09 }), 2: L({ wave: 'square', rate: 1, routes: [R('gate', 0.9, 'B'), R('pan', 0.72, 'B'), R('cutoff', 0.35, 'A')],
+      seq: seq(Array.from({ length: 64 }, (_, i) => ({ m: 'step', v: skank[i % 16] })), { length: 64, slew: 0.08, pattern: 'Mirage skank gate' }) }) });
+    s.lfoSeq = arrange([[0, 2], [0, 2], [0, 2], [0, 2]]);
+    space(s, { drive: 0.24, phaserOn: true, phaserRate: 0.13, phaserDepth: 0.68, phaserWet: 0.38, delayFb: 0.52, delayWet: 0.3, ppFb: 0.54, ppMix: 0.32, ppLp: 1850, ppHp: 240, reverbWet: 0.46, reverbDecay: 4.6 });
+    const notes = [0, 0, 3, 5, 7, 10, 12, 14];
+    groove(s, 130, 0.15, 64, (bar, st, i) => { const on = bass[st] === 1 || (bar === 3 && st >= 12), acc = st === 0 || st === 6 || st === 10;
+      return { on, note: 38 + (st === 0 ? 0 : notes[(i * 2 + bar) % notes.length]), vel: acc ? 120 : 88, accent: acc, slide: on && (st === 3 || st === 13) }; }, 'both');
+  }));
+  P.push(preset('LFOSEQ Psy Tor Stone Circle 94', (s) => {
+    s.polyphony = 2; s.glide = 0.045; s.unison = 2; s.detune = 12;
+    Object.assign(s.layers.A, { level: 0.86, character: 0.55 });
+    s.layers.A.osc = [osc('triangle', 0, 0, -4, 0.9, 0.5), osc('square', -1, 0, 4, 0.42, 0.35), osc('sine', 0, 7, 0, 0.3, 0.5)];
+    s.layers.A.filter = { type: 'lowpass', cutoff: 440, res: 0.48, env: 0.62, lfo: 0.25, key: 0.3, slope: 1 };
+    s.layers.A.amp = env(0.005, 0.19, 0.15, 0.14); s.layers.A.filt = env(0.005, 0.16, 0.08, 0.12);
+    s.layers.B = layer({ enabled: true, level: 0.76, osc: [osc('sine', -2, 0, 0, 0.95, 0.5), osc('triangle', -1, 0, 0, 0.55, 0.5), osc('sine', 0, 0, 0, 0, 0.5)],
+      filter: { type: 'lowpass', cutoff: 155, res: 0.12, env: 0.35, lfo: 0, key: 0.15, slope: 1 }, amp: env(0.01, 0.28, 0.8, 0.2) });
+    lfos(s, { 0: L({ wave: 'sine', rate: 0.06 }), 2: L({ wave: 'sine', rate: 1, routes: [R('cutoff', 0.35, 'A'), R('pan', 0.58, 'A')], seq: breath(0.8) }) });
+    s.lfoSeq = arrange([[0, 2], [0, 2], [0, 2], [0, 2]]);
+    space(s, { drive: 0.22, phaserOn: true, phaserRate: 0.12, phaserWet: 0.3, delayFb: 0.5, delayWet: 0.28, ppFb: 0.52, ppMix: 0.3, ppLp: 1800, ppHp: 240, reverbWet: 0.46, reverbDecay: 4.5 });
+    const mask = [1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1], sc = [0, 0, 3, 5, 7, 10, 12];
+    groove(s, 128, 0.15, 64, (bar, st, i) => { const on = mask[st] === 1 || (bar === 3 && st >= 12), acc = st === 0 || st === 5 || st === 8 || st === 13;
+      return { on, note: 38 + (st === 0 ? 0 : sc[(i * 2 + bar * 3) % sc.length]), vel: acc ? 120 : 86, accent: acc, slide: on && (st === 2 || st === 11) }; }, 'both');
+  }));
+  P.push(preset('LFOSEQ Psy Velvet Acid Caravan 95', (s) => {
+    s.polyphony = 1; s.glide = 0.055; s.unison = 2; s.detune = 10;
+    Object.assign(s.layers.A, { level: 0.9, character: 0.55 });
+    s.layers.A.osc = [osc('saw', -1, 0, -3, 0.85, 0.5), osc('triangle', 0, 0, 3, 0.65, 0.5), osc('sine', -2, 0, 0, 0.6, 0.5)]; s.layers.A.osc[0].sub = 0.5;
+    s.layers.A.filter = { type: 'lowpass', cutoff: 420, res: 0.64, env: 0.68, lfo: 0.25, key: 0.3, slope: 1 };
+    s.layers.A.amp = env(0.004, 0.22, 0.2, 0.12); s.layers.A.filt = env(0.005, 0.19, 0.12, 0.1);
+    s.layers.B.enabled = false;
+    lfos(s, { 0: L({ wave: 'sine', rate: 0.07 }), 2: L({ wave: 'sine', rate: 1, routes: [R('cutoff', 0.38, 'A'), R('pan', 0.52, 'A')], seq: breath(0.8) }) });
+    s.lfoSeq = arrange([[0, 2], [0, 2], [0, 2], [0, 2]]);
+    space(s, { drive: 0.26, chorusOn: true, chorusRate: 0.22, chorusMix: 0.28, delayFb: 0.48, delayWet: 0.28, ppFb: 0.5, ppMix: 0.3, ppLp: 1850, ppHp: 240, reverbWet: 0.42, reverbDecay: 4.2 });
+    const mask = [1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1], notes = [0, 0, 3, 5, 7, 9, 10, 12];
+    groove(s, 134, 0.14, 64, (bar, st, i) => { const on = mask[st] === 1 || (bar === 3 && st >= 12), acc = st === 0 || st === 3 || st === 6 || st === 10;
+      return { on, note: 40 + (bar === 2 ? 5 : 0) + (st === 0 ? 0 : notes[(i * 3 + bar) % notes.length]), vel: acc ? 120 : 88, accent: acc, slide: on && (st === 2 || st === 6 || st === 13) }; });
+  }));
+  P.push(preset('LFOSEQ Psy Night Meadow Dub Pad 93', (s) => {   // PLAYABLE
+    s.polyphony = 6; s.glide = 0.08; s.unison = 4; s.detune = 15;
+    Object.assign(s.layers.A, { level: 0.84, character: 0.55 });
+    s.layers.A.osc = [osc('triangle', -1, 0, -6, 0.85, 0.5), osc('saw', 0, 0, 6, 0.6, 0.5), osc('sine', -2, 0, 0, 0.55, 0.5)];
+    s.layers.A.filter = { type: 'lowpass', cutoff: 520, res: 0.25, env: 0.3, lfo: 0.35, key: 0.25, slope: 1 };
+    s.layers.A.amp = env(1.1, 1.4, 0.9, 2.4); s.layers.A.filt = env(1.3, 1.2, 0.65, 2.0);
+    s.layers.B = layer({ enabled: true, level: 0.44, osc: [osc('sine', 0, 7, -4, 0.75, 0.5), osc('triangle', 1, 0, 4, 0.45, 0.5), osc('pink', 0, 0, 0, 0.12, 0.82)],
+      filter: { type: 'lowpass', cutoff: 950, res: 0.2, env: 0.2, lfo: 0.3, key: 0.3, slope: 1 }, amp: env(1.5, 1.6, 0.85, 2.6) });
+    lfos(s, { 0: L({ wave: 'sine', rate: 0.05 }) });
+    s.mod = [M('lfo1', 'cutoff', 0.38, 'A'), M('lfo1', 'pan', 0.5, 'B')];
+    space(s, { chorusOn: true, chorusRate: 0.18, chorusMix: 0.34, delayFb: 0.5, delayWet: 0.28, ppFb: 0.52, ppMix: 0.3, ppLp: 1800, ppHp: 230, reverbWet: 0.55, reverbDecay: 5.6 });
+    playable(s);
+    lift(s, 1.4);
+  }));
+  P.push(preset('LFOSEQ Psy Sunrise Dub Gate 94', (s) => {
+    s.polyphony = 4; s.glide = 0.06; s.unison = 4; s.detune = 15;
+    Object.assign(s.layers.A, { level: 0.86, character: 0.55 });
+    s.layers.A.osc = [osc('triangle', -1, 0, -6, 0.85, 0.5), osc('saw', 0, 0, 6, 0.65, 0.5), osc('sine', -2, 0, 0, 0.6, 0.5)];
+    s.layers.A.filter = { type: 'lowpass', cutoff: 580, res: 0.32, env: 0.45, lfo: 0.3, key: 0.25, slope: 1 };
+    s.layers.A.amp = env(0.08, 0.45, 0.88, 1.4); s.layers.A.filt = env(0.3, 0.8, 0.65, 1.2);
+    s.layers.B = layer({ enabled: true, level: 0.48, osc: [osc('triangle', 0, 7, -4, 0.75, 0.5), osc('sine', 0, 10, 4, 0.65, 0.5), osc('pink', 0, 0, 0, 0.12, 0.82)],
+      filter: { type: 'lowpass', cutoff: 880, res: 0.25, env: 0.3, lfo: 0.3, key: 0.3, slope: 1 }, amp: env(0.12, 0.5, 0.85, 1.6) });
+    const gm = [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1];
+    lfos(s, { 0: L({ wave: 'sine', rate: 0.06 }), 2: L({ wave: 'square', rate: 1, routes: [R('gate', 0.88, 'both'), R('cutoff', 0.38, 'A'), R('pan', 0.65, 'B')],
+      seq: seq(Array.from({ length: 64 }, (_, i) => { const bar = Math.floor(i / 16), st = i % 16; return { m: 'step', v: (bar === 3 && st >= 8) ? (st % 2 === 0 ? 1 : 0.4) : gm[st] }; }), { length: 64, slew: 0.09, pattern: 'Sunrise dub gate' }) }) });
+    s.lfoSeq = arrange([[0, 2], [0, 2], [0, 2], [0, 2]]);
+    space(s, { chorusOn: true, chorusRate: 0.2, chorusMix: 0.34, delayFb: 0.5, delayWet: 0.28, ppFb: 0.52, ppMix: 0.3, ppLp: 1800, ppHp: 230, reverbWet: 0.52, reverbDecay: 5.2 });
+    const chord = [0, 7, 10, 14, 0, 7, 12, 10];
+    groove(s, 130, 0.14, 64, (bar, st) => ({ on: st % 2 === 0 || (bar === 3 && st >= 12), note: 38 + chord[(Math.floor(st / 2) + bar) % chord.length], vel: st % 4 === 0 ? 114 : 86, accent: st % 4 === 0, slide: st === 6 || st === 14 }), 'both');
+    lift(s, 1.3);
+  }));
+  P.push(preset('LFOSEQ Psy Bush Glitch 92', (s) => {
+    s.polyphony = 2; s.glide = 0.035; s.unison = 1;
+    Object.assign(s.layers.A, { level: 0.92, fmMode: 'fm', fmRatio: 1.0, fmIndex: 0.35 });
+    s.layers.A.osc = [osc('saw', -1, 0, 0, 0.9, 0.5), osc('triangle', -1, 0, 0, 0.7, 0.5), osc('sine', -2, 0, 0, 0.65, 0.5)]; s.layers.A.osc[0].sub = 0.55;
+    s.layers.A.filter = { type: 'lowpass', cutoff: 340, res: 0.52, env: 0.68, lfo: 0.15, key: 0.25, slope: 1 };
+    s.layers.A.amp = env(0.002, 0.17, 0.12, 0.07); s.layers.A.filt = env(0.002, 0.14, 0.05, 0.06);
+    s.layers.B = layer({ enabled: true, level: 0.46, fmMode: 'fm', fmRatio: 3.0, fmIndex: 1.1, osc: [osc('sine', 0, 0, 0, 0.85, 0.5), osc('triangle', 1, 7, 0, 0.45, 0.5), osc('pink', 0, 0, 0, 0.22, 0.85)],
+      filter: { type: 'comb', cutoff: 420, res: 0.48, comb: 0.84, env: 0.45, lfo: 0.35, key: 0.3 }, amp: env(0.002, 0.09, 0, 0.08) });
+    const bass = [1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1], clicks = [0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0];
+    lfos(s, { 2: L({ wave: 'square', rate: 1, routes: [R('gate', 0.95, 'B'), R('pan', 0.8, 'B'), R('fm', 0.45, 'A')],
+      seq: seq(Array.from({ length: 64 }, (_, i) => ({ m: Math.floor(i / 16) === 2 && i % 4 === 3 ? 'rand' : 'step', v: clicks[i % 16] })), { length: 64, slew: 0.03, pattern: 'Bush glitch clicks' }) }) });
+    s.lfoSeq = arrange([[2], [2], [2], [2]]);
+    Object.assign(s.fx, { drive: 0.28, ppOn: true, ppSync: '3/16', ppFb: 0.44, ppMix: 0.26, ppLp: 1800, ppHp: 280, reverbWet: 0.32, reverbDecay: 3.0, compOn: true, compThreshold: -13, compRatio: 5 });
+    const notes = [0, 0, 1, 0, 0, 6, 7, 0, 0, 3, 0, 1, 0, 12, 7, 1];
+    groove(s, 136, 0.08, 64, (bar, st) => { const on = bass[st] === 1 || (bar === 3 && st >= 12), acc = st === 0 || st === 3 || st === 10 || (bar === 3 && st >= 12);
+      return { on, note: 38 + notes[st], vel: acc ? 124 : 88, accent: acc, slide: on && (st === 2 || st === 6 || st === 13) }; }, 'both');
+  }));
+  P.push(preset('LFOSEQ Psy Velvet Electric 94', (s) => {
+    s.polyphony = 4; s.glide = 0.05; s.unison = 3; s.detune = 14;
+    Object.assign(s.layers.A, { level: 0.86, character: 0.6, fmMode: 'fm', fmRatio: 2.0, fmIndex: 0.42 });
+    s.layers.A.osc = [osc('sine', 0, 0, -6, 0.9, 0.5), osc('triangle', 0, 0, 6, 0.7, 0.5), osc('sine', -1, 0, 0, 0.55, 0.5)];
+    s.layers.A.filter = { type: 'lowpass', cutoff: 580, res: 0.25, env: 0.48, lfo: 0.3, key: 0.35, slope: 1 };
+    s.layers.A.amp = env(0.012, 0.45, 0.35, 0.65); s.layers.A.filt = env(0.015, 0.35, 0.2, 0.5);
+    s.layers.B = layer({ enabled: true, level: 0.44, osc: [osc('triangle', 0, 7, -4, 0.7, 0.5), osc('sine', 1, 2, 4, 0.45, 0.5), osc('sine', 0, 0, 0, 0, 0.5)],
+      filter: { type: 'lowpass', cutoff: 820, res: 0.2, env: 0.25, lfo: 0.3, key: 0.3, slope: 1 }, amp: env(0.04, 0.55, 0.4, 0.8) });
+    lfos(s, { 0: L({ wave: 'sine', rate: 0.06 }) });
+    s.mod = [M('lfo1', 'cutoff', 0.38, 'A'), M('lfo1', 'pan', 0.55, 'B')];
+    space(s, { chorusOn: true, chorusRate: 0.22, chorusMix: 0.35, delayFb: 0.52, delayWet: 0.3, ppFb: 0.54, ppMix: 0.32, ppLp: 1800, ppHp: 240, reverbWet: 0.5, reverbDecay: 5.0 });
+    const mask = [1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0], sc = [0, 3, 5, 7, 10, 12, 14, 17];
+    groove(s, 126, 0.1, 64, (bar, st, i) => { const on = mask[st] === 1;
+      return { on, note: 41 + sc[(i * 3 + bar * 2) % sc.length], vel: st % 4 === 0 ? 112 : 82, accent: st % 4 === 0, slide: on && (st === 5 || st === 12) }; }, 'both');
+    lift(s, 1.25);
+  }));
+  P.push(preset('LFOSEQ Psy Tape Infinity Pad', (s) => {   // PLAYABLE
+    s.polyphony = 6; s.glide = 0.14; s.unison = 4; s.detune = 15;
+    Object.assign(s.layers.A, { level: 0.86, character: 0.65 });
+    s.layers.A.osc = [osc('triangle', -1, 0, -6, 0.85, 0.5), osc('sine', 0, 0, 6, 0.8, 0.5), osc('triangle', 0, 7, 0, 0.45, 0.5)];
+    s.layers.A.filter = { type: 'lowpass', cutoff: 540, res: 0.22, env: 0.28, lfo: 0.35, key: 0.25, slope: 1 };
+    s.layers.A.amp = env(3.2, 2.5, 0.92, 6.5); s.layers.A.filt = env(3.6, 2.5, 0.7, 6.0);
+    s.layers.B = layer({ enabled: true, level: 0.42, osc: [osc('sine', -2, 0, 0, 0.75, 0.5), osc('pink', 0, 0, 0, 0.28, 0.85), osc('sine', 0, 0, 0, 0, 0.5)],
+      filter: { type: 'bandpass', cutoff: 620, res: 0.35, env: 0.2, lfo: 0.4, key: 0.3 }, amp: env(3.8, 2.8, 0.88, 7.0) });
+    lfos(s, { 0: L({ wave: 'sine', rate: 0.04 }) });
+    s.mod = [M('lfo1', 'cutoff', 0.36, 'A'), M('lfo1', 'pan', 0.55, 'B')];
+    Object.assign(s.fx, { drive: 0.32, chorusOn: true, chorusRate: 0.16, chorusMix: 0.35, ppOn: true, ppSync: '3/16', ppFb: 0.54, ppMix: 0.28, ppLp: 1700, ppHp: 220,
+      reverbWet: 0.65, reverbDecay: 6, shimmerOn: true, shimmerLevel: 0.14, shimmerMotion: 0.45, tapeOn: true, tapeSat: 0.3, tapeWow: 0.2 });
+    playable(s);
+    lift(s, 1.3);
+  }));
+  P.push(preset('LFOSEQ Psy Bio-Sonar S&H', (s) => {   // PLAYABLE
+    s.polyphony = 4; s.glide = 0.12; s.unison = 2; s.detune = 12;
+    Object.assign(s.layers.A, { level: 0.8, fmMode: 'fm', fmRatio: 2.0, fmIndex: 0.28 });
+    s.layers.A.osc = [osc('sine', 0, 0, -4, 0.9, 0.5), osc('triangle', 0, 0, 4, 0.6, 0.5), osc('sine', -1, 0, 0, 0.45, 0.5)];
+    s.layers.A.filter = { type: 'lowpass', cutoff: 460, res: 0.42, env: 0.45, lfo: 0.35, key: 0.3, slope: 1 };
+    s.layers.A.amp = env(0.08, 0.85, 0.2, 2.8); s.layers.A.filt = env(0.06, 0.6, 0.15, 2.2);
+    s.layers.B = layer({ enabled: true, level: 0.45, osc: [osc('triangle', -1, 0, -5, 0.75, 0.5), osc('sine', 0, 7, 5, 0.6, 0.5), osc('pink', 0, 0, 0, 0.14, 0.82)],
+      filter: { type: 'lowpass', cutoff: 520, res: 0.2, env: 0.2, lfo: 0.3, key: 0.25, slope: 1 }, amp: env(1.8, 2.0, 0.85, 4.5) });
+    lfos(s, { 0: L({ wave: 'sample', rate: 0.38 }), 1: L({ wave: 'sine', rate: 0.08 }) });
+    s.mod = [M('lfo1', 'pitch', 0.42, 'A'), M('lfo1', 'cutoff', 0.38, 'A'), M('lfo2', 'pan', 0.75, 'A'), M('lfo2', 'pan', -0.5, 'B')];
+    space(s, { delayFb: 0.66, delayWet: 0.38, ppFb: 0.68, ppMix: 0.42, ppLp: 1650, ppHp: 250, reverbWet: 0.62, reverbDecay: 6 });
+    playable(s);
+    lift(s, 1.3);
+  }));
+  P.push(preset('LFOSEQ Psy Arctic Wind & Static', (s) => {   // PLAYABLE
+    s.polyphony = 3; s.glide = 0.2; s.unison = 3; s.detune = 14;
+    s.layers.A.level = 0.82;
+    s.layers.A.osc = [osc('sine', -2, 0, 0, 0.95, 0.5), osc('triangle', -1, 0, -4, 0.55, 0.5), osc('sine', 0, 7, 4, 0.25, 0.5)];
+    s.layers.A.filter = { type: 'lowpass', cutoff: 280, res: 0.22, env: 0.2, lfo: 0.3, key: 0.2, slope: 1 };
+    s.layers.A.amp = env(2.5, 2.0, 0.92, 5.5);
+    s.layers.B = layer({ enabled: true, level: 0.58, osc: [osc('pink', 0, 0, 0, 0.9, 0.88), osc('noise', 0, 0, 0, 0.22, 0.82), osc('sine', 0, 0, 0, 0, 0.5)],
+      filter: { type: 'bandpass', cutoff: 480, res: 0.58, env: 0.15, lfo: 0.55, key: 0.2 }, amp: env(2.8, 2.5, 0.9, 6.0) });
+    lfos(s, { 0: L({ wave: 'sine', rate: 0.09 }), 1: L({ wave: 'sample', rate: 2.4 }) });
+    s.mod = [M('lfo1', 'cutoff', 0.52, 'B'), M('lfo1', 'pan', 0.7, 'B'), M('lfo2', 'gate', 0.28, 'B')];
+    Object.assign(s.fx, { phaserOn: true, phaserRate: 0.06, phaserDepth: 0.6, phaserWet: 0.35, ppOn: true, ppSync: '3/16', ppFb: 0.58, ppMix: 0.34, ppLp: 1700, ppHp: 240, reverbWet: 0.64, reverbDecay: 6 });
+    playable(s);
+    lift(s, 1.4);
+  }));
+  P.push(preset('LFOSEQ Psy Frozen Cello', (s) => {   // PLAYABLE
+    s.polyphony = 4; s.glide = 0.15; s.unison = 4; s.detune = 16;
+    Object.assign(s.layers.A, { level: 0.84, character: 0.6, fmMode: 'pd', pdDepth: 0.25, pdCurve: 'sine' });
+    s.layers.A.osc = [osc('saw', -1, 0, -7, 0.85, 0.5), osc('triangle', 0, 0, 7, 0.75, 0.5), osc('sine', -2, 0, 0, 0.55, 0.5)];
+    s.layers.A.filter = { type: 'lowpass', cutoff: 520, res: 0.32, env: 0.3, lfo: 0.35, key: 0.3, slope: 1 };
+    s.layers.A.amp = env(2.4, 2.2, 0.9, 6.0); s.layers.A.filt = env(2.8, 2.0, 0.7, 5.5);
+    s.layers.B = layer({ enabled: true, level: 0.48, osc: [osc('triangle', 0, 7, -5, 0.7, 0.5), osc('saw', 0, 12, 5, 0.4, 0.5), osc('pink', 0, 0, 0, 0.15, 0.85)],
+      filter: { type: 'comb', cutoff: 290, res: 0.45, comb: 0.88, env: 0.2, lfo: 0.45, key: 0.4 }, amp: env(3.0, 2.5, 0.88, 6.5) });
+    lfos(s, { 0: L({ wave: 'sine', rate: 0.07 }) });
+    s.mod = [M('lfo1', 'cutoff', 0.35, 'A'), M('lfo1', 'pan', 0.82, 'B'), M('lfo1', 'pan', -0.45, 'A')];
+    space(s, { chorusOn: true, chorusRate: 0.18, chorusMix: 0.34, delayFb: 0.54, delayWet: 0.3, ppFb: 0.56, ppMix: 0.32, ppLp: 1750, ppHp: 220, reverbWet: 0.62, reverbDecay: 6, tapeOn: true, tapeSat: 0.3, tapeWow: 0.2 });
+    playable(s);
+    lift(s, 1.4);
+  }));
+  // 46-48. Dub-psy bass riffs (16 steps, D1 pocket): a warm DRIP bass in mono with sidechain and tape, as the recipe racks it
+  const dubPsyRiff = (name, ons, notes, accs, slides) => preset(name, (s) => {
+    s.polyphony = 1; s.glide = 0.04; s.unison = 1;
+    Object.assign(s.layers.A, { level: 1, character: 0.55 });
+    s.layers.A.osc = [osc('saw', -1, 0, 0, 1, 0.5), osc('square', -1, 0, 0, 0.4, 0.4), osc('sine', -2, 0, 0, 0.75, 0.5)]; s.layers.A.osc[0].sub = 0.55;
+    s.layers.A.filter = { type: 'drip', cutoff: 260, res: 0.68, env: 0.74, lfo: 0.15, key: 0.3, ping: 0.8, sweep: 0.6, fall: 0.075, bubble: 0.74, fm: 0.25, dripMode: 'both', chirp: 0.3, dwidth: 0.85, density: 0.45, dsize: 0.65, dguard: 0.55 };
+    s.layers.A.amp = env(0.003, 0.2, 0.2, 0.1); s.layers.A.filt = env(0.003, 0.17, 0.08, 0.08);
+    s.layers.B.enabled = false;
+    const skank = [0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0];
+    lfos(s, { 2: L({ wave: 'square', rate: 1, routes: [R('drip', 0.85, 'A'), R('cutoff', 0.35, 'A')], seq: seq(Array.from({ length: 64 }, (_, i) => ({ m: 'step', v: skank[i % 16] })), { slew: 0.06, pattern: 'Dub skank drips' }) }) });
+    s.lfoSeq = arrange([[2], [2], [2], [2]]);
+    Object.assign(s.fx, { drive: 0.28, ppOn: true, ppSync: '3/16', ppFb: 0.46, ppMix: 0.26, ppLp: 1750, ppHp: 260, compOn: true, compThreshold: -13, compRatio: 5,
+      mstOn: true, mstMono: 140, duckOn: true, duckDepth: 0.65, duckRelease: 0.45, tapeOn: true, tapeSat: 0.35, tapeHead: 0.74 });
+    s.seq.bpm = 135; s.seq.swing = 0.14; s.seq.length = 16; s.seq.target = 'A';
+    let n = 0; s.seq.steps = Array.from({ length: 16 }, (_, i) => { const st = i + 1, on = ons.includes(st), note = on ? notes[n++] : 38;
+      return { on, note, vel: accs.includes(st) ? 125 : 96, accent: accs.includes(st), slide: on && slides.includes(st) }; });
+  });
+  const D1 = 38, F1 = 41, G1 = 43, A1 = 45, C2 = 48, D2 = 50;
+  P.push(dubPsyRiff('LFOSEQ Psy Dub Psy Sub Bounce', [1, 3, 4, 7, 9, 10, 13, 15, 16], [D1, D1, F1, A1, D1, D1, C2, A1, G1], [1, 4, 7, 13], [4, 13, 16]));
+  P.push(dubPsyRiff('LFOSEQ Psy Dub Psy Rolling Gallop', [1, 2, 3, 4, 6, 7, 9, 10, 11, 13, 15, 16], [D1, D1, D1, D2, A1, C2, D1, D1, D1, G1, F1, D1], [1, 4, 7, 10, 15], [4, 7, 15]));
+  P.push(dubPsyRiff('LFOSEQ Psy Dub Psy Steppers', [1, 4, 5, 7, 9, 11, 13, 15, 16], [D1, A1, D1, D2, D1, C2, D1, F1, G1], [1, 4, 5, 9, 13], [4, 7, 11, 16]));
   return P;
 })();
 /* No shrill trance: short bites (FM and filter envelopes on each note) stay, but brightness that lasts over bars is reined in.
@@ -6809,6 +7131,27 @@ function mount(stage, engine) {
       addKnob(knobs, { path: 'fx.djCeil', label: 'LIMIT CEIL', min: 0, max: 1, def: 0.79, format: (v) => (-6 + v * 5.7).toFixed(1) + ' dB' });
       card.append(knobs); deskBar(card);
     }));
+    pageNode.append(fxCard('X/Y MORPH', 'Two moves at once for builds and breakdowns. Left to right (TONE): layer A cutoff 160 Hz to 1.4 kHz and a little FM growl, both kept warm. Bottom to top (DUB WASH): DUB SPACE ECHO and SPRING TANK come in and grow (echo wet, regen and splash); at the very bottom both switch off. CENTER returns to a gentle starting point.', (card) => {
+      const box = el('div', 'xy-box'), dot = el('div', 'xy-dot'), read = el('div', 'xy-read'); box.append(el('i', 'xy-v'), el('i', 'xy-h'), dot);
+      const paint = () => { const x = clamp(Number(state.fx.xyX ?? 0.35), 0, 1), y = clamp(Number(state.fx.xyY ?? 0.35), 0, 1);
+        dot.style.left = (x * 100).toFixed(1) + '%'; dot.style.top = ((1 - y) * 100).toFixed(1) + '%'; read.textContent = 'TONE ' + Math.round(x * 100) + '%  \u00b7  DUB WASH ' + Math.round(y * 100) + '%'; };
+      widgets.push({ path: 'fx.xyX', paint });
+      const apply = (x, y) => {
+        x = clamp(x, 0, 1); y = clamp(y, 0, 1); const f = state.fx, A = state.layers.A; f.xyX = x; f.xyY = y;
+        A.filter.cutoff = Math.round(160 + Math.pow(x, 1.7) * 1240); A.fmIndex = +(0.15 + x * 0.75).toFixed(2);
+        if (y > 0.05) Object.assign(f, { dubOn: true, dubMix: 0.15 + y * 0.55, dubFb: 0.35 + y * 0.45, springOn: true, springMix: 0.1 + y * 0.45 });
+        else Object.assign(f, { dubOn: false, springOn: false });
+        schedule(); paintAll();
+      };
+      const at = (e) => { const r = box.getBoundingClientRect(); apply((e.clientX - r.left) / r.width, 1 - (e.clientY - r.top) / r.height); };
+      let drag = false;
+      box.addEventListener('pointerdown', (e) => { drag = true; box.setPointerCapture(e.pointerId); at(e); });
+      box.addEventListener('pointermove', (e) => { if (drag) at(e); });
+      ['pointerup', 'pointercancel'].forEach((ev) => box.addEventListener(ev, () => { drag = false; }));
+      const center = el('button', 'seq-act', 'CENTER'); center.type = 'button'; center.addEventListener('click', () => apply(0.35, 0.25));
+      const row = el('div', 'xy-row'); row.append(read, center);
+      card.append(box, row); paint();
+    }));
     pageNode.append(fxCard('PSY MASTER', 'Club-ready low end: everything below SUB MONO is summed to mono (leads, delays and shimmer above it stay wide), LOW CUT clears rumble, PSY AIR adds a shelf at 8.5 kHz, MID WIDE sets the width above it, HIGH TAME eases everything above 3.2 kHz, WARM rolls the top off smoothly (16 down to 4.5 kHz) to take the fizz out of long passages.', (card) => {
       const top = el('div', 'fx-top'); addSwitch(top, { path: 'fx.mstOn', label: 'ON', liveLabel: true }); card.append(top);
       const knobs = el('div', 'knobs');
@@ -6836,7 +7179,7 @@ function mount(stage, engine) {
     [['COLOUR', ['DRIVE', 'CRUSH', 'VINYL & LO-FI', 'ANALOG TAPE']],
      ['MOTION', ['FILTER', 'ENVELOPE FILTER', 'PSY FILTER GATE', 'PHASER', 'CHORUS', 'ENSEMBLE', 'TREMOLO', 'RESO COMB', 'PSY FREQ SHIFT']],
      ['SPACE', ['DELAY', 'PING-PONG', 'MULTIBAND', 'DUB SPACE ECHO', 'DUB SIREN', 'REVERB', 'SPRING TANK', 'SHIMMER']],
-     ['MASTER', ['WIDTH', 'COMPRESSOR', 'SIDECHAIN', 'PSY MASTER', 'DJ ISOLATOR']]].forEach(([label, names]) => {
+     ['MASTER', ['WIDTH', 'COMPRESSOR', 'SIDECHAIN', 'PSY MASTER', 'DJ ISOLATOR', 'X/Y MORPH']]].forEach(([label, names]) => {
       pageNode.append(el('div', 'fx-group', label));
       names.forEach((n) => { const c = cards.get(n); if (c) { pageNode.append(c); cards.delete(n); } });
     });
@@ -6979,7 +7322,7 @@ function mount(stage, engine) {
     // PSY SEQ GEN: writes a psytrance pattern into the SEQ (16/32/64 steps, 4-bar phrasing), and ↓ .MID saves the pattern's notes as a MIDI clip at once
     const psyStyle = el('select', 'slim'); psyStyle.title = 'Pattern style for PSY GEN';
     [['bass', 'ROLLING BASS'], ['phrygian', 'PHRYGIAN LEAD'], ['hijaz', 'HIJAZ ACID 303'], ['forest', 'FOREST GLITCH'], ['hitech', 'HI-TECH LASER'],
-     ['fo-call', 'FULL-ON CALL & RESPONSE (32)'], ['goa-spiral', 'GOA HIJAZ SPIRAL (32)'], ['forest-3o4', 'FOREST 3-OVER-4 (32)'], ['riser', 'DOPAMINE RISER'], ['ecstatic', 'ECSTATIC PLATEAU'], ['serotonin', 'SEROTONIN GATE'], ['psybreaks', 'PSYBREAKS DUB'], ['dubvoid', 'DUB VOID (ETHEREAL)'], ['subbuild', 'SUB BUILD (HEAVY)'], ['warehouse', 'WAREHOUSE 95'], ['soultech', 'SOULTECH 64'], ['funkacid', 'RHINO 96'], ['freeparty', 'FREE PARTY 93']].forEach(([v, t]) => { const o = el('option', '', t); o.value = v; psyStyle.append(o); });
+     ['fo-call', 'FULL-ON CALL & RESPONSE (32)'], ['goa-spiral', 'GOA HIJAZ SPIRAL (32)'], ['forest-3o4', 'FOREST 3-OVER-4 (32)'], ['riser', 'DOPAMINE RISER'], ['ecstatic', 'ECSTATIC PLATEAU'], ['serotonin', 'SEROTONIN GATE'], ['psybreaks', 'PSYBREAKS DUB'], ['dubvoid', 'DUB VOID (ETHEREAL)'], ['subbuild', 'SUB BUILD (HEAVY)'], ['warehouse', 'WAREHOUSE 95'], ['soultech', 'SOULTECH 64'], ['funkacid', 'RHINO 96'], ['freeparty', 'FREE PARTY 93'], ['himalayan', 'HIMALAYAN DUB (WORLD BREAK)'], ['solarswirl', 'SOLAR SWIRL (94 PHASER)'], ['dubpsybass', 'DUB PSY BASS (GROOVE)']].forEach(([v, t]) => { const o = el('option', '', t); o.value = v; psyStyle.append(o); });
     psyStyle.value = 'phrygian';
     const psyRoot = el('select', 'slim'); psyRoot.title = 'Root note';
     [['D', 38], ['D#', 39], ['E', 40], ['F', 41], ['F#', 42], ['G', 43], ['G#', 44], ['A', 45]].forEach(([n, m]) => { const o = el('option', '', n); o.value = m; psyRoot.append(o); });
@@ -7432,6 +7775,17 @@ function mount(stage, engine) {
         const mask = [1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1], roots = [0, 10, 8, 10], on = mask[k] === 1;
         const bounce = (k === 6 || k === 14) ? 7 : (last && bars > 1 && k >= 12) ? 12 : 0, acc = k % 4 === 0;
         out.push({ on, note: root + roots[bar % 4] + bounce, vel: acc ? 124 : 92, accent: acc, slide: on && (k === 2 || k === 10) });
+      } else if (style === 'dubpsybass') {
+        // dub-psy bass: a rolling psy gallop with reggae off-beats and b7 / 5th flips; bar 3 octave pops, a turnaround on the last bar
+        const mask = [1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1], deg = [0, 0, 0, 7, 10, 12, 7, 5, 3, 0], roll = last && k >= 12, on = roll || mask[k] === 1;
+        const d = k === 0 ? 0 : (bar % 4 === 2 && k % 4 === 2) ? 12 : roll ? deg[15 - k] : pick(deg), acc = k === 0 || k === 3 || k === 6 || k === 10 || roll;
+        out.push({ on, note: root + d, vel: acc ? 125 : (k % 2 === 1 ? 84 : 98), accent: acc, slide: on && (k === 3 || k === 10 || k === 14) });
+      } else if (style === 'himalayan' || style === 'solarswirl') {
+        // himalayan: 126 BPM world-dub break, phrygian dominant plucks; solarswirl: 132 BPM dorian phaser groove with a bar-3 lift
+        const h = style === 'himalayan', mask = h ? [1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1] : [1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0];
+        const sc = h ? [0, 0, 1, 4, 5, 7, 8, 10, 12] : [0, 0, 2, 3, 5, 7, 9, 10, 12], roll = last && k >= 12, on = roll || mask[k] === 1;
+        const acc = k === 0 || k === 6 || k === 10 || (!h && k === 3) || roll, lift = !h && bar % 4 === 2 ? 5 : 0;
+        out.push({ on, note: root + lift + (k === 0 ? 0 : pick(sc)), vel: acc ? 120 : h ? 86 : 88, accent: acc, slide: on && (h ? (k === 3 || k === 10 || k === 13) : (k === 2 || k === 6 || k === 11)) });
       } else if (style === 'soultech' || style === 'funkacid' || style === 'freeparty') {
         // syncopated breaks in the low pocket: soultech minor pentatonic + tritone bite, funk acid dorian/mixolydian with the major 6th, free party phrygian/dub minor
         const P = { soultech: { mask: [1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0], sc: [0, 0, 3, 5, 6, 7, 10, 12], acc: [0, 6, 10], sl: [3, 5, 13], lift: 0, rnd: true },
@@ -7486,6 +7840,26 @@ function mount(stage, engine) {
       Object.assign(s.fx, { chorusOn: true, chorusMix: 0.3, ppOn: true, ppSync: '3/16', ppFb: 0.46, ppMix: 0.3, reverbWet: 0.44, reverbDecay: 4.2, shimmerOn: true, shimmerLevel: 0.15, shimmerMotion: 0.55 });
       const chop = [1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1];
       lane(2, 'square', [{ d: 'gate', a: 0.85, t: 'A' }, { d: 'pan', a: 0.68, t: 'A' }, { d: 'cutoff', a: 0.38, t: 'A' }], { slew: 0.1, pattern: 'PSY GEN trance gate', steps: mk((i) => ({ m: 'step', v: i >= n - 8 ? 1 : chop[i % 16] })) });
+      grid(4); return;
+    }
+    if (style === 'dubpsybass') {
+      // 135 BPM + 14% swing, mono, a warm low-mid DRIP squelch (sweep kept short), 3/16 echoes rolled off at 1.75 kHz, skank drips on LFO 3
+      Object.assign(s.seq, { bpm: 135, swing: 0.14 }); s.polyphony = 1; s.glide = 0.04; s.unison = 1;
+      Object.assign(A.filter, { type: 'drip', cutoff: 260, res: 0.68, env: 0.74, ping: 0.88, sweep: 0.8, fall: 0.075, bubble: 0.74, fm: 0.3, dripMode: 'both', chirp: 0.4, dwidth: 0.85, density: 0.45, dsize: 0.65, dguard: 0.55 });
+      Object.assign(s.fx, { drive: 0.28, ppOn: true, ppSync: '3/16', ppFb: 0.46, ppMix: 0.26, ppLp: 1750, ppHp: 260, compOn: true, compThreshold: -13, compRatio: 5 });
+      const skank = [0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0];
+      lane(2, 'square', [{ d: 'drip', a: 0.85, t: 'A' }, { d: 'cutoff', a: 0.35, t: 'A' }], { slew: 0.06, pattern: 'PSY GEN dub psy skank drips', steps: mk((i) => ({ m: 'step', v: skank[i % 16] })) });
+      grid(4); return;
+    }
+    if (style === 'himalayan' || style === 'solarswirl') {
+      // no DRIP here: a warm 24 dB low-pass (580 / 540 Hz), phaser, 1/8d + 3/16 echoes rolled off at 1.9 kHz, and a slow breathing cutoff / pan lane
+      const h = style === 'himalayan';
+      Object.assign(s.seq, { bpm: h ? 126 : 132, swing: h ? 0.15 : 0.14 }); s.unison = h ? 2 : 3; s.detune = h ? 12 : 13;
+      Object.assign(A.filter, { type: 'lowpass', cutoff: h ? 580 : 540, res: h ? 0.42 : 0.52, env: h ? 0.62 : 0.65, lfo: h ? 0.25 : 0.35, key: 0.35, slope: 1 });
+      Object.assign(s.fx, { drive: h ? 0.22 : 0.25, phaserOn: true, phaserRate: h ? 0.11 : 0.14, phaserDepth: h ? (s.fx.phaserDepth || 0.5) : 0.72, phaserWet: h ? 0.28 : 0.42,
+        delaySync: '1/8d', delayFb: h ? 0.52 : 0.5, delayWet: h ? 0.3 : 0.28, ppOn: true, ppSync: '3/16', ppFb: h ? 0.54 : 0.52, ppMix: h ? 0.32 : 0.3, ppLp: 1900, ppHp: 240, reverbWet: h ? 0.46 : 0.44, reverbDecay: h ? 4.6 : 4.4 });
+      lane(2, 'sine', h ? [{ d: 'cutoff', a: 0.36, t: 'A' }, { d: 'pan', a: 0.55, t: 'A' }] : [{ d: 'cutoff', a: 0.45, t: 'A' }, { d: 'pan', a: 0.65, t: 'A' }, { d: 'pwm', a: 0.35, t: 'A' }],
+        { div: '1/8', slew: 0.45, pattern: 'PSY GEN ' + (h ? 'himalayan' : 'solar') + ' breath', steps: mk((i) => ({ m: 'step', v: Math.sin((i / n) * Math.PI) * (h ? 0.8 : 0.85) + 0.15 })) });
       grid(4); return;
     }
     if (style === 'warehouse' || style === 'soultech' || style === 'funkacid' || style === 'freeparty') {
