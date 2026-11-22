@@ -6329,9 +6329,20 @@ function mount(stage, engine) {
   }
   function vlq(n) { const out = [n & 127]; while ((n >>= 7)) out.unshift((n & 127) | 128); return out; }
   function download(blob, name) { const url = URL.createObjectURL(blob), a = el('a'); a.href = url; a.download = name; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 60000); }
-  let bouncing = false;
+  let bouncing = false, bouncePending = null;
+  // Browsers only let a page start a download shortly after a click; a long bounce outlives that, so its files
+  // wait for the next click on the button (which then reads SAVE). The plugin saves through its own dialog.
+  function deliver(files, btn, label) {
+    const now = window.MosaicPlugin || !navigator.userActivation || navigator.userActivation.isActive;
+    if (now) { files.forEach((f) => download(f.blob, f.name)); return false; }
+    bouncePending = { files, label }; btn.textContent = 'SAVE'; btn.classList.add('busy');
+    statusNode.textContent = 'Bounce ready: click SAVE to download ' + files.map((f) => f.name).join(' and ');
+    return true;
+  }
   async function seqBounce(cycles, loopReady, wantMidi, btn) {
+    if (bouncePending) { const p = bouncePending; bouncePending = null; p.files.forEach((f) => download(f.blob, f.name)); btn.textContent = p.label; btn.classList.remove('busy'); statusNode.textContent = 'Saved ' + p.files.map((f) => f.name).join(' and '); return; }
     if (bouncing) return; bouncing = true;
+    let waiting = false; const files = [];
     const label = btn.textContent, say = (t) => { btn.textContent = t; statusNode.textContent = t; };
     btn.classList.add('busy');
     const origOn = engine.noteOn, origOff = engine.noteOff, origFire = sequencer.fire;
@@ -6363,7 +6374,7 @@ function mount(stage, engine) {
       say('BOUNCING…');
       const audio = await recorder.captureSpan(begin, end);
       sequencer.stop();
-      download(wav24(audio.l, audio.r, audio.rate), `${name}_${cycles}x.wav`);
+      files.push({ blob: wav24(audio.l, audio.r, audio.rate), name: `${name}_${cycles}x.wav` });
       if (wantMidi) {
         const len = end - begin, out = [];
         notes.forEach((n) => {
@@ -6389,15 +6400,16 @@ function mount(stage, engine) {
         });
         state.seq.ccMap = map;   // this preset now answers these CCs (saved with it)
         schedule();
-        download(midiClip(name, bpm, len, out, ccs, map), `${name}_${cycles}x.mid`);
+        files.push({ blob: midiClip(name, bpm, len, out, ccs, map), name: `${name}_${cycles}x.mid` });
         say(`BOUNCED · ${out.length} NOTES · ${paths.length} CC`);
       } else say('BOUNCED');
+      waiting = deliver(files, btn, label);
     } catch (err) {
       say('BOUNCE FAILED'); console.error(err); statusNode.textContent = 'Bounce failed: ' + err.message;
     } finally {
       engine.noteOn = origOn; engine.noteOff = origOff; sequencer.fire = origFire;
       if (sequencer.playing) sequencer.stop();
-      bouncing = false; setTimeout(() => { btn.textContent = label; btn.classList.remove('busy'); }, 2500);
+      bouncing = false; if (!waiting) setTimeout(() => { if (!bouncePending) { btn.textContent = label; btn.classList.remove('busy'); } }, 2500);
     }
   }
 
