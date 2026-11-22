@@ -120,7 +120,8 @@ header.top {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.texty.seq-bounce { opacity: .55; } .texty.seq-bounce.on { opacity: 1; color: var(--accent); border-color: var(--accent); }
+.seq-act { border: 1px solid var(--accent); background: transparent; color: var(--accent); border-radius: 99px; height: 26px; padding: 0 12px; font-size: 10px; font-weight: 800; letter-spacing: .12em; cursor: pointer; }
+.seq-act:hover, .seq-act.busy { background: var(--accent); color: var(--accent-ink); }
 .presets .texty { padding: 0 10px; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; }
 .menu {
   position: absolute;
@@ -6049,13 +6050,13 @@ function mount(stage, engine) {
     const bounceLen = el('select', 'slim');
     [1, 2, 4, 8].forEach((n) => { const o = el('option', '', n + (n > 1 ? ' CYCLES' : ' CYCLE')); o.value = n; bounceLen.append(o); });
     bounceLen.title = 'How many passes of the pattern to bounce';
-    const loopReady = el('button', 'texty seq-bounce on', 'LOOP-READY'); loopReady.type = 'button';
+    const loopReady = el('button', 'switch on', 'LOOP-READY'); loopReady.type = 'button';
     loopReady.title = 'Play one pass first, so reverb and delay tails wrap round and the clip loops seamlessly';
     loopReady.addEventListener('click', () => loopReady.classList.toggle('on'));
-    const bounceMidi = el('button', 'texty seq-bounce on', '+MIDI'); bounceMidi.type = 'button';
+    const bounceMidi = el('button', 'switch on', '+MIDI'); bounceMidi.type = 'button';
     bounceMidi.title = 'Also save a MIDI clip: the notes, and every automated setting as a CC lane that Mosaic plays back';
     bounceMidi.addEventListener('click', () => bounceMidi.classList.toggle('on'));
-    const bounceBtn = el('button', 'texty', 'BOUNCE'); bounceBtn.type = 'button';
+    const bounceBtn = el('button', 'seq-act', 'BOUNCE'); bounceBtn.type = 'button';
     bounceBtn.title = 'Play the pattern from step 1 and save it as a WAV (the exact sound, with all automation) and a MIDI clip';
     bounceBtn.addEventListener('click', () => seqBounce(+bounceLen.value, loopReady.classList.contains('on'), bounceMidi.classList.contains('on'), bounceBtn));
     transport.append(bounceLen, loopReady, bounceMidi, bounceBtn);
@@ -6332,6 +6333,7 @@ function mount(stage, engine) {
   async function seqBounce(cycles, loopReady, wantMidi, btn) {
     if (bouncing) return; bouncing = true;
     const label = btn.textContent, say = (t) => { btn.textContent = t; statusNode.textContent = t; };
+    btn.classList.add('busy');
     const origOn = engine.noteOn, origOff = engine.noteOff, origFire = sequencer.fire;
     try {
       await new Promise((r) => onGesture(r));
@@ -6395,7 +6397,7 @@ function mount(stage, engine) {
     } finally {
       engine.noteOn = origOn; engine.noteOff = origOff; sequencer.fire = origFire;
       if (sequencer.playing) sequencer.stop();
-      bouncing = false; setTimeout(() => { btn.textContent = label; }, 2500);
+      bouncing = false; setTimeout(() => { btn.textContent = label; btn.classList.remove('busy'); }, 2500);
     }
   }
 
