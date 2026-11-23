@@ -787,6 +787,7 @@ footer.bed {
 .page-fx .fx-card .fx-note{margin:auto 2px 0!important;padding-top:10px;border-top:1px solid #ffffff10;color:var(--dim);font-size:10px;line-height:1.45}
 .page-fx .fx-card .fx-note:first-of-type{margin-top:auto!important}
 .xy-box{position:relative;height:150px;margin-top:4px;background:rgba(0,0,0,.25);border:1px solid var(--line,#353a47);border-radius:8px;cursor:crosshair;touch-action:none;overflow:hidden}.xy-box .xy-v,.xy-box .xy-h{position:absolute;background:var(--line,#262a34);pointer-events:none}.xy-box .xy-v{left:50%;top:0;bottom:0;width:1px}.xy-box .xy-h{top:50%;left:0;right:0;height:1px}.xy-dot{position:absolute;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent);pointer-events:none}.xy-row{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:11px}.xy-row .xy-read{flex:1;opacity:.8}.xy-row .seq-act{padding:3px 10px}
+.bk-oldskool{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:2px 0 8px;padding:8px;border:1px dashed var(--accent);border-radius:10px;background:repeating-linear-gradient(135deg,rgba(255,255,255,.02) 0 8px,transparent 8px 16px)}.bk-oldskool .bk-os-hd{font-weight:800;letter-spacing:.18em;font-size:11px;color:var(--accent);margin-right:4px;transform:rotate(-2deg)}.bk-oldskool .bk-os{font:inherit;font-size:10px;font-weight:700;letter-spacing:.06em;padding:3px 9px;border-radius:999px;border:1px solid var(--accent);background:transparent;color:inherit;cursor:pointer}.bk-oldskool .bk-os:nth-child(odd){transform:rotate(-1.5deg)}.bk-oldskool .bk-os:nth-child(even){transform:rotate(1.2deg)}.bk-oldskool .bk-os.on{background:var(--accent);color:#111}
 .desk-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px;padding-top:8px;border-top:1px solid var(--line, #2d313d);font-size:11px}.desk-bar .desk-status{flex:1 1 100%;min-width:0;opacity:.8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.desk-bar .seq-act{padding:3px 8px;flex:1}
 .page-fx .fx-group{grid-column:1/-1;margin:-4px 0 -8px;padding:0 2px 3px;font-size:9px;line-height:1.2;font-weight:800;letter-spacing:.2em;color:var(--accent);border-bottom:1px solid #ffffff10}
 .page-fx .fx-about{grid-column:1/-1}
@@ -9372,10 +9373,31 @@ function mount(stage, engine) {
     };
     chip('ALL', 'All'); chip('★ FAV', null, 'fav'); groups.forEach((g) => chip(g.toUpperCase(), g));
   }
+  /* ---------- easter egg: type "oldskool" in the bank search for rave-flyer scenes ---------- */
+  const OLDSKOOL_SCENES = [
+    ['90s FREE PARTY', /castlemcore|free party 93|dread dub|alien acid|siren fx|stone circle|warehouse 95|m25 spiral|rolling mono/i],
+    ['GOA & WORLD DUB', /rhino 96|himalayan|monastery|solar swirl|desert mirage|dub caravan|didgeridoo|velvet acid/i],
+    ['90s AMBIENT', /tape infinity|time-stretch|bio-sonar|arctic wind|frozen cello|solstice|night meadow|sunrise dub|velvet electric/i],
+    ['PSYBREAKS & DUB', /soultech|psybreaks|ethereal dub|drip bass|bush glitch/i],
+    ['PSY & RISERS', /psy rolling bass|drip squelch|liquid drip|forest spore|hi-tech|dopamine|ecstatic|sub seismic|seismic sub/i],
+    ['BALEARIC', /balearic/i]];
+  const oldskoolOn = () => /^\s*old\s*sk(?:oo|u)l\s*$/i.test(String(BK.view.text || ''));
+  const oldskoolMatch = (name) => BK.view.scene ? OLDSKOOL_SCENES.find((c) => c[0] === BK.view.scene)[1].test(name) : OLDSKOOL_SCENES.some((c) => c[1].test(name));
+  function oldskoolRender(entries) {
+    const box = $b('#bkOldskool'); if (!box) return;
+    if (!oldskoolOn()) { box.hidden = true; box.replaceChildren(); BK.view.scene = null; return; }
+    box.hidden = false; box.replaceChildren(el('span', 'bk-os-hd', '\u2605 OLD SKOOL \u2605'));
+    OLDSKOOL_SCENES.forEach(([nm, re]) => {
+      const b = el('button', 'bk-os' + (BK.view.scene === nm ? ' on' : ''), nm + ' ' + entries.filter((e) => !e.user && re.test(e.name)).length); b.type = 'button';
+      b.addEventListener('click', () => { BK.view.scene = BK.view.scene === nm ? null : nm; bankRenderList(); });
+      box.append(b);
+    });
+  }
   function bankRenderList() {
-    const entries = bankEntries(); bankView = entries;
+    const entries = bankEntries(); bankView = entries; oldskoolRender(entries); const egg = oldskoolOn();
     const pseudo = entries.map((e) => ({ name: e.name, category: e.group, description: helixHay(e), metadata: { tags: [e.category, e.tag].concat(e.spec ? e.spec.metadata.tags : [], helixTagsFor(e)), rating: ratingOf(e), author: '' } }));
-    const hits = SBS.searchPresets(pseudo, { text: BK.view.text, category: BK.view.category, favourites: BK.view.fav, minRating: BK.view.min, sort: BK.view.sort, tag: BK.view.tag || undefined }, bankMeta);
+    let hits = SBS.searchPresets(pseudo, { text: egg ? '' : BK.view.text, category: BK.view.category, favourites: BK.view.fav, minRating: BK.view.min, sort: BK.view.sort, tag: BK.view.tag || undefined }, bankMeta);
+    if (egg) hits = hits.filter(({ i }) => !entries[i].user && oldskoolMatch(entries[i].name));
     $b('#bkCount').textContent = hits.length + ' / ' + entries.length;
     const list = $b('#bkList');
     const keep = list.scrollTop;
@@ -9528,7 +9550,7 @@ function mount(stage, engine) {
           <select id="bkMin" aria-label="Minimum rating"><option value="0">ANY ★</option><option value="3">3★ +</option><option value="4">4★ +</option><option value="5">5★</option></select>
           <select id="bkSrc" aria-label="Source"><option value="">ALL SOURCES</option><option>MACHINA</option><option>PRO</option><option>SEQ</option><option>MACRO</option><option>BANK</option><option>FACTORY</option><option>USER</option><option>IMPORT</option></select></div>
         <div class="bk-file"><button type="button" id="bkSaveAs" title="Save the current sound as a new preset">SAVE AS…</button><button type="button" id="bkUpdate" title="Overwrite the current saved preset">UPDATE</button><button type="button" id="bkExpPreset" title="Download the current sound as JSON">EXPORT PRESET</button><button type="button" id="bkExpUser" title="Download every saved preset as one file">EXPORT USER BANK</button><button type="button" id="bkImport" title="Load a preset, a user bank or a specification bank from a JSON file">IMPORT</button><input type="file" id="bkFile" accept="application/json,.json" hidden></div>
-        <div class="bk-chips" id="bkChips"></div><div class="bk-list" id="bkList" role="listbox" aria-label="Presets"></div><div class="hx-versions" id="hxVersions" hidden></div>
+        <div class="bk-chips" id="bkChips"></div><div class="bk-oldskool" id="bkOldskool" hidden></div><div class="bk-list" id="bkList" role="listbox" aria-label="Presets"></div><div class="hx-versions" id="hxVersions" hidden></div>
         <div class="bk-sim"><div id="bkSim" role="group" aria-label="Presets similar to the current one"></div></div>
         <details class="hx-roll" id="hxRoll"><summary><span>STORAGE · VERSIONS · AUTOSAVE</span><em id="hxSum"></em></summary>
         <div class="hx-store"><div class="hx-status" id="hxStatus" role="status">STARTING…</div>
