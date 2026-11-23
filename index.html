@@ -4468,6 +4468,78 @@ const PSY_LFOSEQ_PRESETS = (() => {
   P.push(dubPsyRiff('LFOSEQ Psy Drip Bass: Sub Bounce', [1, 3, 4, 7, 9, 10, 13, 15, 16], [D1, D1, F1, A1, D1, D1, C2, A1, G1], [1, 4, 7, 13], [4, 13, 16]));
   P.push(dubPsyRiff('LFOSEQ Psy Drip Bass: Rolling Gallop', [1, 2, 3, 4, 6, 7, 9, 10, 11, 13, 15, 16], [D1, D1, D1, D2, A1, C2, D1, D1, D1, G1, F1, D1], [1, 4, 7, 10, 15], [4, 7, 15]));
   P.push(dubPsyRiff('LFOSEQ Psy Drip Bass: Steppers', [1, 4, 5, 7, 9, 11, 13, 15, 16], [D1, A1, D1, D2, D1, C2, D1, F1, G1], [1, 4, 5, 9, 13], [4, 7, 11, 16]));
+  // 49-52. Balearic: sunny major-7 colour to lift the set out of the squelch. Warm throughout (low-passed, nothing bright held), D major around D3-F4.
+  P.push(preset('LFOSEQ Psy Balearic Nylon Pluck', (s) => {
+    // a soft nylon-style guitar pluck: triangle + a little saw, a quick filter snap and a ringing decay, picking a Dmaj9 - Gmaj9 - Bm9 - A6 arpeggio
+    s.polyphony = 6; s.glide = 0; s.unison = 2; s.detune = 6;
+    Object.assign(s.layers.A, { level: 0.95, character: 0.45 });
+    s.layers.A.osc = [osc('triangle', 0, 0, -3, 0.9, 0.5), osc('saw', 0, 0, 3, 0.35, 0.5), osc('sine', 1, 0, 0, 0.2, 0.5)];
+    s.layers.A.filter = { type: 'lowpass', cutoff: 950, res: 0.22, env: 0.55, lfo: 0, key: 0.35, slope: 1 };
+    s.layers.A.amp = env(0.002, 0.65, 0.0, 0.5); s.layers.A.filt = env(0.001, 0.16, 0.05, 0.2);
+    s.layers.B.enabled = false;
+    lfos(s, { 2: L({ wave: 'sine', rate: 1, routes: [R('pan', 0.35, 'A')], seq: seq(Array.from({ length: 64 }, (_, i) => ({ m: 'step', v: Math.sin((i / 64) * Math.PI * 2) * 0.5 + 0.5 })), { div: '1/8', length: 64, slew: 0.5, pattern: 'Gentle pick drift' }) }) });
+    s.lfoSeq = arrange([[2], [2], [2], [2]]);
+    Object.assign(s.fx, { chorusOn: true, chorusRate: 0.3, chorusMix: 0.25, delaySync: '1/8d', delayFb: 0.32, delayWet: 0.2, ppOn: true, ppSync: '3/16', ppFb: 0.3, ppMix: 0.18, ppLp: 2000, ppHp: 300, reverbWet: 0.38, reverbDecay: 3.8 });
+    const chords = [[50, 54, 57, 61, 64], [55, 59, 62, 54, 57], [59, 62, 54, 57, 61], [57, 61, 64, 54, 57]].map((c) => c.map((n) => n + 12));
+    const pickOrder = [0, 2, 1, 3, 4, 3, 2, 1, 0, 2, 1, 3, 4, 3, 1, 2];
+    s.seq.length = 64; s.seq.target = 'A'; s.seq.swing = 0.08;
+    s.seq.steps = Array.from({ length: 64 }, (_, i) => { const bar = Math.floor(i / 16), st = i % 16, c = chords[bar], on = st !== 7 && st !== 15;
+      return { on, note: c[pickOrder[st] % c.length], vel: st % 4 === 0 ? 108 : 84, accent: st === 0, slide: false }; });
+    lift(s, 1.5);
+  }));
+  P.push(preset('LFOSEQ Psy Balearic Soft Keys', (s) => {
+    // electric-piano-style keys: a sine tine with a gentle FM bark that fades, built as major-7 chords (root + 5th on A, 3rd + 7th on B), held over two beats
+    s.polyphony = 4; s.glide = 0; s.unison = 2; s.detune = 7;
+    Object.assign(s.layers.A, { level: 0.9, character: 0.5, fmMode: 'fm', fmRatio: 1.0, fmIndex: 0.5 });
+    s.layers.A.osc = [osc('sine', 0, 0, -3, 0.9, 0.5), osc('triangle', 0, 7, 3, 0.55, 0.5), osc('sine', -1, 0, 0, 0.25, 0.5)];
+    s.layers.A.filter = { type: 'lowpass', cutoff: 1300, res: 0.15, env: 0.35, lfo: 0, key: 0.3, slope: 1 };
+    s.layers.A.amp = env(0.004, 1.1, 0.35, 0.7); s.layers.A.filt = env(0.004, 0.5, 0.2, 0.5);
+    s.layers.B = layer({ enabled: true, level: 0.55, osc: [osc('sine', 0, 4, -4, 0.7, 0.5), osc('sine', 0, 11, 4, 0.55, 0.5), osc('sine', 0, 0, 0, 0, 0.5)],
+      filter: { type: 'lowpass', cutoff: 1500, res: 0.1, env: 0.25, lfo: 0, key: 0.3, slope: 1 }, amp: env(0.006, 1.2, 0.3, 0.8) });
+    lfos(s, { 0: L({ wave: 'sine', rate: 4.2 }) });
+    s.mod = [{ src: 'lfo1', dest: 'pan', amount: 0.25, target: 'B' }];   // a soft stereo tremolo, like a suitcase piano
+    Object.assign(s.fx, { chorusOn: true, chorusRate: 0.22, chorusMix: 0.3, phaserOn: true, phaserRate: 0.12, phaserWet: 0.2, delaySync: '1/8d', delayFb: 0.3, delayWet: 0.18, ppOn: true, ppSync: '3/16', ppFb: 0.28, ppMix: 0.15, ppLp: 2000, ppHp: 300, reverbWet: 0.36, reverbDecay: 3.4 });
+    const roots = [62, 67, 62, 67];   // the classic Balearic I - IV vamp: Dmaj7, Gmaj7
+    s.seq.length = 64; s.seq.target = 'both'; s.seq.swing = 0.1;
+    s.seq.steps = Array.from({ length: 64 }, (_, i) => { const bar = Math.floor(i / 16), st = i % 16, on = st === 0 || st === 6 || st === 10;
+      return { on, note: roots[bar], vel: st === 0 ? 104 : 86, accent: st === 0, slide: false }; });
+    lift(s, 1.6);
+  }));
+  P.push(preset('LFOSEQ Psy Balearic Sunny Stabs', (s) => {
+    // off-beat house piano-style stabs: a major-9 shape (root, 5th on A; 3rd, 7th, 9th on B), short and rounded, swinging between D and G
+    s.polyphony = 4; s.glide = 0; s.unison = 2; s.detune = 8;
+    Object.assign(s.layers.A, { level: 0.85, character: 0.5 });
+    s.layers.A.osc = [osc('saw', 0, 0, -4, 0.6, 0.5), osc('triangle', 0, 7, 4, 0.7, 0.5), osc('sine', -1, 0, 0, 0.2, 0.5)];
+    s.layers.A.filter = { type: 'lowpass', cutoff: 1250, res: 0.2, env: 0.5, lfo: 0, key: 0.35, slope: 1 };
+    s.layers.A.amp = env(0.003, 0.24, 0.0, 0.16); s.layers.A.filt = env(0.002, 0.14, 0.0, 0.1);
+    s.layers.B = layer({ enabled: true, level: 0.6, osc: [osc('triangle', 0, 4, -4, 0.65, 0.5), osc('triangle', 0, 11, 4, 0.55, 0.5), osc('sine', 1, 2, 0, 0.3, 0.5)],
+      filter: { type: 'lowpass', cutoff: 1500, res: 0.15, env: 0.4, lfo: 0, key: 0.35, slope: 1 }, amp: env(0.003, 0.22, 0.0, 0.16) });
+    Object.assign(s.fx, { chorusOn: true, chorusRate: 0.25, chorusMix: 0.28, delaySync: '1/8d', delayFb: 0.38, delayWet: 0.22, ppOn: true, ppSync: '3/16', ppFb: 0.36, ppMix: 0.22, ppLp: 2000, ppHp: 300, reverbWet: 0.34, reverbDecay: 3.0 });
+    const roots = [62, 62, 67, 67];   // Dmaj9, Gmaj9, with a Cmaj9 push on the last step of bars 2 and 4
+    s.seq.length = 64; s.seq.target = 'both'; s.seq.swing = 0.12;
+    s.seq.steps = Array.from({ length: 64 }, (_, i) => { const bar = Math.floor(i / 16), st = i % 16, on = st % 4 === 2 || (st === 15 && bar % 2 === 1);
+      return { on, note: roots[bar] + (st === 15 ? -2 : 0), vel: st === 10 ? 110 : 92, accent: st === 10, slide: false }; });
+    lift(s, 1.8);
+  }));
+  P.push(preset('LFOSEQ Psy Balearic Breath Flute', (s) => {
+    // a breathy wooden flute: sine + a little triangle, a band of air on B, a gentle delayed vibrato, playing a slow D major pentatonic line with legato slurs
+    s.polyphony = 1; s.glide = 0.07; s.unison = 1;
+    Object.assign(s.layers.A, { level: 0.9, character: 0.35 });
+    s.layers.A.osc = [osc('sine', 0, 0, 0, 0.95, 0.5), osc('triangle', 0, 0, 2, 0.3, 0.5), osc('sine', 1, 0, 0, 0.12, 0.5)];
+    s.layers.A.filter = { type: 'lowpass', cutoff: 1900, res: 0.1, env: 0.15, lfo: 0, key: 0.3, slope: 1 };
+    s.layers.A.amp = env(0.07, 0.4, 0.85, 0.35); s.layers.A.filt = env(0.06, 0.4, 0.8, 0.3);
+    s.layers.B = layer({ enabled: true, level: 0.32, osc: [osc('pink', 0, 0, 0, 0.6, 0.85), osc('sine', 0, 0, 0, 0, 0.5), osc('sine', 0, 0, 0, 0, 0.5)],
+      filter: { type: 'bandpass', cutoff: 1300, res: 0.35, env: 0.1, lfo: 0, key: 0.6 }, amp: env(0.05, 0.3, 0.6, 0.3) });
+    lfos(s, { 0: L({ wave: 'sine', rate: 5.2 }) });
+    s.mod = [{ src: 'lfo1', dest: 'pitch', amount: 0.012, target: 'A' }];   // a light vibrato (about 0.15 semitone)
+    Object.assign(s.fx, { delaySync: '1/8d', delayFb: 0.42, delayWet: 0.26, ppOn: true, ppSync: '3/16', ppFb: 0.4, ppMix: 0.24, ppLp: 1900, ppHp: 300, reverbWet: 0.45, reverbDecay: 4.4 });
+    // phrase over 4 bars: long notes tied by slides (each held step slides into the next)
+    const line = [[57, 6], [59, 2], [62, 8], [64, 4], [62, 2], [59, 2], [57, 8], [54, 4], [57, 4], [50, 12], [52, 4]].map(([n, l]) => [n + 12, l]);
+    const steps = []; line.forEach(([n, len]) => { for (let k = 0; k < len; k++) steps.push({ on: true, note: n, vel: k === 0 ? 100 : 90, accent: false, slide: k < len - 1 }); });
+    while (steps.length < 64) steps.push({ on: false, note: 50, vel: 90, accent: false, slide: false });
+    s.seq.length = 64; s.seq.target = 'both'; s.seq.swing = 0.06; s.seq.steps = steps.slice(0, 64);
+    lift(s, 1.6);
+  }));
   return P;
 })();
 /* No shrill trance: short bites (FM and filter envelopes on each note) stay, but brightness that lasts over bars is reined in.
@@ -4503,7 +4575,7 @@ PSY_LFOSEQ_PRESETS.forEach((s) => {
     if (s.fx.ppOn) s.fx.ppLp = Math.min(s.fx.ppLp || 3500, 2400);
   }
   const len = s.seq.length || 16, on = s.seq.steps.slice(0, len).filter((x) => x && x.on);
-  if (on.length && Math.max(...on.map((x) => x.note)) > 65) s.seq.steps.forEach((x) => { if (x) x.note = Math.max(0, x.note - 12); });
+  if (on.length && !/Balearic/.test(s.name) && Math.max(...on.map((x) => x.note)) > 65) s.seq.steps.forEach((x) => { if (x) x.note = Math.max(0, x.note - 12); });
   // one tempo for the whole pack (130 BPM, the live set's tempo), so every bounce drops straight into the session; echoes and LFO lanes are tempo-synced and follow
   s.seq.bpm = 130;
 });
@@ -7478,12 +7550,11 @@ function mount(stage, engine) {
     const psyMidBtn = el('button', 'seq-act', '↓ .MID'); psyMidBtn.type = 'button';
     psyMidBtn.title = 'Save the current pattern as a MIDI clip straight away (notes only; BOUNCE +MIDI also records automation)';
     psyGenBtn.addEventListener('click', () => {
-      const style = psyStyle.value, root = +psyRoot.value, steps = psyPattern(style, root, +psyLen.value);
+      const style = psyStyle.value, root = +psyRoot.value, steps = psyPattern(style, root, +psyLen.value), bpm0 = state.seq.bpm;
       steps.forEach((st, i) => { state.seq.steps[i] = Object.assign({}, state.seq.steps[i] || {}, st); });
       state.seq.length = steps.length; state.seq.division = 0.25;
       if (psyDripTg.classList.contains('on')) psyDrip(state, style, steps.length);
-      if (style === 'bass') state.seq.bpm = Math.max(138, state.seq.bpm || 142);
-      if (style === 'hitech') state.seq.bpm = Math.max(148, state.seq.bpm || 150);
+      if (bpm0) state.seq.bpm = bpm0;   // keep the session's tempo (a style still sets its swing and its sound)
       schedule(); syncSteps(); paintAll();
       psyGenBtn.classList.add('busy'); setTimeout(() => psyGenBtn.classList.remove('busy'), 180);
     });
