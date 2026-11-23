@@ -3418,7 +3418,7 @@ const MOSAIC_ENGINEERED_PRESETS = [];
 const MOSAIC_LIBRARY_PRESETS = [];
 
 MOSAIC_LIBRARY_PRESETS.push(...(globalThis.__WT_STARTERS_STATES||[]));
-/* ===== LFO ×16 starter presets (CONTINUUM integration expansion). Starting points built on the 16-LFO system; not judged by ear yet. ===== */
+/* ===== LFO ×16 starter presets (CONTINUUM integration expansion). Starting points built on the 16-LFO system, meant to be tweaked. ===== */
 const LFO16_PRESETS = (() => {
   const st = (arr, extra) => Array.from({ length: 64 }, (_, k) => {
     const s = arr[k % arr.length];
