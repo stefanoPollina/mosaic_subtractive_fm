@@ -11250,7 +11250,7 @@ function mount(stage, engine) {
     if (isTyping(event)) return;
     if (event.code === 'Space') {
       const tag = event.target && event.target.tagName;
-      if (tag === 'BUTTON' || (event.target.closest && event.target.closest('.knob'))) return;
+      if (tag === 'BUTTON' || tag === 'SELECT' || (event.target.closest && event.target.closest('.knob'))) return;
       event.preventDefault();
       sequencer.toggle();
       return;
@@ -11534,7 +11534,11 @@ function isTyping(event) {
   const target = event.target;
   if (!target || !target.tagName) return false;
   const tag = target.tagName;
-  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+  // only real text entry blocks the playing keys; sliders, tick boxes and drop-down menus keep focus after a click,
+  // and must not silence the computer keyboard (the note handler's preventDefault stops a menu jumping to an option)
+  if (tag === 'TEXTAREA' || target.isContentEditable) return true;
+  if (tag === 'INPUT') return !/^(range|checkbox|radio|button|submit|reset|color|file)$/i.test(target.type || 'text');
+  return false;
 }
 
 function hz(value) {
