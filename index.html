@@ -4641,6 +4641,28 @@ PSY_LFOSEQ_PRESETS.forEach((s) => {
   // one tempo for the whole pack (130 BPM, the live set's tempo), so every bounce drops straight into the session; echoes and LFO lanes are tempo-synced and follow
   s.seq.bpm = 130;
 });
+/* LFO SEQ has to switch something. Where a preset lit the same LFOs on every bar, its sound stays as bar 1 and three spare LFOs
+   (tempo-locked at 130 BPM) are brought in by the sequencer: a stereo drift, then a filter move, then everything plus an eighth-note chop on bar 4.
+   Warm by design: the filter only moves around where it sits, and the chop takes level away rather than adding brightness. */
+PSY_LFOSEQ_PRESETS.forEach((s) => {
+  const U = s.lfoSeq; if (!U || !U.on) return;
+  const n = U.steps || 16, base = U.grid[0];
+  if (U.grid.slice(0, n).some((m) => m !== base)) return;
+  const live = (rs) => (rs || []).some((r) => r && r.a && r.d && r.d !== 'off');
+  const inMatrix = (i) => (s.mod || []).some((m) => m && m.amount && m.src === 'lfo' + (i + 1));
+  const free = [7, 6, 5, 4, 3, 2].filter((i) => !(base >> i & 1) && !inMatrix(i) && !(s.lfo[i] && (live(s.lfo[i].routes) || live(s.lfo[i].osc)))).slice(0, 3);
+  if (free.length < 3) return;
+  const q = 130 / 60, pad = !!(s.layers.A && s.layers.A.amp && s.layers.A.amp.a >= 0.3) || /Pad|Choir|Drone|Strings|Cello|Swirl/.test(s.name);
+  const R = (d, a, t) => ({ d, a, t: t || 'both' });
+  const [drift, move, accent] = free;
+  s.lfo[drift] = lfoFill({ wave: 'sine', rate: q / 4, routes: [R('pan', pad ? 0.8 : 0.7)] }, drift);                          // one bar side to side
+  s.lfo[move] = lfoFill(pad ? { wave: 'sine', rate: q / 8, routes: [R('cutoff', 0.24)] }                                    // two-bar filter breath
+    : { wave: 'triangle', rate: q * 2, routes: [R('cutoff', 0.3)] }, move);                                                // eighth-note wobble
+  s.lfo[accent] = lfoFill({ wave: 'square', rate: q * 2, routes: [R('gate', pad ? 0.45 : 0.55)] }, accent);              // eighth-note chop
+  const b = (...ix) => ix.reduce((m, i) => m | (1 << i), base);
+  const bars = [b(), b(drift), b(move), b(drift, move, accent)];
+  Object.assign(U, { steps: 4, div: '1/1', grid: Array.from({ length: 64 }, (_, k) => bars[k % 4]) });
+});
 MOSAIC_LIBRARY_PRESETS.push(...PSY_LFOSEQ_PRESETS);
 PSY_LFOSEQ_PRESETS.forEach((p) => { MOSAIC_LIBRARY_DEST[mosaicSignatureKey(p.name)] = 'LFO SEQ'; });
 CONTINUUM_PACK_PRESETS.forEach((p) => { MOSAIC_LIBRARY_DEST[mosaicSignatureKey(p.name)] = p.dest; });
