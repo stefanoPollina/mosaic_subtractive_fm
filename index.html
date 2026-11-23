@@ -220,6 +220,8 @@ header.top {
 .menu.pm .pm-item.cur { background: #202124; }
 .menu.pm .pm-item:focus { outline: none; }
 .menu.pm .pm-item:focus-visible { box-shadow: inset 0 0 0 1px var(--accent); }
+.keys-ico { display: inline-flex; vertical-align: -1px; margin-left: 6px; color: #8d96a6; opacity: .85; }
+.pm-item.on .keys-ico { color: var(--accent); }
 .menu.pm .pm-item .pm-it { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .menu.pm .pm-item small { flex: none; color: var(--dim); font-size: 9px; letter-spacing: .12em; text-transform: uppercase; }
 .menu.pm .pm-item .pm-star { color: var(--accent); font-size: 10px; flex: none; }
@@ -4665,6 +4667,8 @@ PSY_LFOSEQ_PRESETS.forEach((s) => {
 });
 MOSAIC_LIBRARY_PRESETS.push(...PSY_LFOSEQ_PRESETS);
 PSY_LFOSEQ_PRESETS.forEach((p) => { MOSAIC_LIBRARY_DEST[mosaicSignatureKey(p.name)] = 'LFO SEQ'; });
+/* Presets made for playing from the keys (no note pattern of their own) carry a small keys icon in the preset menu and bank. */
+const MOSAIC_KEYS_FIRST = new Set();
 /* Every LFO SEQ preset sounds on PLAY (Space): the ones built only for the keys get a starting note pattern, so the LFO switching can be
    heard straight away. Pads and drones hold one D for the whole four bars, so slow attacks can swell; the two rhythmic ones pulse in sixteenths on D with the beat
    accented. The keys still play on top. */
@@ -4672,6 +4676,7 @@ MOSAIC_LIBRARY_PRESETS.forEach((s) => {
   if (!/^LFOSEQ/.test(s.name || '') || !s.seq) return;
   const q = s.seq, n = q.length || 16;
   if ((q.steps || []).slice(0, n).some((x) => x && x.on)) return;
+  MOSAIC_KEYS_FIRST.add(s.name);
   const A = s.layers && s.layers.A, held = !!(A && A.amp && (A.amp.a >= 0.2 || A.amp.s >= 0.5)) || /Pad|Choir|Drone|Strings|Cello|Wind|Siren|Sonar|Static/.test(s.name);
   if (held) {
     q.length = 64; q.steps = Array.from({ length: 64 }, (_, i) => ({ on: true, note: 50, vel: 100, accent: false, slide: i !== 63 }));
@@ -8869,7 +8874,7 @@ function mount(stage, engine) {
         const on = r.e.id === currentId;
         const b = el('button', 'pm-item' + (on ? ' on cur' : '')); b.type = 'button'; b.dataset.i = i;
         b.setAttribute('role', 'option'); b.setAttribute('aria-selected', String(on)); b.tabIndex = -1;
-        b.append(el('span', 'pm-it', r.label));
+        { const it = el('span', 'pm-it', r.label); if (keysOnly(r.e)) it.append(keysIcon(r.e)); b.append(it); }
         if (r.sub) b.append(el('small', '', r.sub));
         else if (bankMeta[r.e.name] && bankMeta[r.e.name].fav) b.append(el('span', 'pm-star', '★'));
         b.addEventListener('mousedown', (ev) => ev.preventDefault());   // no focus-scroll on click
@@ -9489,6 +9494,27 @@ function mount(stage, engine) {
     });
     return rows;
   }
+  // keys icon: true when a preset has no note pattern (play it from the keys / MIDI), or was built for the keys and only has a starter pattern
+  const KEYS_ONLY = {};
+  function keysOnly(e) {
+    if (!e || e.backup) return false;
+    if (MOSAIC_KEYS_FIRST.has(e.name)) return true;
+    const key = e.id + '|' + e.name;                 // library positions shift once the embedded pack loads, so the name is part of the key
+    if (!e.user && key in KEYS_ONLY) return KEYS_ONLY[key];
+    let r = false;
+    try {
+      const st = e.id.indexOf('spec:') === 0 ? professionalStateFromSpec(e.spec) : recall(e.id, user), q = st && st.seq;
+      r = !(q && (q.steps || []).slice(0, q.length || 16).some((x) => x && x.on));
+    } catch (err) { return false; }   // not ready yet (early first paint): don't remember the answer
+    if (!e.user) KEYS_ONLY[key] = r;
+    return r;
+  }
+  function keysIcon(e) {
+    const i = el('span', 'keys-ico'); i.title = MOSAIC_KEYS_FIRST.has(e.name) ? 'Made for playing on the keys (PLAY runs a simple starter pattern)' : 'Play from the keys or MIDI: no note pattern, PLAY stays silent';
+    i.setAttribute('aria-label', 'Keys preset');
+    i.innerHTML = '<svg viewBox="0 0 14 9" width="14" height="9" aria-hidden="true"><rect x=".5" y=".5" width="13" height="8" rx="1" fill="none" stroke="currentColor"/><path d="M5 .5v8M9 .5v8" stroke="currentColor" stroke-width=".8"/><rect x="3.6" y=".5" width="2.6" height="4.6" fill="currentColor"/><rect x="7.8" y=".5" width="2.6" height="4.6" fill="currentColor"/></svg>';
+    return i;
+  }
   function bankLoadEntry(e) {
     if (e.backup) { helixShowVersions(e.backup.id); return; }
     if (e.id.indexOf('spec:') === 0) { loadStateDirect(professionalStateFromSpec(e.spec)); currentId = e.id; }
@@ -9548,6 +9574,7 @@ function mount(stage, engine) {
       const fav = el('button', 'bk-fav', bankMeta[e.name] && bankMeta[e.name].fav ? '★' : '☆'); fav.type = 'button'; fav.dataset.fav = i; fav.setAttribute('aria-label', 'Favourite ' + e.name);
       const nm = el('span', 'bk-nm', e.name), tag = el('span', 'bk-tag', e.tag), st = el('span', 'bk-st');
       for (let n = 1; n <= 5; n++) { const sp = el('b', n <= ratingOf(e) ? 'on' : '', '★'); sp.dataset.rate = n; sp.dataset.i = i; st.append(sp); }
+      if (keysOnly(e)) nm.append(keysIcon(e));
       row.append(fav, nm, tag, st); helixDecorateRow(row, e);
       if (e.user) { const del = el('button', 'bk-del', '✕'); del.type = 'button'; del.dataset.del = i; del.title = 'Delete this saved preset'; del.setAttribute('aria-label', 'Delete ' + e.name); row.append(del); }
       list.append(row);
@@ -11282,13 +11309,14 @@ function mount(stage, engine) {
     else if (status === 0xb0) { if (window.__mosaicDeskLearning && window.__mosaicDeskLearning()) window.__mosaicDeskCc(d1, d2); else if (!ccIn(d1, d2) && window.__mosaicDeskCc) window.__mosaicDeskCc(d1, d2); }
   }
 
+  window.addEventListener('keyup', (event) => { if (event.code === 'Space' && !isTyping(event)) event.preventDefault(); });
   window.addEventListener('keydown', (event) => {
     if (isTyping(event)) return;
     if (event.code === 'Space') {
-      const tag = event.target && event.target.tagName;
-      if (tag === 'BUTTON' || tag === 'SELECT' || (event.target.closest && event.target.closest('.knob'))) return;
+      // Space always starts/stops the sequencer, even with a preset row, button, menu or knob focused (a clicked button keeps focus);
+      // its default press of the focused button is cancelled here and on keyup. Text boxes are excluded above by isTyping.
       event.preventDefault();
-      sequencer.toggle();
+      if (!event.repeat) sequencer.toggle();
       return;
     }
     if (event.code === 'Escape') {
