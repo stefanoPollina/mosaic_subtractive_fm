@@ -2648,7 +2648,7 @@ function defaultStateBase() {
       rotOn: false, rotSpeed: 0.35, rotDepth: 0.65, rotMix: 0.55, vowOn: false, vowPos: 0.35, vowRate: 0.28, vowRes: 0.55,
       apOn: false, apDiv: 0.5, apDepth: 0.7, apShape: 0.25, bpOn: false, bpRate: 0.58, bpFb: 0.48, bpMix: 0.45, rtOn: false, rtTune: 0.28, rtColor: 0.45, rtMix: 0.35,
       tcOn: false, tcSub: 0.45, tcTube: 0.35, tcSilk: 0.35, nyOn: false, nySmash: 0.65, nyBody: 0.45, nyMix: 0.3, tlOn: false, tlAngle: 0.38, tlFocus: 0.4, tlTrim: 0.5, tlMono: false,
-      sirOn: false, sirDub: 0.55, sirGrit: 0.45, sirMix: 0.45, sirHold: false,
+      sirOn: false, sirDub: 0.55, sirGrit: 0.45, sirMix: 0.45, sirType: 0, sirHold: false,
       fgOn: false, fgSteps: [1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1], fgCut: 0.42, fgRes: 0.35, fgDepth: 0.85, tapeOn: false, tapeSat: 0.3, tapeHead: 0.45, tapeWow: 0.15,
       duckOn: false, duckDepth: 0.7, duckRelease: 0.55, duckShape: 0.35,
       ppOn: false, ppSync: '3/16', ppTime: 0.28, ppFb: 0.35, ppMix: 0.12, ppLp: 3500, ppHp: 300,
@@ -5403,10 +5403,12 @@ class Engine {
       const slap = ctx.createDelay(0.5); slap.delayTime.value = 0.145; this.srFb = ctx.createGain(); this.srFb.gain.value = 0;
       this.mvOut.connect(this.srBp); this.srBp.connect(this.srCrush); this.srCrush.connect(lp); lp.connect(slap); slap.connect(this.srFb); this.srFb.connect(lp);
       lp.connect(this.srWet); slap.connect(this.srWet);
-      this.srOsc = ctx.createOscillator(); this.srOsc.type = 'triangle'; this.srOsc.frequency.value = 560;
-      const wob = ctx.createOscillator(); wob.type = 'sawtooth'; wob.frequency.value = 5.5; const wobG = ctx.createGain(); wobG.gain.value = 140; wob.connect(wobG); wobG.connect(this.srOsc.frequency);
-      this.srSirG = ctx.createGain(); this.srSirG.gain.value = 0; this.srOsc.connect(this.srSirG); this.srSirG.connect(slap); this.srSirG.connect(this.srWet);
-      this.srOsc.start(); wob.start(); this.srWet.connect(this.srOut); }
+      // the siren, like a 555-timer siren box: a square tone whose pitch an LFO cycles (WHOOP: rising saw sweeps, TRILL: two-tone square, WAIL: smooth triangle up-and-down), kept warm by a 2.2 kHz low-pass
+      this.srOsc = ctx.createOscillator(); this.srOsc.type = 'square'; this.srOsc.frequency.value = 620;
+      this.srWob = ctx.createOscillator(); this.srWob.type = 'sawtooth'; this.srWob.frequency.value = 4; this.srWobG = ctx.createGain(); this.srWobG.gain.value = 260; this.srWob.connect(this.srWobG); this.srWobG.connect(this.srOsc.frequency);
+      this.srSirLp = ctx.createBiquadFilter(); this.srSirLp.type = 'lowpass'; this.srSirLp.frequency.value = 2200;
+      this.srSirG = ctx.createGain(); this.srSirG.gain.value = 0; this.srOsc.connect(this.srSirLp); this.srSirLp.connect(this.srSirG); this.srSirG.connect(slap); this.srSirG.connect(this.srWet);
+      this.srOsc.start(); this.srWob.start(); this.srWet.connect(this.srOut); }
     this.srOut.connect(this.tpDry); this.tpDry.connect(this.tpOut);
     this.tpShaper = ctx.createWaveShaper(); this.tpShaper.oversample = '2x'; this.tpCurveK = -1;
     this.tpHead = ctx.createBiquadFilter(); this.tpHead.type = 'lowpass'; this.tpHead.frequency.value = 10000; this.tpHead.Q.value = -3.0103;
@@ -5677,9 +5679,13 @@ class Engine {
       const so = !!fx.sirOn, sh = !!fx.sirHold, sd = cl(fx.sirDub, 0, 1, 0.55), sg = cl(fx.sirGrit, 0, 1, 0.45), slv = Math.max(4, Math.round(64 - (0.25 + sg * 0.55) * 56)), sdr = 1 + sg * 3.5, skey = slv + ':' + sdr.toFixed(3);
       if (skey !== this.srKey) { this.srKey = skey; const n = 2048, c = new Float32Array(n); for (let i = 0; i < n; i++) c[i] = Math.round(Math.tanh(((i * 2) / (n - 1) - 1) * sdr) / sdr * slv) / slv; this.srCrush.curve = c; }
       set(this.srBp.frequency, 340 + sd * 820); set(this.srFb.gain, so || sh ? 0.2 + sd * 0.58 : 0); set(this.srWet.gain, so || sh ? cl(fx.sirMix, 0, 1, 0.45) * 1.2 : 0);
-      { const t0 = this.ctx.currentTime, f = this.srOsc.frequency, g = this.srSirG.gain;
+      { const t0 = this.ctx.currentTime, f = this.srOsc.frequency, g = this.srSirG.gain, mode = Math.min(2, Math.floor(cl(fx.sirType, 0, 1, 0) * 2.99));
+        const M = [{ wave: 'square', base: 620, lfo: 'sawtooth', rate: 4, depth: 260, lvl: 0.2 }, { wave: 'square', base: 700, lfo: 'square', rate: 8.5, depth: 150, lvl: 0.2 },
+          { wave: 'square', base: 640, lfo: 'triangle', rate: 3, depth: 300, lvl: 0.2 }][mode];
+        if (this.srOsc.type !== M.wave) this.srOsc.type = M.wave; if (this.srWob.type !== M.lfo) this.srWob.type = M.lfo; set(this.srWob.frequency, M.rate); set(this.srWobG.gain, M.depth);
         if (sh !== this.srHeld) { this.srHeld = sh; f.cancelScheduledValues(t0); g.cancelScheduledValues(t0);
-          if (sh) { f.setValueAtTime(560, t0); f.setTargetAtTime(190, t0, 0.35); g.setTargetAtTime(0.28, t0, 0.015); } else { g.setTargetAtTime(0, t0, 0.04); f.setTargetAtTime(560, t0 + 0.2, 0.02); } } }
+          // a quick rise into the cycle on press; on release the pitch drops away as it fades into the echo, as a siren box does
+          if (sh) { f.setValueAtTime(M.base * 0.72, t0); f.setTargetAtTime(M.base, t0, 0.04); g.setTargetAtTime(M.lvl, t0, 0.015); } else { g.setTargetAtTime(0, t0, 0.14); f.setTargetAtTime(250, t0, 0.12); } } }
       set(this.spSend.gain, sp ? 1 : 0); set(this.spWet.gain, sp ? cl(fx.springMix, 0, 1, 0.32) * 1.2 : 0);
       set(this.dubSend.gain, dub || thr ? 1 : 0); set(this.dubWet.gain, dub || thr ? cl(fx.dubMix, 0, 1, 0.38) * 1.15 : 0); }
     { const on = !!fx.mstOn, cl = (v, a, b, d) => Math.max(a, Math.min(b, Number.isFinite(+v) ? +v : d));
@@ -7197,12 +7203,13 @@ function mount(stage, engine) {
       ['pointerup', 'pointercancel', 'lostpointercapture'].forEach((ev) => thr.addEventListener(ev, () => go(false)));
       card.append(thr);
     }));
-    pageNode.append(fxCard('DUB SIREN', 'Sound-system dub tools: a dark band-pass, gritty 12-bit slapback echo (ECHO also moves the band-pass and sets how long it repeats), and HOLD: SIREN, a classic falling dub siren you can fire over anything.', (card) => {
+    pageNode.append(fxCard('DUB SIREN', 'Sound-system dub tools: a dark band-pass, gritty 12-bit slapback echo (ECHO also moves the band-pass and sets how long it repeats), and HOLD: SIREN, a sound-system dub siren you can fire over anything. TYPE picks the siren: WHOOP (rising sweeps), TRILL (two-tone) or WAIL (a smooth up-and-down).', (card) => {
       const top = el('div', 'fx-top'); addSwitch(top, { path: 'fx.sirOn', label: 'ON', liveLabel: true }); card.append(top);
       const knobs = el('div', 'knobs');
       addKnob(knobs, { path: 'fx.sirDub', label: 'ECHO', min: 0, max: 1, def: 0.55, format: (v) => Math.round(v * 100) + '%' });
       addKnob(knobs, { path: 'fx.sirGrit', label: 'GRIT', min: 0, max: 1, def: 0.45, format: (v) => Math.round(v * 100) + '%' });
       addKnob(knobs, { path: 'fx.sirMix', label: 'MIX', min: 0, max: 1, def: 0.45, format: (v) => Math.round(v * 100) + '%' });
+      addKnob(knobs, { path: 'fx.sirType', label: 'TYPE', min: 0, max: 1, def: 0, format: (v) => ['WHOOP', 'TRILL', 'WAIL'][Math.min(2, Math.floor(v * 2.99))] });
       card.append(knobs);
       const btn = el('button', 'seq-act', 'HOLD: SIREN'); btn.type = 'button'; btn.dataset.learn = 'fx.sirHold'; btn.dataset.learnMode = 'hold'; widgets.push({ path: 'fx.sirHold', paint() { btn.classList.toggle('busy', !!state.fx.sirHold); } }); btn.style.width = '100%'; btn.style.marginTop = '8px';
       const go = (on) => { if (!!state.fx.sirHold === on) return; state.fx.sirHold = on; btn.classList.toggle('busy', on); schedule(); };
