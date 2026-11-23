@@ -4504,6 +4504,8 @@ PSY_LFOSEQ_PRESETS.forEach((s) => {
   }
   const len = s.seq.length || 16, on = s.seq.steps.slice(0, len).filter((x) => x && x.on);
   if (on.length && Math.max(...on.map((x) => x.note)) > 65) s.seq.steps.forEach((x) => { if (x) x.note = Math.max(0, x.note - 12); });
+  // one tempo for the whole pack (130 BPM, the live set's tempo), so every bounce drops straight into the session; echoes and LFO lanes are tempo-synced and follow
+  s.seq.bpm = 130;
 });
 MOSAIC_LIBRARY_PRESETS.push(...PSY_LFOSEQ_PRESETS);
 PSY_LFOSEQ_PRESETS.forEach((p) => { MOSAIC_LIBRARY_DEST[mosaicSignatureKey(p.name)] = 'LFO SEQ'; });
