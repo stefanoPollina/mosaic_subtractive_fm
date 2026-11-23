@@ -4665,6 +4665,20 @@ PSY_LFOSEQ_PRESETS.forEach((s) => {
 });
 MOSAIC_LIBRARY_PRESETS.push(...PSY_LFOSEQ_PRESETS);
 PSY_LFOSEQ_PRESETS.forEach((p) => { MOSAIC_LIBRARY_DEST[mosaicSignatureKey(p.name)] = 'LFO SEQ'; });
+/* Every LFO SEQ preset sounds on PLAY (Space): the ones built only for the keys get a starting note pattern, so the LFO switching can be
+   heard straight away. Pads and drones hold one D for the whole four bars, so slow attacks can swell; the two rhythmic ones pulse in sixteenths on D with the beat
+   accented. The keys still play on top. */
+MOSAIC_LIBRARY_PRESETS.forEach((s) => {
+  if (!/^LFOSEQ/.test(s.name || '') || !s.seq) return;
+  const q = s.seq, n = q.length || 16;
+  if ((q.steps || []).slice(0, n).some((x) => x && x.on)) return;
+  const A = s.layers && s.layers.A, held = !!(A && A.amp && (A.amp.a >= 0.2 || A.amp.s >= 0.5)) || /Pad|Choir|Drone|Strings|Cello|Wind|Siren|Sonar|Static/.test(s.name);
+  if (held) {
+    q.length = 64; q.steps = Array.from({ length: 64 }, (_, i) => ({ on: true, note: 50, vel: 100, accent: false, slide: i !== 63 }));
+  } else {
+    q.length = 16; q.steps = Array.from({ length: 16 }, (_, i) => ({ on: true, note: 50, vel: i % 4 ? 84 : 118, accent: i % 4 === 0, slide: false }));
+  }
+});
 CONTINUUM_PACK_PRESETS.forEach((p) => { MOSAIC_LIBRARY_DEST[mosaicSignatureKey(p.name)] = p.dest; });
 DRIP_GUIDE_PRESETS.forEach((p) => { MOSAIC_LIBRARY_DEST[mosaicSignatureKey(p.name)] = p.dest; });
 // Near-copies that share oscillators, envelope, resonance and effects, and differ only by a small cutoff, are hidden.
