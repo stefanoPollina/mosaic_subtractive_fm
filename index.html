@@ -4545,6 +4545,20 @@ const PSY_LFOSEQ_PRESETS = (() => {
     s.seq.length = 64; s.seq.target = 'both'; s.seq.swing = 0.06; s.seq.steps = steps.slice(0, 64);
     lift(s, 1.6);
   }));
+  // 53. Bristol Tape Strings 95 (PLAYABLE): warm bowed tape strings with a vinyl-air halo, slow tape wow on pitch and cutoff
+  P.push(preset('LFOSEQ Psy Bristol Tape Strings 95', (s) => {
+    s.polyphony = 4; s.glide = 0.12; s.unison = 3; s.detune = 15;
+    Object.assign(s.layers.A, { level: 0.84, character: 0.7 });
+    s.layers.A.osc = [osc('saw', -1, 0, -6, 0.85, 0.5), osc('triangle', 0, 0, 6, 0.75, 0.5), osc('sine', -2, 0, 0, 0.6, 0.5)];
+    s.layers.A.filter = { type: 'lowpass', cutoff: 520, res: 0.3, env: 0.35, lfo: 0.35, key: 0.25, slope: 1 };
+    s.layers.A.amp = env(0.45, 1.2, 0.88, 1.8);
+    s.layers.B = layer({ enabled: true, level: 0.44, osc: [osc('sine', 0, 7, -4, 0.75, 0.5), osc('pink', 0, 0, 0, 0.2, 0.85), osc('sine', 0, 0, 0, 0, 0.5)],
+      filter: { type: 'lowpass', cutoff: 860, res: 0.25, env: 0.2, lfo: 0.3, key: 0.25, slope: 1 }, amp: env(0.6, 1.4, 0.85, 2.0) });
+    lfos(s, { 0: L({ wave: 'sine', rate: 0.42 }) });
+    s.mod = [{ src: 'lfo1', dest: 'pitch', amount: 0.06, target: 'A' }, { src: 'lfo1', dest: 'cutoff', amount: 0.32, target: 'A' }];   // tape wow and a drifting cutoff
+    Object.assign(s.fx, { drive: 0.32, ppOn: true, ppSync: '3/16', ppFb: 0.52, ppMix: 0.3, ppLp: 1700, ppHp: 230, reverbWet: 0.54, reverbDecay: 5.0 });
+    playable(s); lift(s, 1.35);
+  }));
   return P;
 })();
 /* No shrill trance: short bites (FM and filter envelopes on each note) stay, but brightness that lasts over bars is reined in.
@@ -9378,6 +9392,9 @@ function mount(stage, engine) {
     ['90s FREE PARTY', /castlemcore|free party 93|dread dub|alien acid|siren fx|stone circle|warehouse 95|m25 spiral|rolling mono/i],
     ['GOA & WORLD DUB', /rhino 96|himalayan|monastery|solar swirl|desert mirage|dub caravan|didgeridoo|velvet acid/i],
     ['90s AMBIENT', /tape infinity|time-stretch|bio-sonar|arctic wind|frozen cello|solstice|night meadow|sunrise dub|velvet electric/i],
+    ['BRISTOL TRIP-HOP', /bristol tape|thames squat strings|· trip hop|trip hop 012|golden tape|smoked vinyl|smoke session|lofi prophet|dusty voyager|dream cartographer/i],
+    ['LONDON SQUAT ACID', /thames squat|brixton sub|^acid line$|acid prophet|acid house chord|liquid acid line|industrial acid|ragga acid|acid dub steppa|aciddub 305/i],
+    ['SACRED & FOLK DUB', /sacred kalimba|temple oud|afro dub kalimba|hypnotic marimba|shamanic throat|tribal ritual drone|submerged temple|recursive temple|andean breath|throat choir|didgeridoo|tribal log pluck/i],
     ['PSYBREAKS & DUB', /soultech|psybreaks|ethereal dub|drip bass|bush glitch/i],
     ['PSY & RISERS', /psy rolling bass|drip squelch|liquid drip|forest spore|hi-tech|dopamine|ecstatic|sub seismic|seismic sub/i],
     ['BALEARIC', /balearic/i]];
