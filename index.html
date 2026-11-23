@@ -6935,7 +6935,7 @@ function mount(stage, engine) {
 .useq-top select,.useq-top button{font:inherit;font-size:11px;color:var(--text);background:#0d0e10;border:1px solid #3a4254;border-radius:5px;padding:4px 8px;cursor:pointer}.useq-top button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}.useq-top input[type=range]{width:110px;accent-color:var(--accent)}
 .useq-wrap{border:1px solid var(--line);border-radius:10px;background:linear-gradient(180deg,#17181a,#101113);padding:8px 10px}.useq-grid{display:grid;gap:2px;touch-action:none;user-select:none}
 .useq-lab{font-size:10px;color:var(--text);display:flex;align-items:center;gap:6px;white-space:nowrap;padding-right:6px;cursor:pointer}.useq-lab i{width:8px;height:8px;border-radius:50%}.useq-lab small{color:var(--dim);font-size:9px}.useq-lab.idle{opacity:.45}.useq-sep{grid-column:1/-1;height:4px}
-.useq-cell{height:18px;background:#0b0c0e;border:1px solid #262a31;border-radius:2px;cursor:pointer}.useq-cell.q{border-left-color:#4a505c}.useq-cell.on{background:var(--c);border-color:var(--c)}.useq-cell.off-range{opacity:.2}.useq-cell.now{box-shadow:0 0 0 1px #fff inset}
+.useq-cell{height:18px;background:#0b0c0e;border:1px solid #262a31;border-radius:2px;cursor:pointer}.useq-cell.q{border-left-color:#4a505c}.useq-cell.on{background:var(--c);border-color:var(--c)}.useq-cell.off-range{opacity:.2}.useq-cell.now{box-shadow:0 0 0 1px #fff inset}.useq-cell.now:not(.on){background-color:#1b1e24}.useq-cell.on.now{filter:brightness(1.35);box-shadow:0 0 0 1px #fff inset,0 0 8px var(--c)}.useq-wrap:not(.useq-live) .useq-cell.on{opacity:.28;filter:saturate(.35)}.useq-wrap:not(.useq-live) .useq-lab{opacity:.6}.useq-hint{font-size:10.5px;color:var(--dim);margin-top:8px;line-height:1.5}.useq-hint b{color:var(--text)}
 .useq-head{font-size:9px;color:var(--dim);text-align:center}.useq-head.now{color:#fff;font-weight:700}.useq-note{font-size:10.5px;color:var(--dim);line-height:1.5}.useq-note b{color:var(--text)}`;
     document.head.append(css);
     const pageNode = el('div', 'page page-useq');
@@ -6947,7 +6947,7 @@ function mount(stage, engine) {
       <label>XFADE <input type="range" id="useqXf" min="0" max="0.5" step="0.01"><b id="useqXfV"></b></label>
       <button type="button" id="useqRetrig">RETRIG · OFF</button>
       <label>PATTERN <select id="useqPat"><option value="">— load a starting pattern —</option>${USEQ_PATTERNS.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select></label></div>
-      <div class="useq-wrap"><div class="useq-grid" id="useqGrid"></div></div>`;
+      <div class="useq-wrap" id="useqWrap"><div class="useq-grid" id="useqGrid"></div><div class="useq-hint" id="useqHint"></div></div>`;
     const $u = (id) => pageNode.querySelector('#' + id);
     const commit = () => { schedule(); useqKey = ''; };
     $u('useqOn').addEventListener('click', () => { const U = useqState(); U.on = !U.on; commit(); });
@@ -6980,6 +6980,13 @@ function mount(stage, engine) {
       const U = useqView(), n = U.steps || 16;
       const on = $u('useqOn'); on.textContent = 'LFO SEQ · ' + (U.on ? 'ON' : 'OFF'); on.classList.toggle('on', !!U.on);
       const rt = $u('useqRetrig'); rt.textContent = 'RETRIG · ' + (U.retrig ? 'ON' : 'OFF'); rt.classList.toggle('on', !!U.retrig);
+      // make the state visible: dim grid when off, a plain-words hint, and a warning when no LFO is routed yet (switching then has nothing to switch)
+      $u('useqWrap').classList.toggle('useq-live', !!U.on);
+      { const routed = Array.from({ length: 16 }, (_, r) => useqLfoUsed(r)).some(Boolean), hint = $u('useqHint');
+        const txt = !U.on ? '<b>OFF</b> · every LFO runs all the time, as set on its panel. Turn LFO SEQ on to switch them step by step.'
+          : !routed ? '<b>ON</b> · stepping, but no LFO is routed to anything yet. Give an LFO a destination in its ROUTES (or a matrix slot) to hear the switching.'
+          : '<b>ON</b> · only the lit LFOs act on each step; the white column is the current step.';
+        if (hint.innerHTML !== txt) hint.innerHTML = txt; }
       $u('useqSteps').value = String(n); $u('useqDiv').value = U.div || '1/16'; $u('useqXf').value = U.xfade == null ? 0.08 : U.xfade; $u('useqXfV').textContent = Math.round((U.xfade == null ? 0.08 : U.xfade) * 100) + '%';
       const key = n + '|' + U.grid.slice(0, n).join(',') + '|' + (state.lfoB ? state.lfoB.map(Boolean).join('') : '') + '|' + Array.from({ length: 16 }, (_, r) => useqLfoUsed(r) ? 1 : 0).join('');
       if (key === useqKey) return;
