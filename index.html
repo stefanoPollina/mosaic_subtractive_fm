@@ -780,7 +780,7 @@ footer.bed {
 /* Preserve the original vertical access to controls when the expanded voice row needs more height. */
 .pages{overflow-x:hidden;overflow-y:auto}
 .page-play{height:auto;min-height:100%;grid-template-rows:minmax(210px,1.2fr) minmax(185px,1fr) minmax(94px,auto)}
-.page-fx{gap:12px!important;padding:12px!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;align-items:stretch}@media(max-width:1180px){.page-fx{grid-template-columns:repeat(2,minmax(0,1fr))!important}}.page-fx .fx-card.fx-wide{grid-column:span 2}.fx-full{grid-column:1/-1}.gc-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px 26px}.gc-pitch{display:flex;flex-direction:column;gap:6px;min-width:220px}.gc-lab{font-size:10px;letter-spacing:.12em;color:var(--dim)}
+.page-fx{gap:12px!important;padding:12px!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;align-items:stretch}@media(max-width:1180px){.page-fx{grid-template-columns:repeat(2,minmax(0,1fr))!important}}.page-fx .fx-card.fx-wide{grid-column:span 2}.fx-full{grid-column:1/-1}.gc-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 28px}.gc-row .knobs{margin:0}.gc-sw{display:flex;gap:6px}.gc-pitch{display:flex;align-items:center;gap:10px}.gc-pitch .segs{display:flex;flex:none;gap:4px}.gc-pitch .segs button{min-width:62px;padding:4px 8px;white-space:nowrap}.gc-row .fx-preset-strip{margin:0 0 0 auto!important;min-width:260px}.gc-lab{font-size:10px;letter-spacing:.12em;color:var(--dim)}.fx-full .fx-top:empty{display:none}
 .page-fx .fx-card{min-width:0;box-sizing:border-box;overflow:hidden;padding:12px!important}
 .page-fx .fx-card .fx-top{justify-content:flex-start;gap:10px;padding:8px 12px 4px!important;min-width:0}
 .page-fx .fx-card .fx-top button{position:static!important;max-width:100%;margin:0!important}
@@ -7738,16 +7738,18 @@ function mount(stage, engine) {
       addKnob(knobs, { path: 'fx.springMix', label: 'SPLASH', min: 0, max: 1, def: 0.32, format: (v) => Math.round(v * 100) + '%' });
       card.append(knobs);
     }));
-    pageNode.append(fxCard('GRANULAR CLOUD', 'Grains of the last few seconds, scattered, pitched and spread across the stereo field into a cloud that sits behind the sound, kept warm by a 1.8 kHz low-pass. FREEZE holds the buffer, REV plays every other grain backwards, REGEN feeds the cloud back into itself (capped, and filtered to 180 Hz - 1.65 kHz).', (card) => {
-      const top = el('div', 'fx-top'); addSwitch(top, { path: 'fx.gcOn', label: 'ON', liveLabel: true }); addSwitch(top, { path: 'fx.gcFreeze', label: 'FREEZE' }); addSwitch(top, { path: 'fx.gcRev', label: 'REV' }); card.append(top);
-      const row = el('div', 'gc-row'), knobs = el('div', 'knobs');
+    pageNode.append(fxCard('GRANULAR CLOUD', 'Grains of the last few seconds, pitched and scattered across the stereo field behind the sound, warm under 1.8 kHz. FREEZE holds the buffer, REV reverses every other grain, REGEN feeds the cloud back (capped).', (card) => {
+      const top = el('div', 'fx-top'); addSwitch(top, { path: 'fx.gcOn', label: 'ON', liveLabel: true }); card.append(top);
+      const row = el('div', 'gc-row'), sw = el('div', 'gc-sw'), knobs = el('div', 'knobs');
+      addSwitch(sw, { path: 'fx.gcFreeze', label: 'FREEZE' }); addSwitch(sw, { path: 'fx.gcRev', label: 'REV' });
       addKnob(knobs, { path: 'fx.gcMix', label: 'MIX', min: 0, max: 1, def: 0.35, format: (v) => Math.round(v * 100) + '%' });
       addKnob(knobs, { path: 'fx.gcRegen', label: 'REGEN', min: 0, max: 0.85, def: 0.38, format: (v) => Math.round(v * 100) + '%' });
       addKnob(knobs, { path: 'fx.gcSize', label: 'GRAIN', min: 45, max: 380, def: 180, format: (v) => Math.round(v) + ' ms' });
       addKnob(knobs, { path: 'fx.gcDens', label: 'DENSITY', min: 4, max: 28, def: 14, format: (v) => Math.round(v) + ' Hz' });
       const pitch = el('div', 'gc-pitch'); pitch.append(el('span', 'gc-lab', 'SHIMMER PITCH'));
       addSegments(pitch, { path: 'fx.gcPitch', options: [[0.5, '-OCT'], [1, 'UNISON'], [1.498, '+5TH'], [2, '+OCT']] });
-      row.append(knobs, pitch); card.append(row); card.classList.add('fx-full');
+      row.append(sw, knobs, pitch); const strip = card.querySelector('.fx-preset-strip'); if (strip) row.append(strip);   // FX PRESET joins the control row
+      card.append(row); card.classList.add('fx-full');
     }));
     pageNode.append(fxCard('PSY FILTER GATE', 'A 16-step trance gate on the SEQ clock: lit steps open a warm 24 dB low-pass and the level, dark steps close them. Click steps to edit or pick a pattern; GATE DEPTH sets how far it closes.', (card) => {
       const top = el('div', 'fx-top'); addSwitch(top, { path: 'fx.fgOn', label: 'ON', liveLabel: true }); card.append(top);
