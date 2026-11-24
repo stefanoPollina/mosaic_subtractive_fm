@@ -559,6 +559,10 @@ canvas.display {
   font-weight: 800;
 }
 .play.on { background: var(--accent); color: var(--accent-ink); }
+.page button.seq-mini { height: 24px; padding: 0 12px; border-radius: 5px; border: 1px solid var(--accent); background: transparent; color: var(--accent);
+  font-size: 10px; font-weight: 800; letter-spacing: .12em; cursor: pointer; pointer-events: auto; white-space: nowrap; }
+.page button.seq-mini.on { background: var(--accent); color: var(--accent-ink); }
+.lfo-book-tabs button.seq-mini { margin: 0 0 5px 12px; align-self: center; }
 select.slim {
   background: #0d0e10;
   border: 1px solid #3a4254;
@@ -6079,6 +6083,16 @@ function mount(stage, engine) {
   let scopeCanvas;
   let stepGrid;
   let playBtn;
+  // PLAY / STOP on the LFO pages: the LFOs only shape notes, so these start the preset's note pattern (same as Space) without leaving the page
+  const PLAY_MIRRORS = [];
+  function transportButton() {
+    const b = el('button', 'seq-mini', '▶ PLAY');
+    b.type = 'button'; b.title = "Play the preset's note pattern (same as Space) so you can hear the LFOs at work";
+    b.addEventListener('click', () => { sequencer.toggle(); b.blur(); });
+    PLAY_MIRRORS.push(b); let on = false; try { on = !!sequencer.playing; } catch (e) { /* sequencer not built yet */ } syncPlayMirrors(on);
+    return b;
+  }
+  function syncPlayMirrors(on) { PLAY_MIRRORS.forEach((b) => { b.classList.toggle('on', on); b.textContent = on ? '■ STOP' : '▶ PLAY'; }); }
   let gateSlots;
   let autoSlots;
   let pageLabel;
@@ -7120,6 +7134,7 @@ function mount(stage, engine) {
     book.innerHTML = '<div class="lfo-book-tabs"><button type="button" data-book="steps">STEP SEQUENCER · per LFO</button><button type="button" data-book="useq">LFO SEQ · switch LFOs per step</button><span>both sequencers run together · the tabs only change the view</span></div><div class="lfo-book-page" data-book-page="steps"></div><div class="lfo-book-page" data-book-page="useq"></div>';
     lfoEd.replaceWith(book);
     book.querySelector('[data-book-page="steps"]').append(lfoEd);
+    book.querySelector('.lfo-book-tabs').append(transportButton());   // one PLAY / STOP for both tabs
     useqNode.className = 'useq-embed'; delete useqNode.dataset.page;
     book.querySelector('[data-book-page="useq"]').append(useqNode);
     let pageNow = 'steps'; try { pageNow = localStorage.getItem('mosaic-lfo-book') === 'useq' ? 'useq' : 'steps'; } catch (e) { /* storage off */ }
@@ -8300,6 +8315,7 @@ function mount(stage, engine) {
         this.timer = setInterval(() => this.pump(), 20);
         playBtn.classList.add('on');
         playBtn.textContent = 'PLAY';
+        syncPlayMirrors(true);
       });
     },
     stop() {
@@ -8316,6 +8332,7 @@ function mount(stage, engine) {
         playBtn.classList.remove('on');
         markPlayhead(-1);
       }
+      syncPlayMirrors(false);
     },
     pump(renderEnd) {
       if (!this.playing || !engine.ctx) return;
