@@ -5694,7 +5694,7 @@ class Engine {
     this.reverb = ctx.createConvolver();
     this.reverbOut = ctx.createGain();   // each convolver feeds the chain through its own fade gain, so a new impulse can be crossfaded in
     this.reverbWet = ctx.createGain();
-    this.fxPre.connect(this.reverb);
+    this.rvIn = ctx.createGain(); this.fxPre.connect(this.rvIn); this.rvIn.connect(this.reverb);   // the reverb's input, so the gate can take the reverb out when it is idle
     this.reverb.connect(this.reverbOut);
     this.reverbOut.connect(this.reverbWet);
     this.reverbWet.connect(this.fxSum);
@@ -5796,7 +5796,7 @@ class Engine {
     this.comp.connect(this.fsIn); this.fsIn.connect(this.fsDry); this.fsDry.connect(this.fsOut);
     { const sum = ctx.createGain(), hil = (list, from) => { let n = from; list.forEach((a) => { const f = ctx.createIIRFilter([a * a, 0, -1], [1, 0, -a * a]); n.connect(f); n = f; }); return n; };
       this.fsIn.connect(sum);
-      const d1 = ctx.createDelay(0.01); d1.delayTime.value = 1 / ctx.sampleRate; sum.connect(d1);
+      const d1 = ctx.createDelay(0.01); d1.delayTime.value = 1 / ctx.sampleRate; sum.connect(d1); this.fsSum = sum;
       const pI = hil([0.6923878, 0.9360654322959, 0.9882295226860, 0.9987488452737], d1);
       const pQ = hil([0.4021921162426, 0.8561710882420, 0.9722909545651, 0.9952884791278], sum);
       const mI = ctx.createGain(), mQ = ctx.createGain(); mI.gain.value = 0; mQ.gain.value = 0;
@@ -5833,7 +5833,7 @@ class Engine {
       const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2300; n.connect(lp);
       const dL = ctx.createDelay(0.5), dR = ctx.createDelay(0.5); dL.delayTime.value = 0.041; dR.delayTime.value = 0.053; const spl = ctx.createChannelSplitter(2); lp.connect(spl); spl.connect(dL, 0); spl.connect(dR, 1);
       const damp = (from, to) => { const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 3000; const g = ctx.createGain(); g.gain.value = 0; from.connect(f); f.connect(g); g.connect(to); return g; };
-      this.spFbL = damp(dL, dR); this.spFbR = damp(dR, dL);
+      this.spFbL = damp(dL, dR); this.spFbR = damp(dR, dL); this.spDL = dL; this.spDR = dR;
       const mg = ctx.createChannelMerger(2); dL.connect(mg, 0, 0); dR.connect(mg, 0, 1); mg.connect(this.spWet); this.spWet.connect(this.spOut); }
     // ENSEMBLE: two bucket-brigade style lines (8 / 11 ms) swept by LFOs at a 1 : 1.47 ratio with opposite depth, each rolled off at 3.4 kHz
     this.enDry = ctx.createGain(); this.enWet = ctx.createGain(); this.enWet.gain.value = 0; this.enOut = ctx.createGain();
@@ -5846,7 +5846,7 @@ class Engine {
       this.enDepL = ctx.createGain(); this.enDepL.gain.value = 0; this.enDepR = ctx.createGain(); this.enDepR.gain.value = 0;
       this.enLfo1.connect(this.enDepL); this.enDepL.connect(dL.delayTime); this.enLfo2.connect(this.enDepR); this.enDepR.connect(dR.delayTime); this.enLfo1.start(); this.enLfo2.start();
       const lpL = ctx.createBiquadFilter(), lpR = ctx.createBiquadFilter(); lpL.type = lpR.type = 'lowpass'; lpL.frequency.value = lpR.frequency.value = 3400;
-      this.gcOut.connect(sp); sp.connect(dL, 0); sp.connect(dR, 1); dL.connect(lpL); dR.connect(lpR); lpL.connect(mg, 0, 0); lpR.connect(mg, 0, 1); mg.connect(this.enWet); this.enWet.connect(this.enOut); }
+      this.gcOut.connect(sp); this.enSp = sp; sp.connect(dL, 0); sp.connect(dR, 1); dL.connect(lpL); dR.connect(lpR); lpL.connect(mg, 0, 0); lpR.connect(mg, 0, 1); mg.connect(this.enWet); this.enWet.connect(this.enOut); }
     // DUB SIREN: a dark band-pass into 12-bit style grit and a 145 ms slapback that feeds back through a 2.6 kHz low-pass, plus a held siren
     // (triangle with a 5.5 Hz saw wobble) that dives from 560 Hz to 190 Hz while HOLD: SIREN is down
     this.srDry = ctx.createGain(); this.srWet = ctx.createGain(); this.srWet.gain.value = 0; this.srOut = ctx.createGain(); this.srKey = '';
@@ -5861,38 +5861,38 @@ class Engine {
         this.rotDep = ctx.createGain(); this.rotDep.gain.value = 0; this.rotAm = ctx.createGain(); this.rotAm.gain.value = 0;
         this.rotOsc.connect(this.rotDep); this.rotOsc.connect(this.rotAm); this.rotDep.connect(dL.delayTime); this.rotAm.connect(gL.gain);
         const depI = ctx.createGain(), amI = ctx.createGain(); this.rotDep.connect(inv); inv.connect(depI); depI.connect(dR.delayTime); this.rotAm.connect(amI); amI.gain.value = -1; amI.connect(gR.gain);
-        this.enOut.connect(lp); lp.connect(sp); sp.connect(dL, 0); sp.connect(dR, 1); dL.connect(gL); dR.connect(gR); gL.connect(mg, 0, 0); gR.connect(mg, 0, 1); mg.connect(this.rot.wet); this.rotOsc.start(); }
+        this.enOut.connect(lp); this.rotLp = lp; lp.connect(sp); sp.connect(dL, 0); sp.connect(dR, 1); dL.connect(gL); dR.connect(gR); gL.connect(mg, 0, 0); gR.connect(mg, 0, 1); mg.connect(this.rot.wet); this.rotOsc.start(); }
       // VOWEL MORPH: two band-passes (the first two formants, oo -> oh -> ah -> eh, below 2.6 kHz) plus a 900 Hz low-pass body, swept by a slow LFO
       this.vow = stage(this.rot.out);
       { this.vowF1 = bq('bandpass', 450, 4.5); this.vowF2 = bq('bandpass', 1100, 5); const body = bq('lowpass', 900);
         this.vowOsc = ctx.createOscillator(); this.vowOsc.frequency.value = 0.4; this.vowM1 = ctx.createGain(); this.vowM2 = ctx.createGain(); this.vowM1.gain.value = this.vowM2.gain.value = 0;
         this.vowOsc.connect(this.vowM1); this.vowM1.connect(this.vowF1.frequency); this.vowOsc.connect(this.vowM2); this.vowM2.connect(this.vowF2.frequency); this.vowOsc.start();
-        for (const f of [this.vowF1, this.vowF2, body]) { this.rot.out.connect(f); f.connect(this.vow.wet); } }
+        for (const f of [this.vowF1, this.vowF2, body]) { this.rot.out.connect(f); f.connect(this.vow.wet); } this.vowBody = body; }
       // STEREO AUTO-PAN: tempo-synced, the lows below 160 Hz stay where they were (24 dB split)
       this.ap = stage(this.vow.out);
       { const lo1 = bq('lowpass', 160, -3.0103), lo2 = bq('lowpass', 160, -3.0103), hi1 = bq('highpass', 160, -3.0103), hi2 = bq('highpass', 160, -3.0103);
         const sp = ctx.createChannelSplitter(2), mg = ctx.createChannelMerger(2), gL = ctx.createGain(), gR = ctx.createGain(); this.apOsc = ctx.createOscillator(); this.apOsc.frequency.value = 1;
         this.apDep = ctx.createGain(); this.apDep.gain.value = 0; const inv = ctx.createGain(); inv.gain.value = -1;
         this.apOsc.connect(this.apDep); this.apDep.connect(gL.gain); this.apDep.connect(inv); inv.connect(gR.gain); this.apOsc.start();
-        this.vow.out.connect(lo1); lo1.connect(lo2); lo2.connect(this.ap.wet);
+        this.vow.out.connect(lo1); this.apLo = lo1; this.apHi = hi1; lo1.connect(lo2); lo2.connect(this.ap.wet);
         this.vow.out.connect(hi1); hi1.connect(hi2); hi2.connect(sp); sp.connect(gL, 0); sp.connect(gR, 1); gL.connect(mg, 0, 0); gR.connect(mg, 0, 1); mg.connect(this.ap.wet); }
       // BARBERPOLE PHASER: six all-passes spaced across 160 Hz - 2.24 kHz that glide endlessly up (or down), with feedback damped at 2.8 kHz
       this.bp = stage(this.ap.out);
       { const inG = ctx.createGain(); this.bpStages = Array.from({ length: 6 }, (_, i) => bq('allpass', 160 * Math.pow(14, i / 6), 1.6));
         const lp = bq('lowpass', 2800), loop = ctx.createDelay(0.01); loop.delayTime.value = 128 / ctx.sampleRate; this.bpFb = ctx.createGain(); this.bpFb.gain.value = 0;
-        this.ap.out.connect(inG); let n = inG; for (const a of this.bpStages) { n.connect(a); n = a; } n.connect(lp); lp.connect(this.bp.wet); lp.connect(loop); loop.connect(this.bpFb); this.bpFb.connect(inG);
+        this.ap.out.connect(inG); this.bpIn = inG; let n = inG; for (const a of this.bpStages) { n.connect(a); n = a; } n.connect(lp); lp.connect(this.bp.wet); lp.connect(loop); loop.connect(this.bpFb); this.bpFb.connect(inG);
         this.bpPhase = 0; this.bpLast = ctx.currentTime; }
       // WARM RING TREM: a sine carrier (2 - 220 Hz) ring-modulating the signal low-passed at 2.6 kHz, then rolled off again by WARMTH
       this.rt = stage(this.bp.out);
       { const pre = bq('lowpass', 2600), vca = ctx.createGain(); vca.gain.value = 0; this.rtOsc = ctx.createOscillator(); this.rtOsc.frequency.value = 55; this.rtDep = ctx.createGain(); this.rtDep.gain.value = 0;
         this.rtPost = bq('lowpass', 1800); this.rtOsc.connect(this.rtDep); this.rtDep.connect(vca.gain); this.rtOsc.start();
-        this.bp.out.connect(pre); pre.connect(vca); vca.connect(this.rtPost); this.rtPost.connect(this.rt.wet); }
+        this.bp.out.connect(pre); this.rtPre = pre; pre.connect(vca); vca.connect(this.rtPost); this.rtPost.connect(this.rt.wet); }
       this.mvOut = this.rt.out; }
     this.mvOut.connect(this.srDry); this.srDry.connect(this.srOut);
     { this.srBp = ctx.createBiquadFilter(); this.srBp.type = 'bandpass'; this.srBp.frequency.value = 790; this.srBp.Q.value = 1.8;
       this.srCrush = ctx.createWaveShaper(); const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2600;
       const slap = ctx.createDelay(0.5); slap.delayTime.value = 0.145; this.srFb = ctx.createGain(); this.srFb.gain.value = 0;
-      this.mvOut.connect(this.srBp); this.srBp.connect(this.srCrush); this.srCrush.connect(lp); lp.connect(slap); slap.connect(this.srFb); this.srFb.connect(lp);
+      this.mvOut.connect(this.srBp); this.srLp = lp; this.srSlap = slap; this.srBp.connect(this.srCrush); this.srCrush.connect(lp); lp.connect(slap); slap.connect(this.srFb); this.srFb.connect(lp);
       lp.connect(this.srWet); slap.connect(this.srWet);
       // the siren, like a 555-timer siren box: a square tone whose pitch an LFO cycles (WHOOP: rising saw sweeps, TRILL: two-tone square, WAIL: smooth triangle up-and-down), kept warm by a 2.2 kHz low-pass
       this.srOsc = ctx.createOscillator(); this.srOsc.type = 'square'; this.srOsc.frequency.value = 620;
@@ -5935,11 +5935,11 @@ class Engine {
       // NY PARALLEL GLUE: the mix stays; a low-passed copy is squashed hard and blended in underneath
       const nyOut = ctx.createGain(); this.nyLp = bq('lowpass', 3200); this.nyComp = ctx.createDynamicsCompressor(); this.nyComp.knee.value = 6; this.nyComp.attack.value = 0.008; this.nyComp.release.value = 0.14;
       this.nyComp.threshold.value = -25; this.nyComp.ratio.value = 12; this.nyWet = ctx.createGain(); this.nyWet.gain.value = 0;
-      tcOut.connect(nyOut); tcOut.connect(this.nyLp); this.nyLp.connect(this.nyComp); this.nyComp.connect(this.nyWet); this.nyWet.connect(nyOut);
+      tcOut.connect(nyOut); tcOut.connect(this.nyLp); this.tcOut = tcOut; this.nyLp.connect(this.nyComp); this.nyComp.connect(this.nyWet); this.nyWet.connect(nyOut);
       // MASTER TILT & MONO: low shelf 320 Hz against high shelf 1.8 kHz (the high side capped at +3.5 dB), a 95 Hz sub focus, MONO CHECK, output trim
       this.tlDry = ctx.createGain(); this.tlWet = ctx.createGain(); this.tlWet.gain.value = 0; const tlOut = ctx.createGain();
       this.tlLow = bq('lowshelf', 320, null, 0); this.tlHigh = bq('highshelf', 1800, null, 0); this.tlFocus = bq('peaking', 95, 0.9, 0);
-      nyOut.connect(this.tlDry); this.tlDry.connect(tlOut); nyOut.connect(this.tlLow); this.tlLow.connect(this.tlHigh); this.tlHigh.connect(this.tlFocus); this.tlFocus.connect(this.tlWet); this.tlWet.connect(tlOut);
+      nyOut.connect(this.tlDry); this.tlDry.connect(tlOut); nyOut.connect(this.tlLow); this.nyOut = nyOut; this.tlLow.connect(this.tlHigh); this.tlHigh.connect(this.tlFocus); this.tlFocus.connect(this.tlWet); this.tlWet.connect(tlOut);
       const sp = ctx.createChannelSplitter(2), mg = ctx.createChannelMerger(2); this.tlSum = ctx.createGain(); this.tlSum.gain.value = 0; this.tlTrim = ctx.createGain();
       const pL = ctx.createGain(), pR = ctx.createGain(); tlOut.connect(sp); sp.connect(pL, 0); sp.connect(pR, 1);
       const sum = ctx.createGain(); sp.connect(sum, 0); sp.connect(sum, 1); sum.gain.value = 0.5; sum.connect(this.tlSum);
@@ -5952,9 +5952,7 @@ class Engine {
       const chain = (src, list, dst) => { let n = src; for (const f of list) { n.connect(f); n = f; } n.connect(dst); };
       this.djDry = ctx.createGain(); this.djBands = ctx.createGain(); this.djBands.gain.value = 0;
       this.djLo = ctx.createGain(); this.djMid = ctx.createGain(); this.djHi = ctx.createGain();
-      chain(this.djIn, [bq('lowpass', 180), bq('lowpass', 180)], this.djLo);
-      chain(this.djIn, [bq('highpass', 180), bq('highpass', 180), bq('lowpass', 2800), bq('lowpass', 2800)], this.djMid);
-      chain(this.djIn, [bq('highpass', 2800), bq('highpass', 2800)], this.djHi);
+      this.djHeads = [[bq('lowpass', 180), bq('lowpass', 180)], [bq('highpass', 180), bq('highpass', 180), bq('lowpass', 2800), bq('lowpass', 2800)], [bq('highpass', 2800), bq('highpass', 2800)]].map((list, i) => { chain(this.djIn, list, [this.djLo, this.djMid, this.djHi][i]); return list[0]; });
       for (const g of [this.djLo, this.djMid, this.djHi]) g.connect(this.djBands);
       this.isoHp = ctx.createBiquadFilter(); this.isoHp.type = 'highpass'; this.isoHp.frequency.value = 10; this.isoHp.Q.value = 2.92;
       this.isoLp = ctx.createBiquadFilter(); this.isoLp.type = 'lowpass'; this.isoLp.frequency.value = Math.min(20000, ctx.sampleRate * 0.45); this.isoLp.Q.value = 0.83;
@@ -6004,6 +6002,68 @@ class Engine {
         }, hold[g]);
       }
     }
+    this.gateIdle(fx);
+  }
+
+  gateIdle(fx) {
+    // The same for the rest of the chain. Each effect's wet branch is fed (and its feedback loop closed) only while the effect is on; when it is
+    // off, its input and loop edges come out once its wet gain has faded, the branch drains and goes silent, and Chrome stops computing it.
+    // Nothing on the dry path is touched, so what you hear is unchanged.
+    if (!this.mstHp || !this.djHeads) return;
+    const n = (v) => Number(v) || 0, on = (k) => !!fx[k];
+    const bus = Math.abs(n(fx.busFilter)) > 0.01 || on('chorusOn') || on('ppOn') || on('crushOn') || on('tremOn') || on('widthOn');
+    const airOn = on('shimmerOn') && fx.shimmerMode === 'air' && n(fx.shimmerLevel) > 0.001;
+    const G = this.idleGroups || (this.idleGroups = {
+      drive: [[this.gate, this.drive]],
+      phaser: [[this.driveSum, this.phaseStages[0]]],
+      delay: [[this.phaserSum, this.delay], [this.delayFb, this.delay]],
+      reverb: [[this.fxPre, this.rvIn]],
+      bus: [[this.fxSum, this.djLp]],
+      crush: [[this.djHp, this.crush]],
+      chorus: [[this.crushSum, this.chHp]],
+      pp: [[this.crushSum, this.ppIn], [this.ppFb, this.ppHp]],
+      fs: [[this.fsIn, this.fsSum], [this.fsFb, this.fsSum]],
+      lofi: [[this.fsOut, this.lfShaper]],
+      dub: [[this.lfOut, this.dubSend], [this.dubFbL, this.dubR], [this.dubFbR, this.dubL]],
+      spring: [[this.dubOut, this.spSend], [this.spFbL, this.spDR], [this.spFbR, this.spDL]],
+      ens: [[this.gcOut, this.enSp]],
+      rot: [[this.enOut, this.rotLp]],
+      vow: [[this.rot.out, this.vowF1], [this.rot.out, this.vowF2], [this.rot.out, this.vowBody]],
+      ap: [[this.vow.out, this.apLo], [this.vow.out, this.apHi]],
+      bp: [[this.ap.out, this.bpIn], [this.bpFb, this.bpIn]],
+      rt: [[this.bp.out, this.rtPre]],
+      siren: [[this.mvOut, this.srBp], [this.srFb, this.srLp], [this.srSirG, this.srSlap], [this.srSirG, this.srWet]],
+      tape: [[this.srOut, this.tpShaper]],
+      mst: [[this.tpOut, this.mstHp]],
+      tc: [[this.mtIn, this.tcShelf]],
+      ny: [[this.tcOut, this.nyLp]],
+      tl: [[this.nyOut, this.tlLow]],
+      dj: this.djHeads.map((h) => [this.djIn, h]),
+    });
+    const want = {
+      drive: n(fx.drive) > 0.001, phaser: on('phaserOn') && n(fx.phaserWet) > 0.001, delay: n(fx.delayWet) > 0.001,
+      reverb: n(fx.reverbWet) > 0.001 || airOn, bus, crush: bus && on('crushOn'), chorus: bus && on('chorusOn'), pp: bus && on('ppOn'),
+      fs: on('fsOn'), lofi: on('lofiOn'), dub: on('dubOn') || on('dubThrow'), spring: on('springOn'), ens: on('ensOn'),
+      rot: on('rotOn'), vow: on('vowOn'), ap: on('apOn'), bp: on('bpOn'), rt: on('rtOn'), siren: on('sirOn') || on('sirHold'),
+      tape: on('tapeOn'), mst: on('mstOn'), tc: on('tcOn'), ny: on('nyOn'), tl: on('tlOn'),
+      dj: on('djOn') && (on('djKillLow') || on('djKillMid') || on('djKillHigh')),
+    };
+    const live = this.idleLive || (this.idleLive = {}), timers = this.idleTimers || (this.idleTimers = {});
+    for (const g in G) {
+      if (live[g] === undefined) live[g] = true;   // everything starts wired, as built
+      if (want[g]) {
+        if (timers[g]) { clearTimeout(timers[g]); timers[g] = 0; }
+        if (!live[g]) { G[g].forEach(([a, b]) => { try { a.connect(b); } catch (e) { /* already connected */ } }); live[g] = true; }
+      } else if (live[g] && !timers[g]) {
+        // wait for the wet gain to fade (and the siren's release) before pulling the edges
+        timers[g] = setTimeout(() => {
+          timers[g] = 0;
+          if (this.idleWant && this.idleWant[g]) return;
+          G[g].forEach(([a, b]) => { try { a.disconnect(b); } catch (e) { /* already out */ } }); live[g] = false;
+        }, g === 'siren' ? 1500 : 400);
+      }
+    }
+    this.idleWant = want;
   }
 
   setState(state) {
@@ -6027,14 +6087,14 @@ class Engine {
     const old = this.reverb, oldOut = this.reverbOut;
     const nu = ctx.createConvolver(); nu.buffer = impulse(ctx, decay);
     const nuOut = ctx.createGain(); nuOut.gain.value = 0;
-    (this.rvToneOn ? this.rvLp : this.fxPre).connect(nu); this.airSend.connect(nu);            // both impulses hear the same input while they cross
+    (this.rvToneOn ? this.rvLp : this.rvIn).connect(nu); this.airSend.connect(nu);            // both impulses hear the same input while they cross
     nu.connect(nuOut); nuOut.connect(this.reverbWet); nuOut.connect(this.airHp);
     const now = ctx.currentTime, dur = 0.18, pts = 64, up = new Float32Array(pts), down = new Float32Array(pts);
     for (let i = 0; i < pts; i++) { const x = i / (pts - 1); up[i] = Math.sin(x * Math.PI / 2); down[i] = Math.cos(x * Math.PI / 2); }   // equal power
     nuOut.gain.setValueCurveAtTime(up, now, dur); oldOut.gain.setValueCurveAtTime(down, now, dur);
     this.reverb = nu; this.reverbOut = nuOut;
     setTimeout(() => {
-      try { (this.rvToneOn ? this.rvLp : this.fxPre).disconnect(old); } catch (e) { /* already gone */ } try { this.fxPre.disconnect(old); } catch (e) { /* not connected */ } try { this.airSend.disconnect(old); old.disconnect(); oldOut.disconnect(); } catch (e) { /* already gone */ }
+      try { (this.rvToneOn ? this.rvLp : this.rvIn).disconnect(old); } catch (e) { /* already gone */ } try { this.rvIn.disconnect(old); } catch (e) { /* not connected */ } try { this.airSend.disconnect(old); old.disconnect(); oldOut.disconnect(); } catch (e) { /* already gone */ }
       this.reverbFading = false;
       if (this.reverbWant != null) { const w = this.reverbWant; this.reverbWant = null; if (Math.abs(w - this.reverbSeconds) > 0.25) this.setReverbDecay(w); }
     }, dur * 1000 + 80);
@@ -6092,7 +6152,7 @@ class Engine {
     set(this.rvHp.frequency, Math.max(20, num(fx.rvHp, 180))); set(this.rvLp.frequency, Math.max(500, num(fx.rvLp, 9000)));
     if (rvOn !== this.rvToneOn) {
       this.rvToneOn = rvOn;
-      try { if (rvOn) { this.fxPre.disconnect(this.reverb); this.fxPre.connect(this.rvHp); this.rvLp.connect(this.reverb); } else { this.fxPre.disconnect(this.rvHp); this.rvLp.disconnect(this.reverb); this.fxPre.connect(this.reverb); } } catch (e) { /* graph already in that state */ }
+      try { if (rvOn) { this.rvIn.disconnect(this.reverb); this.rvIn.connect(this.rvHp); this.rvLp.connect(this.reverb); } else { this.rvIn.disconnect(this.rvHp); this.rvLp.disconnect(this.reverb); this.rvIn.connect(this.reverb); } } catch (e) { /* graph already in that state */ }
     }
   }
 
