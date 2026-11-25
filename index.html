@@ -6688,7 +6688,7 @@ function mount(stage, engine) {
     });
     mrLive = live;
   }
-  (function mrLoop() { try { modRingsPaint(); } catch (e) {} requestAnimationFrame(mrLoop); })();
+  let mrFrameT = -1e9; (function mrLoop(now) { requestAnimationFrame(mrLoop); if (now - mrFrameT < 31 || document.hidden) return; mrFrameT = now || 0; try { modRingsPaint(); } catch (e) {} })(0);
 
   function fullscreenButton() {
     const root = document.documentElement;
@@ -11962,25 +11962,32 @@ function mount(stage, engine) {
     scope = meter.scope;
   };
 
+  // the displays repaint at about 30 frames a second (high-refresh screens would otherwise ask for 120 or more), and the
+  // canvases they draw into are looked up a few times a second rather than on every frame: less work for the page, more for the sound
+  let qaCache = new Map(), qaAt = 0;
+  const qa = (sel) => { let r = qaCache.get(sel); if (!r) { r = Array.from(plugin.querySelectorAll(sel)); qaCache.set(sel, r); } return r; };
+  const q1 = (sel) => qa(sel)[0] || null;
   function frame(now) {
+    if (now - lastFrame < 31 || document.hidden) { requestAnimationFrame(frame); return; }
+    if (now - qaAt > 500) { qaCache = new Map(); qaAt = now; }
     const dt = Math.min(0.05, (now - lastFrame) / 1000);
     lastFrame = now;
     oscVis += dt * 0.45;
     const lfoUi = (i) => (editLayer === 'B' && state.lfoB && state.lfoB[i] ? state.lfoB[i] : state.lfo[i]);
     for (let i = 0; i < 8; i++) lfoVis[i] += dt * ((lfoUi(i) && lfoUi(i).rate) || 0);
     if (page === 'lfo') useqFrame();
-    if (page === 'lfo') { plugin.querySelectorAll('.page-lfo canvas.lfo').forEach((canvas) => { const index = Number(canvas.dataset.lfo); drawLfo(canvas, lfoUi(index), lfoVis[index]); }); lfoPagePaint(); }
+    if (page === 'lfo') { qa('.page-lfo canvas.lfo').forEach((canvas) => { const index = Number(canvas.dataset.lfo); drawLfo(canvas, lfoUi(index), lfoVis[index]); }); lfoPagePaint(); }
     if (page === 'play') {
-      plugin.querySelectorAll('canvas.display[data-osc]').forEach((canvas) => {
+      qa('canvas.display[data-osc]').forEach((canvas) => {
         const index = Number(canvas.dataset.osc);
         const osc = state.layers[editLayer].osc[index];
         if (osc) drawWave(canvas, osc, oscVis);
       });
-      const engineShape=plugin.querySelector('canvas.engine-shape');if(engineShape)drawEngineShape(engineShape,state.layers[editLayer]);
-      const filter = plugin.querySelector('canvas.filter');
+      const engineShape=q1('canvas.engine-shape');if(engineShape)drawEngineShape(engineShape,state.layers[editLayer]);
+      const filter = q1('canvas.filter');
       if (filter) drawFilter(filter, state.layers[editLayer].filter);
-      plugin.querySelectorAll('canvas.env').forEach((canvas) => drawEnv(canvas, state.layers[editLayer][canvas.dataset.env]));
-      plugin.querySelectorAll('canvas.lfo').forEach((canvas) => {
+      qa('canvas.env').forEach((canvas) => drawEnv(canvas, state.layers[editLayer][canvas.dataset.env]));
+      qa('canvas.lfo').forEach((canvas) => {
         const index = Number(canvas.dataset.lfo);
         drawLfo(canvas, (editLayer === 'B' && state.lfoB && state.lfoB[index] ? state.lfoB[index] : state.lfo[index]), lfoVis[index]);
       });
