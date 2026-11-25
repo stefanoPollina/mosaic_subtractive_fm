@@ -18429,7 +18429,9 @@ Mr98TjFROoGi5JGU/Zyijjk6Pjz+P7jopW1GcZQA
     if ($('#audioBuffer')) return true;
     const tabs = $('.tabs');
     const guide = tabs && [...tabs.children].find((x) => x.tagName === 'BUTTON' && /^GUIDE/.test(x.textContent.trim()));
-    if (!guide) return false;
+    // its place: before GUIDE when that tab exists, otherwise at the right of the tab bar, before the EDITING chip (or full screen)
+    const anchor = guide || (tabs && (tabs.querySelector(':scope > #layerChip') || tabs.querySelector(':scope > .fs-btn')));
+    if (!anchor) return false;
     const wrap = document.createElement('span'); wrap.id = 'audioBufWrap';
     const sel = document.createElement('select'); sel.id = 'audioBuffer';
     sel.setAttribute('aria-label', 'AUDIO BUFFER');
@@ -18450,11 +18452,11 @@ Mr98TjFROoGi5JGU/Zyijjk6Pjz+P7jopW1GcZQA
       fit();
     });
     wrap.append(sel);
-    guide.before(wrap);
+    anchor.before(wrap);
     fit();
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
     const guidePanel = $('.mosaic-preset-guide');
-    if (guidePanel) guide.addEventListener('click', () => {
+    if (guidePanel && guide) guide.addEventListener('click', () => {
       guidePanel.style.right = Math.max(0, tabs.clientWidth - (guide.offsetLeft + guide.offsetWidth)) + 'px';
     });
     return true;
