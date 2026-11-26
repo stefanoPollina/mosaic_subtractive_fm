@@ -1127,18 +1127,26 @@ footer.bed {
 .hx-roll.hx-fixed { border: 0; margin: 0; } .hx-roll.hx-fixed > summary { cursor: default; pointer-events: none; list-style: none; } .hx-roll.hx-fixed > summary::-webkit-details-marker { display: none; } .hx-roll.hx-fixed > summary::before { content: none !important; }
 .bk-side #userSafety .us { margin: 6px 10px; font-size: 10px; line-height: 1.45; padding: 8px 10px; }
 .page-perf { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); gap: 8px; padding: 8px; }
-.page-perf > .bk-perform { overflow: auto; padding: 0 10px 10px; display: flex; flex-direction: column; gap: 8px; }
-.pf-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; align-items: stretch; }
-.pf-row > * { margin: 0 !important; min-width: 0; }
-.page-perf .bk-xywin .bk-xy, .page-perf .pf-fxxy .xy-box.xy-field { height: 140px; } .page-perf #scCv, .page-perf #fftCv { height: 118px; }
-.pf-ctl { display: grid !important; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; } .pf-group { min-width: 0; } .pf-group > * { margin-top: 0; }
-.pf-fxxy .fx-head { padding: 0 10px !important; min-height: 37px; display: flex; align-items: center; }
-.pf-vis { align-items: start; } .pf-fxxy .fx-head h3 { letter-spacing: .14em; }
-.page-bank.bk-split .bk-browser { display: flex; flex-direction: column; } .page-bank.bk-split .bk-list { flex: 1 1 0; min-height: 120px; max-height: none; }
-.pf-fxxy { padding: 0 !important; display: flex; flex-direction: column; } .pf-fxxy .fx-head { padding: 7px 10px; border-bottom: 1px solid var(--line); }
-.pf-fxxy .fx-head h3 { margin: 0; font-size: 10px; } .pf-fxxy .xy-box.xy-field { margin: 0; border-radius: 0; border-left: 0; border-right: 0; }
-.pf-fxxy .note, .pf-fxxy .fx-copy, .pf-fxxy > p { display: none; } .pf-fxxy .xy-read { padding: 6px 10px; font-size: 10px; }
-.pf-ctl { display: flex; flex-wrap: wrap; gap: 4px 24px; align-items: flex-start; } .pf-ctl > * { margin: 0; }
+.page-perf > .bk-perform { overflow: auto; padding: 0 10px 10px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.page-perf > .bk-perform > h3 { align-self: stretch; }
+/* four equal windows: each the original scope's size (about 340 wide, 150-tall display plus its bars) */
+.pf-stage { --cell: 340px; display: grid; grid-template-columns: 92px var(--cell) var(--cell) 92px; grid-template-rows: 1fr 1fr; gap: 10px; }   /* equal rows: all four windows the same size */
+.pf-stage > .sc-win { margin: 0 !important; width: var(--cell); display: flex; flex-direction: column; }
+.pf-stage > .pf-side:first-child { grid-column: 1; grid-row: 1 / 3; } .pf-stage > .pf-side:not(:first-child) { grid-column: 4; grid-row: 1 / 3; }
+.pf-stage > .bk-xywin { grid-column: 2; grid-row: 1; } .pf-stage > .pf-fxwin { grid-column: 3; grid-row: 1; }
+.pf-stage > #scWin { grid-column: 2; grid-row: 2; } .pf-stage > #fftWin { grid-column: 3; grid-row: 2; }
+.pf-stage #scCv, .pf-stage #fftCv { height: 150px; }
+.pf-stage .bk-xywin .bk-xy, .pf-stage .pf-fxwin .xy-box.xy-field { flex: 1 1 auto; height: auto; min-height: 150px; margin: 0; border: 0; border-radius: 0; }
+.pf-stage .bk-xywin .sc-head, .pf-stage .pf-fxwin .sc-head { min-height: 34px; justify-content: space-between; }
+.pf-fxwin .sc-head button { padding: 2px 8px; font-size: 9px; min-height: 0; height: 22px; line-height: 1; }
+.pf-side { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
+.pf-side-lab { font-size: 9px; letter-spacing: .16em; color: var(--dim); } .pf-side .dnb-tg { font-size: 9px; padding: 4px 6px; }
+.pf-notes { display: grid; grid-template-columns: var(--cell, 340px) var(--cell, 340px); gap: 6px 10px; width: calc(340px * 2 + 10px); }
+.pf-note { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 10px; line-height: 1.45; color: var(--dim); background: #0b0c0f; min-width: 0; }
+.pf-note > b { display: block; font-size: 9px; letter-spacing: .16em; color: var(--accent); margin-bottom: 4px; }
+.pf-note .sc-read { border: 0; padding: 0; background: none; } .pf-note em { display: block; font-style: normal; margin-top: 4px; }
+.pf-note .xy-read { padding: 0; font-size: 10px; color: var(--text, #ddd); } .pf-note-wide { grid-column: 1 / -1; } .pf-note-wide .bk-perf { padding: 0; }
+@media (max-width: 900px) { .pf-stage { grid-template-columns: var(--cell); } .pf-stage > * { grid-column: 1 !important; grid-row: auto !important; } .pf-side { flex-direction: row; } .pf-notes { grid-template-columns: 1fr; width: auto; } }
 .page-seq.has-more { overflow: auto; grid-template-rows: 114px 306px 32px 64px auto; }
 .more-panel { overflow: visible; padding-bottom: 8px; } .more-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 10px; }
 .more-panel .bk-knobs { margin-top: 0; justify-content: flex-start; gap: 4px 8px; } .more-panel .bk-sec .bk-knobs .knob { width: 56px; }
@@ -6786,10 +6794,10 @@ function mount(stage, engine) {
   }
 
   function buildTabs() {
-    [['play', 'PLAY'], ['mod', 'MOD'], ['lfo', 'LFO'], ['fx', 'FX'], ['seq', 'SEQ'], ['wt', 'TABLE'], ['bank', 'BANK'], ['perf', 'PERFORM'], ['rec', 'REC']].forEach(([id, label]) => {
+    [['play', 'PLAY'], ['mod', 'MOD'], ['lfo', 'LFO'], ['fx', 'FX'], ['seq', 'SEQ'], ['wt', 'TABLE'], ['bank', 'BANK'], ['perf', 'MACRO'], ['rec', 'REC']].forEach(([id, label]) => {
       const button = el('button', '', '');
       const tabMain = el('span', 'tab-main', ({ wt: 'WAVE', bank: 'PRESET' })[id] || label);
-      button.append(tabMain, el('small', 'tab-sub', ({ play: 'Voice', mod: 'Matrix', lfo: 'Sequencer', fx: 'Bus', seq: 'Notes', wt: 'Table', bank: 'Bank', perf: 'XY · Scope', rec: 'Live' })[id] || ''));
+      button.append(tabMain, el('small', 'tab-sub', ({ play: 'Voice', mod: 'Matrix', lfo: 'Sequencer', fx: 'Bus', seq: 'Notes', wt: 'Table', bank: 'Bank', perf: 'X Y', rec: 'Live' })[id] || ''));
       button.type = 'button';
       button.dataset.page = id;
       if (id === 'rec') { const lamp = el('span', 'mr-tab-lamp'); lamp.setAttribute('aria-label','recording indicator'); tabMain.append(lamp); }
@@ -11505,16 +11513,36 @@ function mount(stage, engine) {
       const perf = el('div', 'page page-perf'); perf.dataset.page = 'perf';
       const perform = bankRoot.querySelector('.bk-perform');
       if (perform) {
-        const pads = el('div', 'pf-row pf-pads'), vis = el('div', 'pf-row pf-vis'), ctlRow = el('div', 'pf-ctl');
-        const bkxy = perform.querySelector('.bk-xywin'); if (bkxy) pads.append(bkxy);
-        if (!fxOnly) { const box = fxPage.page.querySelector('.xy-box'), card = box && box.closest('.fx-card'); if (card) { card.classList.add('pf-fxxy'); const t = card.querySelector('.fx-head h3'); if (t) t.textContent = 'FX XY · TONE / DUB WASH'; pads.append(card); } }
-        const sc = perform.querySelector('#scWin'), ff = perform.querySelector('#fftWin'); if (sc) vis.append(sc); if (ff) vis.append(ff);
-        const mac = el('div', 'pf-group'), map = el('div', 'pf-group'); let into = mac;
-        [...perform.children].filter((n) => n.tagName !== 'H3' && n !== sc && n !== ff).forEach((n) => { if (/^\s*PERFORMANCE MAP/i.test(n.textContent || '')) into = map; into.append(n); });
-        ctlRow.append(mac, map);
-        perform.append(pads, ctlRow, vis); perf.append(perform);
-        // both displays open whenever PERFORM is shown (a remembered folded state no longer hides one of them here)
-        const tabBtn = () => tabs.querySelector('[data-page="perf"]'); setTimeout(() => { const b = tabBtn(); if (b) b.addEventListener('click', () => { if (sc) sc.open = true; if (ff) ff.open = true; }); }, 0);
+        // a 2 x 2 of equal windows (sound XY | FX XY over scope | spectrum), the macros either side, the words underneath
+        const stage = el('div', 'pf-stage'), left = el('div', 'pf-side'), right = el('div', 'pf-side'), notes = el('div', 'pf-notes');
+        const bkxy = perform.querySelector('.bk-xywin'), sc = perform.querySelector('#scWin'), ff = perform.querySelector('#fftWin');
+        const nSound = el('div', 'pf-note'), nFx = el('div', 'pf-note'), nMap = el('div', 'pf-note pf-note-wide');
+        if (bkxy) { const rd = bkxy.querySelector('.bk-xyread'); nSound.append(el('b', '', 'XY MORPH · SOUND')); if (rd) nSound.append(rd); }
+        let fxw = null;
+        if (!fxOnly) {
+          const box = fxPage.page.querySelector('.xy-box'), card = box && box.closest('.fx-card');
+          if (card) {
+            fxw = el('div', 'sc-win pf-fxwin'); const head = el('div', 'sc-head'); head.append(el('b', '', 'XY MORPH · FX'));
+            const row = card.querySelector('.xy-row'), centre = row && row.querySelector('button'); if (centre) head.append(centre);
+            fxw.append(head, box);
+            nFx.append(el('b', '', 'XY MORPH · FX')); const rd = row && row.querySelector('.xy-read'); if (rd) nFx.append(rd);
+            const about = card.querySelector('.fx-note'); if (about) { const em = el('em', '', about.textContent); nFx.append(em); }
+            card.remove();
+          }
+        }
+        const macros = perform.querySelector('#bkMacros'), dnb = perform.querySelector('#dnbMode');
+        if (macros) { const ks = [...macros.children]; left.append(el('span', 'pf-side-lab', 'MACROS')); ks.slice(0, 2).forEach((k) => left.append(k)); right.append(el('span', 'pf-side-lab', 'MACROS')); ks.slice(2).forEach((k) => right.append(k)); }
+        if (dnb) left.append(dnb);
+        const mapLab = [...perform.querySelectorAll(':scope > .bk-lab')].find((n) => /PERFORMANCE MAP/i.test(n.textContent)), map = perform.querySelector('#bkPerf');
+        nMap.append(el('b', '', 'PERFORMANCE MAP')); if (map) nMap.append(map);
+        [...perform.querySelectorAll(':scope > .bk-lab, :scope > #bkMacros')].forEach((n) => n.remove());
+        stage.append(left); if (bkxy) stage.append(bkxy); if (fxw) stage.append(fxw); stage.append(right); if (sc) stage.append(sc); if (ff) stage.append(ff);
+        notes.append(nSound, nFx, nMap);
+        const h = perform.querySelector(':scope > h3'); if (h) h.textContent = 'MACRO · X Y';
+        perform.append(stage, notes); perf.append(perform);
+        // both displays open whenever PERFORM is shown
+        setTimeout(() => { const b = tabs.querySelector('[data-page="perf"]'); if (b) b.addEventListener('click', () => { if (sc) sc.open = true; if (ff) ff.open = true; }); }, 0);
+        if (sc) sc.open = true; if (ff) ff.open = true;
       }
       pages.append(perf); perfRoot = perf;
       const sys = bankRoot.querySelector('.bk-systems');
