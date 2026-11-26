@@ -1101,6 +1101,16 @@ footer.bed {
 .env-panel h3 .env-adsr { color: var(--dim); font-weight: 400; letter-spacing: .09em; }
 
 .engine-preview-panel canvas.engine-shape{height:68px;min-height:68px;flex:0 0 68px;margin:4px 8px 2px;width:calc(100% - 16px)}
+
+/* ---- PRESET page, middle column: XY pad as a display window, the same size as the scope and spectrum ---- */
+.bk-xywin .sc-head { justify-content: space-between; }
+.bk-xywin .bk-cap { display: flex; align-items: center; gap: 5px; font-size: 9px; letter-spacing: .12em; color: var(--dim); }
+.bk-xywin .bk-cap > span:first-child { margin-right: 2px; } .bk-xywin #bkCap { display: flex; gap: 4px; margin: 0; }
+.bk-xywin #bkCap button { min-width: 26px; padding: 3px 7px; font-size: 9px; }
+.bk-xywin .bk-xy { width: 100%; height: 150px; border: 0; border-radius: 0; box-shadow: inset 0 0 24px #000000aa; }
+.bk-xyread { display: flex; flex-direction: column; gap: 1px; } .bk-xyread em { font-size: 9px; line-height: 1.35; font-style: normal; color: var(--dim); letter-spacing: 0; font-family: inherit; }
+.bk-check { padding: 4px 10px 8px; border-bottom: 1px solid var(--line); } .bk-check .bk-valid, .bk-check .bk-info { padding-left: 0; padding-right: 0; } .bk-check .bk-btns { padding: 2px 0; }
+@media (max-width: 900px) { .bk-xywin .bk-xy { max-width: none; } }
 </style>
 <style id="mosaic-recorder-styles">
 /* Recorder-only styling; inherited Mosaic typography and palette. */
@@ -10319,19 +10329,20 @@ function mount(stage, engine) {
         <div class="bk-file"><button type="button" id="bkSaveAs" title="Save the current sound as a new preset">SAVE AS…</button><button type="button" id="bkUpdate" title="Overwrite the current saved preset">UPDATE</button><button type="button" id="bkExpPreset" title="Download the current sound as JSON">EXPORT PRESET</button><button type="button" id="bkExpUser" title="Download every saved preset as one file">EXPORT USER BANK</button><button type="button" id="bkImport" title="Load a preset, a user bank or a specification bank from a JSON file">IMPORT</button><input type="file" id="bkFile" accept="application/json,.json" hidden></div>
         <div class="bk-chips" id="bkChips"></div><div class="bk-oldskool" id="bkOldskool" hidden></div><div class="bk-list" id="bkList" role="listbox" aria-label="Presets"></div><div class="hx-versions" id="hxVersions" hidden></div>
         <div class="bk-sim"><div id="bkSim" role="group" aria-label="Presets similar to the current one"></div></div>
-        <details class="hx-roll" id="hxRoll"><summary><span>STORAGE · VERSIONS · AUTOSAVE</span><em id="hxSum"></em></summary>
+        <details class="hx-roll" id="hxRoll"><summary><span>STORAGE · VERSIONS · BANK CHECK</span><em id="hxSum"></em></summary>
+        <div class="bk-check"><div class="bk-lab" style="padding-left:0">BANK CHECK · CURRENT PRESET</div><div class="bk-valid" id="bkValid"></div><div class="bk-info" id="bkInfo"></div>
+          <div class="bk-btns"><button type="button" id="bkValidate">VALIDATE BANK</button><button type="button" id="bkExport">EXPORT SPEC BANK</button></div></div>
         <div class="hx-store"><div class="hx-status" id="hxStatus" role="status">STARTING…</div>
           <div class="bk-r2"><label class="bk-ck"><input type="checkbox" id="hxAuto" checked> AUTOSAVE</label><label>IDLE <select id="hxMs"><option value="1000">1 s</option><option value="2000">2 s</option><option value="5000">5 s</option><option value="10000">10 s</option></select></label><label>KEEP <select id="hxMax"><option value="25">25</option><option value="50">50</option><option value="100">100</option><option value="0">ALL</option></select> VERSIONS</label><label class="bk-ck" title="Flags presets for a future cloud sync. Nothing is uploaded."><input type="checkbox" id="hxSync"> SYNC READY</label></div>
           <div class="bk-r2"><button type="button" id="hxUndo">⟲ UNDO</button><button type="button" id="hxRedo">⟳ REDO</button><span class="hx-snaps" id="hxSnaps"></span><button type="button" id="hxStore" aria-pressed="false" title="When on, the next S1–S4 click stores the current sound there">STORE</button></div>
           <div class="bk-r2"><button type="button" id="hxExpHlx">EXPORT .HLX</button><button type="button" id="hxImpHlx">IMPORT .HLX</button><button type="button" id="hxExpAll">EXPORT ALL</button><button type="button" id="hxRecover" hidden>RECOVER UNSAVED</button><input type="file" id="hxFile" accept=".hlx,.hlxbank,.json,application/json" multiple hidden></div>
           <div class="bk-lab" style="padding-left:0">TAGS · CURRENT PRESET</div><div class="hx-tags" id="hxTags"></div></div></details></section>
-      <section class="panel bk-perform"><h3>XY MORPH <span id="bkXYTxt"></span></h3>
-        <div class="bk-xywrap"><div class="bk-xy" id="bkXY" tabindex="0" role="slider" aria-label="XY morph pad"><canvas class="bk-xy-ripples" id="bkXYRipples" aria-hidden="true"></canvas><i id="bkPuck"></i><span class="c ca">A</span><span class="c cb">B</span><span class="c cc">C</span><span class="c cd">D</span></div>
-          <div class="bk-cap"><b>CAPTURE CORNER</b><div id="bkCap"></div><em>Drag the pad to morph between the four snapshots. Capture stores the current cutoff, drive, reverb and chorus into a corner.</em></div></div>
+      <section class="panel bk-perform"><h3>PERFORM</h3>
+        <div class="sc-win bk-xywin" role="group" aria-label="XY morph"><div class="sc-head"><b>XY MORPH</b><span class="bk-cap"><span>CAPTURE</span><span id="bkCap"></span></span></div>
+          <div class="bk-xy" id="bkXY" tabindex="0" role="slider" aria-label="XY morph pad"><canvas class="bk-xy-ripples" id="bkXYRipples" aria-hidden="true"></canvas><i id="bkPuck"></i><span class="c ca">A</span><span class="c cb">B</span><span class="c cc">C</span><span class="c cd">D</span></div>
+          <div class="sc-read bk-xyread"><span id="bkXYTxt"></span><em>Drag to morph between corners A–D. CAPTURE stores the current cutoff, drive, reverb and chorus into a corner.</em></div></div>
         <div class="bk-lab">MACROS <button type="button" id="dnbMode" class="dnb-tg" aria-pressed="false">DnB ENGINE</button></div><div class="knobs bk-knobs" id="bkMacros"></div>
         <div class="bk-lab">PERFORMANCE MAP</div><div class="bk-perf" id="bkPerf"></div>
-        <div class="bk-valid" id="bkValid"></div><div class="bk-info" id="bkInfo"></div>
-        <div class="bk-btns"><button type="button" id="bkValidate">VALIDATE BANK</button><button type="button" id="bkExport">EXPORT SPEC BANK</button></div>
         <details class="sc-win" id="scWin" role="group" aria-label="Oscilloscope" open><summary><span>OSCILLOSCOPE</span><em id="scSum"></em></summary><div class="sc-head">
           <span class="sc-seg" role="group" aria-label="Channels"><button type="button" data-m="lr">L / R</button><button type="button" data-m="sum">SUM</button></span>
           <label>TIME<select id="scMs" aria-label="Time window"><option value="2">2 ms</option><option value="5">5 ms</option><option value="10">10 ms</option><option value="20">20 ms</option><option value="50">50 ms</option></select></label>
