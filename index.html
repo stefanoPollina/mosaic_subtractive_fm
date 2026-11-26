@@ -1101,6 +1101,23 @@ footer.bed {
 .env-panel h3 .env-adsr { color: var(--dim); font-weight: 400; letter-spacing: .09em; }
 
 .engine-preview-panel canvas.engine-shape{height:68px;min-height:68px;flex:0 0 68px;margin:4px 8px 2px;width:calc(100% - 16px)}
+
+/* ---- PRESET page, middle column: XY pad as a display window, the same size as the scope and spectrum ---- */
+.bk-xywin .sc-head { justify-content: space-between; }
+.bk-xywin .bk-cap { display: flex; align-items: center; gap: 5px; font-size: 9px; letter-spacing: .12em; color: var(--dim); }
+.bk-xywin .bk-cap > span:first-child { margin-right: 2px; } .bk-xywin #bkCap { display: flex; gap: 4px; margin: 0; }
+.bk-xywin #bkCap button { min-width: 26px; padding: 3px 7px; font-size: 9px; }
+.bk-xywin .bk-xy { width: 100%; height: 150px; border: 0; border-radius: 0; box-shadow: inset 0 0 24px #000000aa; }
+.bk-xyread { display: flex; flex-direction: column; gap: 1px; } .bk-xyread em { font-size: 9px; line-height: 1.35; font-style: normal; color: var(--dim); letter-spacing: 0; font-family: inherit; }
+.bk-check { padding: 4px 10px 8px; border-bottom: 1px solid var(--line); } .bk-check .bk-valid, .bk-check .bk-info { padding-left: 0; padding-right: 0; } .bk-check .bk-btns { padding: 2px 0; }
+@media (max-width: 900px) { .bk-xywin .bk-xy { max-width: none; } }
+
+/* FX page X/Y pad: the same look as the PRESET page's pad (grid, puck guides, glowing puck, ripples) */
+.xy-box.xy-field { background: radial-gradient(120% 120% at 50% 45%, #1a2130 0%, #090a0c 72%); border: 1px solid #2c3446; border-radius: 10px; box-shadow: inset 0 0 26px #000000a6, inset 0 0 0 1px #ffffff08; height: 190px; }
+.xy-box.xy-field::before { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0; background-image: linear-gradient(#ffffff09 1px, transparent 1px), linear-gradient(90deg, #ffffff09 1px, transparent 1px); background-size: 25% 25%; }
+.xy-box.xy-field::after { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0; background: linear-gradient(#e2a84a38, #e2a84a38) var(--px, 50%) 0 / 1px 100% no-repeat, linear-gradient(#e2a84a38, #e2a84a38) 0 var(--py, 50%) / 100% 1px no-repeat; }
+.xy-box.xy-field .xy-ripples { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+.xy-box.xy-field .xy-dot { z-index: 3; width: 12px; height: 12px; margin: -6px 0 0 -6px; background: radial-gradient(circle at 36% 30%, #fff1cf, #e2a84a 58%, #a8721c 100%); box-shadow: 0 0 0 1px #090a0c, 0 0 0 2px #e2a84a55, 0 0 14px #e2a84a77; }
 </style>
 <style id="mosaic-recorder-styles">
 /* Recorder-only styling; inherited Mosaic typography and palette. */
@@ -6628,7 +6645,7 @@ function mount(stage, engine) {
     });
     mrLive = live;
   }
-  (function mrLoop() { try { modRingsPaint(); } catch (e) {} requestAnimationFrame(mrLoop); })();
+  let mrFrameT = -1e9; (function mrLoop(now) { requestAnimationFrame(mrLoop); if (now - mrFrameT < 31 || document.hidden) return; mrFrameT = now || 0; try { modRingsPaint(); } catch (e) {} })(0);
 
   function fullscreenButton() {
     const root = document.documentElement;
@@ -7793,9 +7810,9 @@ function mount(stage, engine) {
       card.append(knobs); deskBar(card);
     }));
     pageNode.append(fxCard('X/Y MORPH', 'Two moves at once for builds and breakdowns. Left to right (TONE): layer A cutoff 160 Hz to 1.4 kHz and a little FM growl, both kept warm. Bottom to top (DUB WASH): DUB SPACE ECHO and SPRING TANK come in and grow (echo wet, regen and splash); at the very bottom both switch off. CENTER returns to a gentle starting point.', (card) => {
-      const box = el('div', 'xy-box'), dot = el('div', 'xy-dot'), read = el('div', 'xy-read'); box.append(el('i', 'xy-v'), el('i', 'xy-h'), dot);
+      const box = el('div', 'xy-box xy-field'), dot = el('div', 'xy-dot'), read = el('div', 'xy-read'), rip = el('canvas', 'xy-ripples'); rip.setAttribute('aria-hidden', 'true'); box.append(rip, dot);
       const paint = () => { const x = clamp(Number(state.fx.xyX ?? 0.35), 0, 1), y = clamp(Number(state.fx.xyY ?? 0.35), 0, 1);
-        dot.style.left = (x * 100).toFixed(1) + '%'; dot.style.top = ((1 - y) * 100).toFixed(1) + '%'; read.textContent = 'TONE ' + Math.round(x * 100) + '%  \u00b7  DUB WASH ' + Math.round(y * 100) + '%'; };
+        dot.style.left = (x * 100).toFixed(1) + '%'; dot.style.top = ((1 - y) * 100).toFixed(1) + '%'; box.style.setProperty('--px', (x * 100).toFixed(1) + '%'); box.style.setProperty('--py', ((1 - y) * 100).toFixed(1) + '%'); FS.dirty = true; read.textContent = 'TONE ' + Math.round(x * 100) + '%  \u00b7  DUB WASH ' + Math.round(y * 100) + '%'; };
       widgets.push({ path: 'fx.xyX', paint });
       const apply = (x, y) => {
         x = clamp(x, 0, 1); y = clamp(y, 0, 1); const f = state.fx, A = state.layers.A; f.xyX = x; f.xyY = y;
@@ -7804,7 +7821,22 @@ function mount(stage, engine) {
         else Object.assign(f, { dubOn: false, springOn: false });
         schedule(); paintAll();
       };
-      const at = (e) => { const r = box.getBoundingClientRect(); apply((e.clientX - r.left) / r.width, 1 - (e.clientY - r.top) / r.height); };
+      // the same sound-reactive field as the PRESET page's pad: ripples as you drag, a ring on every note, a halo that breathes with the output
+      const FS = { waves: [], halo: 0, level: 0, lastDraw: 0, lastRipple: 0, lastKey: 0, dirty: true, painted: false, drawn: 0 };
+      const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const fxy = () => [clamp(Number(state.fx.xyX ?? 0.35), 0, 1), clamp(Number(state.fx.xyY ?? 0.35), 0, 1)];
+      const ripple = (x, y, key, vel) => { const X = window.MosaicXyFx; if (X && X.rippleTo && !reduce) X.rippleTo(FS, x, y, key, vel); };
+      document.addEventListener('mosaic-xy-key-attack', (e) => { const now = performance.now(); if (now - FS.lastKey < 55 || !box.offsetParent) return; FS.lastKey = now; const [x, y] = fxy(); ripple(x, y, true, clamp(((e.detail && e.detail.velocity) == null ? 100 : e.detail.velocity) / 127, 0, 1)); });
+      const frame = (now) => {
+        requestAnimationFrame(frame);
+        if (reduce || document.hidden || !box.offsetParent || !window.MosaicXyFx || !window.MosaicXyFx.field) return;
+        const raw = Math.min(1, window.MosaicFxLevel || 0); FS.level += (raw - FS.level) * (raw > FS.level ? 0.4 : 0.07); FS.halo = Math.sqrt(FS.level);
+        if (!FS.waves.length && FS.halo < 0.02 && !FS.dirty) { if (FS.painted) { rip.getContext('2d').clearRect(0, 0, rip.width, rip.height); FS.painted = false; } return; }
+        if (now - FS.lastDraw < 33) return; FS.lastDraw = now;
+        const [x, y] = fxy(); window.MosaicXyFx.field(FS, rip, x, y, now);
+      };
+      requestAnimationFrame(frame);
+      const at = (e) => { const r = box.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = 1 - (e.clientY - r.top) / r.height; apply(x, y); const now = performance.now(); if (now - FS.lastRipple >= 42) { FS.lastRipple = now; ripple(clamp(x, 0, 1), clamp(y, 0, 1), false, 1); } };
       let drag = false;
       box.addEventListener('pointerdown', (e) => { drag = true; box.setPointerCapture(e.pointerId); at(e); });
       box.addEventListener('pointermove', (e) => { if (drag) at(e); });
@@ -7887,6 +7919,7 @@ function mount(stage, engine) {
       const L = M.bL, R = M.bR; let pl = 0, pr = 0, lr = 0, ll = 0, rr = 0, mm = 0, ss = 0;
       for (let i = 0; i < L.length; i++) { const l = L[i], r = R[i]; const al = l < 0 ? -l : l, ar = r < 0 ? -r : r; if (al > pl) pl = al; if (ar > pr) pr = ar;
         lr += l * r; ll += l * l; rr += r * r; const m = (l + r) * 0.5, sd = (l - r) * 0.5; mm += m * m; ss += sd * sd; }
+      window.MosaicFxLevel = Math.max(pl, pr);                          // the FX page's X/Y pad halo breathes with this
       [pl, pr].forEach((pk, c) => {
         const db = pk > 1e-5 ? 20 * Math.log10(pk) : -96;
         if (db >= M.hold[c] || now - M.holdT[c] > 1200) { M.hold[c] = db; M.holdT[c] = now; }
@@ -10259,19 +10292,20 @@ function mount(stage, engine) {
         <div class="bk-file"><button type="button" id="bkSaveAs" title="Save the current sound as a new preset">SAVE AS…</button><button type="button" id="bkUpdate" title="Overwrite the current saved preset">UPDATE</button><button type="button" id="bkExpPreset" title="Download the current sound as JSON">EXPORT PRESET</button><button type="button" id="bkExpUser" title="Download every saved preset as one file">EXPORT USER BANK</button><button type="button" id="bkImport" title="Load a preset, a user bank or a specification bank from a JSON file">IMPORT</button><input type="file" id="bkFile" accept="application/json,.json" hidden></div>
         <div class="bk-chips" id="bkChips"></div><div class="bk-oldskool" id="bkOldskool" hidden></div><div class="bk-list" id="bkList" role="listbox" aria-label="Presets"></div><div class="hx-versions" id="hxVersions" hidden></div>
         <div class="bk-sim"><div id="bkSim" role="group" aria-label="Presets similar to the current one"></div></div>
-        <details class="hx-roll" id="hxRoll"><summary><span>STORAGE · VERSIONS · AUTOSAVE</span><em id="hxSum"></em></summary>
+        <details class="hx-roll" id="hxRoll"><summary><span>STORAGE · VERSIONS · BANK CHECK</span><em id="hxSum"></em></summary>
+        <div class="bk-check"><div class="bk-lab" style="padding-left:0">BANK CHECK · CURRENT PRESET</div><div class="bk-valid" id="bkValid"></div><div class="bk-info" id="bkInfo"></div>
+          <div class="bk-btns"><button type="button" id="bkValidate">VALIDATE BANK</button><button type="button" id="bkExport">EXPORT SPEC BANK</button></div></div>
         <div class="hx-store"><div class="hx-status" id="hxStatus" role="status">STARTING…</div>
           <div class="bk-r2"><label class="bk-ck"><input type="checkbox" id="hxAuto" checked> AUTOSAVE</label><label>IDLE <select id="hxMs"><option value="1000">1 s</option><option value="2000">2 s</option><option value="5000">5 s</option><option value="10000">10 s</option></select></label><label>KEEP <select id="hxMax"><option value="25">25</option><option value="50">50</option><option value="100">100</option><option value="0">ALL</option></select> VERSIONS</label><label class="bk-ck" title="Flags presets for a future cloud sync. Nothing is uploaded."><input type="checkbox" id="hxSync"> SYNC READY</label></div>
           <div class="bk-r2"><button type="button" id="hxUndo">⟲ UNDO</button><button type="button" id="hxRedo">⟳ REDO</button><span class="hx-snaps" id="hxSnaps"></span><button type="button" id="hxStore" aria-pressed="false" title="When on, the next S1–S4 click stores the current sound there">STORE</button></div>
           <div class="bk-r2"><button type="button" id="hxExpHlx">EXPORT .HLX</button><button type="button" id="hxImpHlx">IMPORT .HLX</button><button type="button" id="hxExpAll">EXPORT ALL</button><button type="button" id="hxRecover" hidden>RECOVER UNSAVED</button><input type="file" id="hxFile" accept=".hlx,.hlxbank,.json,application/json" multiple hidden></div>
           <div class="bk-lab" style="padding-left:0">TAGS · CURRENT PRESET</div><div class="hx-tags" id="hxTags"></div></div></details></section>
-      <section class="panel bk-perform"><h3>XY MORPH <span id="bkXYTxt"></span></h3>
-        <div class="bk-xywrap"><div class="bk-xy" id="bkXY" tabindex="0" role="slider" aria-label="XY morph pad"><canvas class="bk-xy-ripples" id="bkXYRipples" aria-hidden="true"></canvas><i id="bkPuck"></i><span class="c ca">A</span><span class="c cb">B</span><span class="c cc">C</span><span class="c cd">D</span></div>
-          <div class="bk-cap"><b>CAPTURE CORNER</b><div id="bkCap"></div><em>Drag the pad to morph between the four snapshots. Capture stores the current cutoff, drive, reverb and chorus into a corner.</em></div></div>
+      <section class="panel bk-perform"><h3>PERFORM</h3>
+        <div class="sc-win bk-xywin" role="group" aria-label="XY morph"><div class="sc-head"><b>XY MORPH</b><span class="bk-cap"><span>CAPTURE</span><span id="bkCap"></span></span></div>
+          <div class="bk-xy" id="bkXY" tabindex="0" role="slider" aria-label="XY morph pad"><canvas class="bk-xy-ripples" id="bkXYRipples" aria-hidden="true"></canvas><i id="bkPuck"></i><span class="c ca">A</span><span class="c cb">B</span><span class="c cc">C</span><span class="c cd">D</span></div>
+          <div class="sc-read bk-xyread"><span id="bkXYTxt"></span><em>Drag to morph between corners A–D. CAPTURE stores the current cutoff, drive, reverb and chorus into a corner.</em></div></div>
         <div class="bk-lab">MACROS <button type="button" id="dnbMode" class="dnb-tg" aria-pressed="false">DnB ENGINE</button></div><div class="knobs bk-knobs" id="bkMacros"></div>
         <div class="bk-lab">PERFORMANCE MAP</div><div class="bk-perf" id="bkPerf"></div>
-        <div class="bk-valid" id="bkValid"></div><div class="bk-info" id="bkInfo"></div>
-        <div class="bk-btns"><button type="button" id="bkValidate">VALIDATE BANK</button><button type="button" id="bkExport">EXPORT SPEC BANK</button></div>
         <details class="sc-win" id="scWin" role="group" aria-label="Oscilloscope" open><summary><span>OSCILLOSCOPE</span><em id="scSum"></em></summary><div class="sc-head">
           <span class="sc-seg" role="group" aria-label="Channels"><button type="button" data-m="lr">L / R</button><button type="button" data-m="sum">SUM</button></span>
           <label>TIME<select id="scMs" aria-label="Time window"><option value="2">2 ms</option><option value="5">5 ms</option><option value="10">10 ms</option><option value="20">20 ms</option><option value="50">50 ms</option></select></label>
@@ -11165,11 +11199,12 @@ function mount(stage, engine) {
     pad.style.setProperty('--wc', ((1 - x) * y).toFixed(3)); pad.style.setProperty('--wd', (x * y).toFixed(3));
     pad.setAttribute('aria-valuetext', 'X ' + Math.round(x * 100) + '%, Y ' + Math.round(y * 100) + '%'); XF.dirty = true;
   }
-  function xyRipple(x, y, key, vel) {
+  function xyRipple(x, y, key, vel) { xyRippleTo(XF, x, y, key, vel); }
+  function xyRippleTo(S, x, y, key, vel) {
     const st = Object.assign({}, xyBlend(x, y));
     if (key) { st.density = Math.max(3, Math.round(st.density * 0.95)); st.lifetime *= 0.85 + vel * 0.2; st.scale *= 0.88 + vel * 0.24; }
-    XF.waves.push({ x, y: 1 - y, style: st, time: performance.now(), key: !!key, vel });
-    if (XF.waves.length > XF_MAX) XF.waves.shift(); XF.dirty = true;
+    S.waves.push({ x, y: 1 - y, style: st, time: performance.now(), key: !!key, vel });
+    if (S.waves.length > XF_MAX) S.waves.shift(); S.dirty = true;
   }
   function xyFxSize(cv) {
     const w = cv.clientWidth, h = cv.clientHeight; if (w < 2 || h < 2) return null;
@@ -11189,17 +11224,21 @@ function mount(stage, engine) {
       return;
     }
     if (now - XF.lastDraw < XF_FRAME_MS) return; XF.lastDraw = now;
-    const cv = $b('#bkXYRipples'); if (!cv) return; const view = xyFxSize(cv); if (!view) return;
-    const { g, w, h } = view; g.clearRect(0, 0, w, h); XF.dirty = false;
-    const px = clamp01(ctl.xy.x) * w, py = (1 - clamp01(ctl.xy.y)) * h;
-    if (XF.halo >= 0.02) {                                                // halo: breathes with the output level
-      const r = 16 + XF.halo * 52, gr = g.createRadialGradient(px, py, 0, px, py, r);
-      gr.addColorStop(0, 'rgba(240,236,224,' + (0.07 + XF.halo * 0.26).toFixed(3) + ')'); gr.addColorStop(0.45, 'rgba(226,168,74,' + (0.04 + XF.halo * 0.16).toFixed(3) + ')'); gr.addColorStop(1, 'rgba(226,168,74,0)');
+    const cv = $b('#bkXYRipples'); if (!cv) return; xyDrawField(XF, cv, ctl.xy.x, ctl.xy.y, now);
+  }
+  // one field of ripples and halo for an XY pad: S holds its waves and level, (x, y) is its puck
+  function xyDrawField(S, cv, x, y, now) {
+    const view = xyFxSize(cv); if (!view) return;
+    const { g, w, h } = view; g.clearRect(0, 0, w, h); S.dirty = false;
+    const px = clamp01(x) * w, py = (1 - clamp01(y)) * h;
+    if (S.halo >= 0.02) {                                                // halo: breathes with the output level
+      const r = 16 + S.halo * 52, gr = g.createRadialGradient(px, py, 0, px, py, r);
+      gr.addColorStop(0, 'rgba(240,236,224,' + (0.07 + S.halo * 0.26).toFixed(3) + ')'); gr.addColorStop(0.45, 'rgba(226,168,74,' + (0.04 + S.halo * 0.16).toFixed(3) + ')'); gr.addColorStop(1, 'rgba(226,168,74,0)');
       g.fillStyle = gr; g.beginPath(); g.arc(px, py, r, 0, Math.PI * 2); g.fill();
     }
-    for (let i = XF.waves.length - 1; i >= 0; i--) {
-      const wv = XF.waves[i], age = (now - wv.time) / 1000, st = wv.style;
-      if (age > st.lifetime) { XF.waves.splice(i, 1); continue; }
+    for (let i = S.waves.length - 1; i >= 0; i--) {
+      const wv = S.waves[i], age = (now - wv.time) / 1000, st = wv.style;
+      if (age > st.lifetime) { S.waves.splice(i, 1); continue; }
       const t = age / st.lifetime, fade = Math.pow(1 - t, wv.key ? 1.9 : 1.45), eased = 1 - Math.pow(1 - t, 2);   // water-like: quick out, slowing down
       const count = Math.round(st.density);
       for (let ring = 0; ring < count; ring++) {
@@ -11219,7 +11258,7 @@ function mount(stage, engine) {
         }
       }
     }
-    XF.drawn++; XF.painted = true;
+    S.drawn++; S.painted = true;
   }
   function xyFxWire() {
     const pad = $b('#bkXY'); if (!pad) return;
@@ -11242,7 +11281,7 @@ function mount(stage, engine) {
     if (window.IntersectionObserver) new IntersectionObserver((es) => { XF.visible = es[es.length - 1].isIntersecting; if (XF.visible) XF.dirty = true; }, { threshold: 0.01 }).observe(pad);
     xyFxPuck(); requestAnimationFrame(xyFxFrame);
   }
-  window.MosaicXyFx = { XF, ripple: xyRipple, attack: xyAttack, weights: () => ['--wa', '--wb', '--wc', '--wd'].map((k) => +$b('#bkXY').style.getPropertyValue(k)),
+  window.MosaicXyFx = { field: xyDrawField, rippleTo: xyRippleTo, XF, ripple: xyRipple, attack: xyAttack, weights: () => ['--wa', '--wb', '--wc', '--wd'].map((k) => +$b('#bkXY').style.getPropertyValue(k)),
     active: () => XF.waves.length > 0 || XF.halo >= 0.02,
     pixels: () => { const c = $b('#bkXYRipples'), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i] > 6) n++; return n; } };
 
@@ -11902,25 +11941,32 @@ function mount(stage, engine) {
     scope = meter.scope;
   };
 
+  // the displays repaint at about 30 frames a second (high-refresh screens would otherwise ask for 120 or more), and the
+  // canvases they draw into are looked up a few times a second rather than on every frame: less work for the page, more for the sound
+  let qaCache = new Map(), qaAt = 0;
+  const qa = (sel) => { let r = qaCache.get(sel); if (!r) { r = Array.from(plugin.querySelectorAll(sel)); qaCache.set(sel, r); } return r; };
+  const q1 = (sel) => qa(sel)[0] || null;
   function frame(now) {
+    if (now - lastFrame < 31 || document.hidden) { requestAnimationFrame(frame); return; }
+    if (now - qaAt > 500) { qaCache = new Map(); qaAt = now; }
     const dt = Math.min(0.05, (now - lastFrame) / 1000);
     lastFrame = now;
     oscVis += dt * 0.45;
     const lfoUi = (i) => (editLayer === 'B' && state.lfoB && state.lfoB[i] ? state.lfoB[i] : state.lfo[i]);
     for (let i = 0; i < 8; i++) lfoVis[i] += dt * ((lfoUi(i) && lfoUi(i).rate) || 0);
     if (page === 'lfo') useqFrame();
-    if (page === 'lfo') { plugin.querySelectorAll('.page-lfo canvas.lfo').forEach((canvas) => { const index = Number(canvas.dataset.lfo); drawLfo(canvas, lfoUi(index), lfoVis[index]); }); lfoPagePaint(); }
+    if (page === 'lfo') { qa('.page-lfo canvas.lfo').forEach((canvas) => { const index = Number(canvas.dataset.lfo); drawLfo(canvas, lfoUi(index), lfoVis[index]); }); lfoPagePaint(); }
     if (page === 'play') {
-      plugin.querySelectorAll('canvas.display[data-osc]').forEach((canvas) => {
+      qa('canvas.display[data-osc]').forEach((canvas) => {
         const index = Number(canvas.dataset.osc);
         const osc = state.layers[editLayer].osc[index];
         if (osc) drawWave(canvas, osc, oscVis);
       });
-      const engineShape=plugin.querySelector('canvas.engine-shape');if(engineShape)drawEngineShape(engineShape,state.layers[editLayer]);
-      const filter = plugin.querySelector('canvas.filter');
+      const engineShape=q1('canvas.engine-shape');if(engineShape)drawEngineShape(engineShape,state.layers[editLayer]);
+      const filter = q1('canvas.filter');
       if (filter) drawFilter(filter, state.layers[editLayer].filter);
-      plugin.querySelectorAll('canvas.env').forEach((canvas) => drawEnv(canvas, state.layers[editLayer][canvas.dataset.env]));
-      plugin.querySelectorAll('canvas.lfo').forEach((canvas) => {
+      qa('canvas.env').forEach((canvas) => drawEnv(canvas, state.layers[editLayer][canvas.dataset.env]));
+      qa('canvas.lfo').forEach((canvas) => {
         const index = Number(canvas.dataset.lfo);
         drawLfo(canvas, (editLayer === 'B' && state.lfoB && state.lfoB[index] ? state.lfoB[index] : state.lfo[index]), lfoVis[index]);
       });
