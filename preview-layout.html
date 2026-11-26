@@ -1119,25 +1119,31 @@ footer.bed {
 .xy-box.xy-field .xy-ripples { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
 .xy-box.xy-field .xy-dot { z-index: 3; width: 12px; height: 12px; margin: -6px 0 0 -6px; background: radial-gradient(circle at 36% 30%, #fff1cf, #e2a84a 58%, #a8721c 100%); box-shadow: 0 0 0 1px #090a0c, 0 0 0 2px #e2a84a55, 0 0 14px #e2a84a77; }
 
-/* ---- PRESET is the browser; PERFORM, and side panels on SEQ and MOD (moved from the PRESET page) ---- */
-.page-bank.browser-only { grid-template-columns: minmax(0, 1fr); }
+/* ---- PRESET = list | this preset; PERFORM = two XY pads over the scope and spectrum; more panels under SEQ and LFO ---- */
+.page-bank.bk-split { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.bk-side { overflow: auto; padding-bottom: 8px; } .bk-side > * { flex-shrink: 0; }
+.bk-side-lab { padding: 6px 10px 2px !important; } .bk-side .bk-sim { padding: 0 6px 6px; }
+.bk-side h4, .page-perf h4, .more-panel h4 { margin: 8px 10px 4px; font-size: 9px; letter-spacing: .16em; color: var(--accent); font-weight: 700; }
+.hx-roll.hx-fixed { border: 0; margin: 0; } .hx-roll.hx-fixed > summary { cursor: default; pointer-events: none; list-style: none; } .hx-roll.hx-fixed > summary::-webkit-details-marker { display: none; } .hx-roll.hx-fixed > summary::before { content: none !important; }
+.bk-side #userSafety .us { margin: 6px 10px; font-size: 10px; line-height: 1.45; padding: 8px 10px; }
 .page-perf { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); gap: 8px; padding: 8px; }
-.page-perf > .bk-perform { overflow: auto; padding-bottom: 8px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-auto-rows: min-content; column-gap: 12px; row-gap: 6px; align-content: start; }
-.page-perf > .bk-perform > * { grid-column: 1; min-width: 0; flex-shrink: 0; }
-.page-perf > .bk-perform > h3 { grid-column: 1 / -1; grid-row: 1; }
-.page-perf > .bk-perform > .bk-xywin { grid-row: 2; }
-.page-perf #scWin { grid-column: 2; grid-row: 2; margin-top: 0; } .page-perf #fftWin { grid-column: 2; grid-row: 3 / span 3; margin-top: 0; }
-.page-perf .bk-xywin .bk-xy, .page-perf #scCv, .page-perf #fftCv { height: 210px; }
-.page-perf h4, .side-panel h4 { margin: 8px 10px 4px; font-size: 9px; letter-spacing: .16em; color: var(--accent); font-weight: 700; }
-.page-perf .bk-knobs, .side-panel .bk-knobs { margin-top: 0; justify-content: flex-start; gap: 4px 8px; }
-.side-panel .bk-sec .bk-knobs .knob { width: 56px; } .side-panel > * { flex-shrink: 0; }
-.page-seq.has-side, .page-mod.has-side { grid-template-columns: minmax(0, 1fr) 300px; column-gap: 8px; }
-.page-seq.has-side > :not(.side-panel), .page-mod.has-side > :not(.side-panel) { grid-column: 1; }
-.side-panel { grid-column: 2; grid-row: 1 / -1; overflow: auto; padding-bottom: 8px; min-width: 0; }
-@media (max-width: 900px) {
-  .page-perf > .bk-perform { grid-template-columns: minmax(0, 1fr); } .page-perf #scWin, .page-perf #fftWin { grid-column: 1; grid-row: auto; }
-  .page-seq.has-side, .page-mod.has-side { grid-template-columns: minmax(0, 1fr); } .side-panel { grid-column: 1; grid-row: auto; }
-}
+.page-perf > .bk-perform { overflow: auto; padding: 0 10px 10px; display: flex; flex-direction: column; gap: 8px; }
+.pf-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; align-items: stretch; }
+.pf-row > * { margin: 0 !important; min-width: 0; }
+.page-perf .bk-xywin .bk-xy, .page-perf .pf-fxxy .xy-box.xy-field { height: 140px; } .page-perf #scCv, .page-perf #fftCv { height: 118px; }
+.pf-ctl { display: grid !important; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; } .pf-group { min-width: 0; } .pf-group > * { margin-top: 0; }
+.pf-fxxy .fx-head { padding: 0 10px !important; min-height: 37px; display: flex; align-items: center; }
+.pf-vis { align-items: start; } .pf-fxxy .fx-head h3 { letter-spacing: .14em; }
+.page-bank.bk-split .bk-browser { display: flex; flex-direction: column; } .page-bank.bk-split .bk-list { flex: 1 1 0; min-height: 120px; max-height: none; }
+.pf-fxxy { padding: 0 !important; display: flex; flex-direction: column; } .pf-fxxy .fx-head { padding: 7px 10px; border-bottom: 1px solid var(--line); }
+.pf-fxxy .fx-head h3 { margin: 0; font-size: 10px; } .pf-fxxy .xy-box.xy-field { margin: 0; border-radius: 0; border-left: 0; border-right: 0; }
+.pf-fxxy .note, .pf-fxxy .fx-copy, .pf-fxxy > p { display: none; } .pf-fxxy .xy-read { padding: 6px 10px; font-size: 10px; }
+.pf-ctl { display: flex; flex-wrap: wrap; gap: 4px 24px; align-items: flex-start; } .pf-ctl > * { margin: 0; }
+.page-seq.has-more { overflow: auto; grid-template-rows: 114px 306px 32px 64px auto; }
+.more-panel { overflow: visible; padding-bottom: 8px; } .more-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 10px; }
+.more-panel .bk-knobs { margin-top: 0; justify-content: flex-start; gap: 4px 8px; } .more-panel .bk-sec .bk-knobs .knob { width: 56px; }
+.lfo-exp .bk-sec { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 16px; } .lfo-exp .bk-note { grid-column: 1 / -1; font-size: 9px; }
+@media (max-width: 900px) { .page-bank.bk-split, .pf-row, .more-row { grid-template-columns: minmax(0, 1fr); } .page-seq.has-more { grid-template-rows: none; } }
 </style>
 <style id="mosaic-recorder-styles">
 /* Recorder-only styling; inherited Mosaic typography and palette. */
@@ -7850,7 +7856,8 @@ function mount(stage, engine) {
       const frame = (now) => {
         requestAnimationFrame(frame);
         if (reduce || document.hidden || !box.offsetParent || !window.MosaicXyFx || !window.MosaicXyFx.field) return;
-        const raw = Math.min(1, window.MosaicFxLevel || 0); FS.level += (raw - FS.level) * (raw > FS.level ? 0.4 : 0.07); FS.halo = Math.sqrt(FS.level);
+        const sc = window.MosaicScope && window.MosaicScope.SC, scl = sc && sc.ctx && sc.stat ? sc.stat.peakM || 0 : 0;
+        const raw = Math.min(1, Math.max(box.closest('.page-perf') ? scl : 0, window.MosaicFxLevel || 0)); FS.level += (raw - FS.level) * (raw > FS.level ? 0.4 : 0.07); FS.halo = Math.sqrt(FS.level);
         if (!FS.waves.length && FS.halo < 0.02 && !FS.dirty) { if (FS.painted) { rip.getContext('2d').clearRect(0, 0, rip.width, rip.height); FS.painted = false; } return; }
         if (now - FS.lastDraw < 33) return; FS.lastDraw = now;
         const [x, y] = fxy(); window.MosaicXyFx.field(FS, rip, x, y, now);
@@ -10322,7 +10329,7 @@ function mount(stage, engine) {
           <div class="bk-r2"><button type="button" id="hxExpHlx">EXPORT .HLX</button><button type="button" id="hxImpHlx">IMPORT .HLX</button><button type="button" id="hxExpAll">EXPORT ALL</button><button type="button" id="hxRecover" hidden>RECOVER UNSAVED</button><input type="file" id="hxFile" accept=".hlx,.hlxbank,.json,application/json" multiple hidden></div>
           <div class="bk-lab" style="padding-left:0">TAGS · CURRENT PRESET</div><div class="hx-tags" id="hxTags"></div></div></details></section>
       <section class="panel bk-perform"><h3>PERFORM</h3>
-        <div class="sc-win bk-xywin" role="group" aria-label="XY morph"><div class="sc-head"><b>XY MORPH</b><span class="bk-cap"><span>CAPTURE</span><span id="bkCap"></span></span></div>
+        <div class="sc-win bk-xywin" role="group" aria-label="XY morph"><div class="sc-head"><b>XY MORPH · SOUND</b><span class="bk-cap"><span>CAPTURE</span><span id="bkCap"></span></span></div>
           <div class="bk-xy" id="bkXY" tabindex="0" role="slider" aria-label="XY morph pad"><canvas class="bk-xy-ripples" id="bkXYRipples" aria-hidden="true"></canvas><i id="bkPuck"></i><span class="c ca">A</span><span class="c cb">B</span><span class="c cc">C</span><span class="c cd">D</span></div>
           <div class="sc-read bk-xyread"><span id="bkXYTxt"></span><em>Drag to morph between corners A–D. CAPTURE stores the current cutoff, drive, reverb and chorus into a corner.</em></div></div>
         <div class="bk-lab">MACROS <button type="button" id="dnbMode" class="dnb-tg" aria-pressed="false">DnB ENGINE</button></div><div class="knobs bk-knobs" id="bkMacros"></div>
@@ -11491,22 +11498,43 @@ function mount(stage, engine) {
   lfoBookMount(lfoPage, useqPageNode);
   pages.append(play.page, modPage, lfoPage, fxPage.page, seqPage.page, recorder.page, (() => { try { return MosaicWT.buildPage(); } catch (err) { console.error('Wavetable panel failed to build; Mosaic continues without it.', err); return document.createElement('div'); } })(), buildBank());
   (function regroupBank() {
-    // PRESET is the browser; PERFORM gets the XY pad, macros, performance map, scope and spectrum; ARP, SEQUENCE and
-    // RANDOMISE join the SEQ page, EXPANSION the MOD page. Only where the panels sit changes.
+    // Layout only: the same panels, with their wiring, in new places. PRESET = list | this preset; PERFORM = both XY pads
+    // over the scope and spectrum; ARP, SEQUENCE and RANDOMISE under the SEQ steps; EXPANSION at the foot of the LFO page.
     try {
+      const fxOnly = document.documentElement.classList.contains('mosaic-fx-only');
       const perf = el('div', 'page page-perf'); perf.dataset.page = 'perf';
-      const perform = bankRoot.querySelector('.bk-perform'); if (perform) perf.append(perform);
+      const perform = bankRoot.querySelector('.bk-perform');
+      if (perform) {
+        const pads = el('div', 'pf-row pf-pads'), vis = el('div', 'pf-row pf-vis'), ctlRow = el('div', 'pf-ctl');
+        const bkxy = perform.querySelector('.bk-xywin'); if (bkxy) pads.append(bkxy);
+        if (!fxOnly) { const box = fxPage.page.querySelector('.xy-box'), card = box && box.closest('.fx-card'); if (card) { card.classList.add('pf-fxxy'); const t = card.querySelector('.fx-head h3'); if (t) t.textContent = 'FX XY · TONE / DUB WASH'; pads.append(card); } }
+        const sc = perform.querySelector('#scWin'), ff = perform.querySelector('#fftWin'); if (sc) vis.append(sc); if (ff) vis.append(ff);
+        const mac = el('div', 'pf-group'), map = el('div', 'pf-group'); let into = mac;
+        [...perform.children].filter((n) => n.tagName !== 'H3' && n !== sc && n !== ff).forEach((n) => { if (/^\s*PERFORMANCE MAP/i.test(n.textContent || '')) into = map; into.append(n); });
+        ctlRow.append(mac, map);
+        perform.append(pads, ctlRow, vis); perf.append(perform);
+        // both displays open whenever PERFORM is shown (a remembered folded state no longer hides one of them here)
+        const tabBtn = () => tabs.querySelector('[data-page="perf"]'); setTimeout(() => { const b = tabBtn(); if (b) b.addEventListener('click', () => { if (sc) sc.open = true; if (ff) ff.open = true; }); }, 0);
+      }
       pages.append(perf); perfRoot = perf;
-      const sys = bankRoot.querySelector('.bk-systems'); if (!sys) return;
-      const secs = [...sys.querySelectorAll(':scope > .bk-sec')], head = (n) => ((n.querySelector('h4') || {}).textContent || '');
-      const gen = el('section', 'panel side-panel seq-gen'); gen.append(el('h3', '', 'ARP · SEQUENCE · RANDOMISE'));
-      secs.filter((n) => !/^EXPANSION/.test(head(n))).forEach((n) => gen.append(n));
-      seqPage.page.classList.add('has-side'); seqPage.page.append(gen);
-      const exp = el('section', 'panel side-panel mod-exp'); exp.append(el('h3', '', 'EXPANSION'));
-      secs.filter((n) => /^EXPANSION/.test(head(n))).forEach((n) => { const h = n.querySelector('h4'); if (h) h.textContent = 'LFO 3 · LFO 4 · CHAOS · FILTERS · MPE'; exp.append(n); });
-      modPage.classList.add('has-side'); modPage.append(exp);
-      sys.remove(); bankRoot.classList.add('browser-only');
-    } catch (err) { console.error('Mosaic: moving the BANK panels failed; they stay on the PRESET page.', err); }
+      const sys = bankRoot.querySelector('.bk-systems');
+      if (sys) {
+        const secs = [...sys.querySelectorAll(':scope > .bk-sec')], head = (n) => ((n.querySelector('h4') || {}).textContent || ''), isExp = (n) => /^EXPANSION/.test(head(n));
+        const gen = el('section', 'panel more-panel seq-gen'); gen.append(el('h3', '', 'ARP · SEQUENCE · RANDOMISE'));
+        const row = el('div', 'more-row'); secs.filter((n) => !isExp(n)).forEach((n) => row.append(n)); gen.append(row);
+        seqPage.page.classList.add('has-more'); seqPage.page.append(gen);
+        const exp = el('section', 'panel more-panel lfo-exp'); exp.append(el('h3', '', 'EXPANSION · LFO 3 · LFO 4 · CHAOS · FILTERS · MPE'));
+        secs.filter(isExp).forEach((n) => { const h = n.querySelector('h4'); if (h) h.remove(); exp.append(n); });
+        lfoPage.append(exp);
+        sys.remove();
+      }
+      // PRESET: the list on the left; this preset's details, similar sounds, storage and versions on the right, always open
+      const side = el('section', 'panel bk-side'); side.append(el('h3', '', 'THIS PRESET'));
+      const sim = bankRoot.querySelector('.bk-sim'); if (sim) { side.append(el('div', 'bk-lab bk-side-lab', 'SIMILAR SOUNDS')); side.append(sim); }
+      const roll = bankRoot.querySelector('#hxRoll');
+      if (roll) { roll.open = true; roll.classList.add('hx-fixed'); roll.addEventListener('toggle', () => { if (!roll.open) roll.open = true; }); side.append(roll); }
+      bankRoot.classList.add('bk-split'); bankRoot.append(side);
+    } catch (err) { console.error('Mosaic: moving panels failed; they stay where they were.', err); }
   })();
   buildBed();
   buildOverlay();
