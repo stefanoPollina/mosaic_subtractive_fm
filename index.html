@@ -1310,6 +1310,112 @@ footer.bed {
 .mr-footgrid{display:grid;grid-template-columns:1fr 1.15fr;gap:8px;min-height:0;flex:1}.mr-panel{border:1px solid var(--line);border-radius:7px;background:linear-gradient(180deg,#17181a,#101113);padding:10px;min-height:0}.mr-panel h3{margin:0 0 10px;font-size:10px;letter-spacing:.16em;color:var(--accent);display:flex;align-items:center;justify-content:space-between}.mr-panel h3 span{font-size:8px;color:var(--dim);font-weight:400}.mr-takes{display:flex;flex-direction:column;gap:5px;max-height:115px;overflow:auto;color:var(--dim);font-size:10px}.mr-takes button{text-align:left;font-size:10px}.mr-takes button.selected{border-color:var(--accent);color:var(--accent)}.mr-muted{font-size:9px;color:var(--dim);line-height:1.5}.mr-export-settings{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:8px 0}.mr-checks{display:flex;flex-wrap:wrap;gap:12px;font-size:9px;color:var(--dim);margin:10px 0}.mr-export-row{display:flex;gap:7px}.mr-export-row select{flex:1}.mr-export-row button{color:var(--accent);border-color:var(--accent);font-weight:600;min-width:90px}.mr-drag{margin-top:8px;padding:7px;text-align:center;border:1px dashed #55606c;border-radius:5px;color:var(--dim);font-size:9px;letter-spacing:.1em;cursor:grab}.mr-drag:hover{color:var(--accent);border-color:var(--accent)}.mr-feedback{font-size:9px;color:var(--dim);padding-top:7px;min-height:22px}.mr-panel progress{width:100%;height:5px;accent-color:var(--accent)}
 @media(max-width:760px){.page-rec.on{padding:6px;gap:6px}.mr-head h2 span{display:block;margin:4px 0}.mr-meters{grid-template-columns:repeat(3,minmax(0,1fr))}.mr-settings{grid-template-columns:repeat(2,minmax(0,1fr))}.mr-footgrid{grid-template-columns:1fr}.mr-controls button{flex:1}.mr-display canvas{height:85px}.mr-display{min-height:104px}}
 
+
+/* ===== housekeeping (trial 32) ===== */
+/* AUTO and ARM: one design on SEQ, WAVE and MACRO (they are the same two switches). AUTO lights amber, ARM lights red like REC. */
+.switch[data-learn="seq.auto.on"], .switch[data-learn="seq.auto.arm"], #wt-auto, #wt-arm, .pf-tg.pf-auto-on, .pf-tg.pf-auto-arm {
+  display: inline-flex !important; align-items: center; justify-content: center; gap: 6px; min-width: 64px; min-height: 26px; padding: 0 10px !important;
+  border: 1px solid #3a4254 !important; border-radius: 7px !important; background: #0d0e12 !important; color: #c9cfda !important;
+  font-size: 10px !important; font-weight: 700 !important; letter-spacing: .12em !important; line-height: 1 !important; white-space: nowrap; cursor: pointer; }
+.switch[data-learn="seq.auto.on"]::before, #wt-auto::before, .pf-tg.pf-auto-on::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #e2a84a55; flex: none; }
+.switch[data-learn="seq.auto.arm"]::before, #wt-arm::before, .pf-tg.pf-auto-arm::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #e5484d66; flex: none; }
+.switch[data-learn="seq.auto.on"].on, #wt-auto.on, .pf-tg.pf-auto-on.on { background: var(--accent) !important; border-color: var(--accent) !important; color: #141210 !important; }
+.switch[data-learn="seq.auto.on"].on::before, #wt-auto.on::before, .pf-tg.pf-auto-on.on::before { background: #141210; }
+.switch[data-learn="seq.auto.arm"].on, #wt-arm.on, .pf-tg.pf-auto-arm.on { background: #e5484d !important; border-color: #e5484d !important; color: #fff !important; }
+.switch[data-learn="seq.auto.arm"].on::before, #wt-arm.on::before, .pf-tg.pf-auto-arm.on::before { background: #fff; }
+.pf-tg.pf-auto-on, .pf-tg.pf-auto-arm { min-height: 34px; min-width: 0; }
+.transport .switch[data-learn^="seq.auto."] { min-width: 0; padding: 0 9px !important; }
+/* SEQ transport: Stop, Clear and CLEAR LANE in the same style as the rest of the row */
+.transport .texty { height: 32px; padding: 0 10px; border-radius: 6px; border: 1px solid var(--line-2, #3a4254); background: #111214; color: var(--text); font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; }
+#autoDest { flex: 1 1 160px !important; min-width: 0 !important; }   /* the AUTO destination menu: it sized itself to its longest name and pushed the row over */
+.transport .texty:hover { border-color: #5a6478; }
+.transport .texty.armed { border-color: #e5484d; color: #e5484d; }
+/* MOD MATRIX: the same small amber title as every other page */
+.mx-top h3 { font-size: 10px !important; letter-spacing: .16em; font-weight: 700; color: var(--accent); padding: 0 !important; }
+/* FX page: controls up top, the description trimmed to one line (click it to read the rest), less padding */
+.page-fx .fx-card { gap: 2px !important; padding: 10px 12px !important; }
+.page-fx .fx-head { min-height: 30px !important; padding-bottom: 6px !important; }
+.page-fx .fx-card .knobs { padding: 2px 4px !important; margin-top: 4px !important; }
+.page-fx .fx-card .fx-note { margin-top: auto !important; padding-top: 6px !important; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; overflow: hidden; cursor: pointer; }
+.page-fx .fx-card .fx-note.open { display: block; -webkit-line-clamp: unset; }
+.page-fx .fx-card .fx-note:not(.open):hover { color: #b8c0cf; }
+.page-fx .fx-head.fx-head-preset h3 { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.page-fx .fx-head .fx-preset-strip { border: 0 !important; padding: 0 !important; margin: 0 0 0 auto !important; flex: 0 1 126px; min-width: 0; }
+.page-fx .fx-head .fx-preset-strip > span { display: none; }
+.page-fx .fx-head .fx-preset-strip select { width: 100%; max-width: 108px; min-width: 0; font-size: 10px !important; padding: 2px 16px 2px 5px !important; background-position: right 3px center; text-overflow: ellipsis; }
+.page-fx .fx-head .fx-preset-strip { flex: 0 1 108px !important; }
+.page-fx .fx-head h3 { letter-spacing: .13em !important; }
+/* option row: small menus and toggles, left aligned, one height */
+.page-fx .fx-opts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 6px 0 2px; }
+.page-fx .fx-opts > select, .page-fx .fx-opts > .segs select { height: 24px; padding: 0 6px; font-size: 10px; max-width: 100%; }
+.page-fx .fx-opts > button, .page-fx .fx-opts .segs button { height: 24px !important; min-height: 0 !important; padding: 0 10px !important; border-radius: 6px !important; font-size: 10px !important; letter-spacing: .1em; margin: 0 !important; flex: 0 1 auto; }
+.page-fx .fx-opts .segs { display: flex; gap: 4px; margin: 0 !important; padding: 0 !important; }
+.page-fx .fx-opts .segs button { min-width: 44px; }
+/* knobs: always one row, shared out evenly */
+.page-fx .fx-card .knobs.fx-knobrow { flex-wrap: nowrap !important; justify-content: space-evenly !important; gap: 0 !important; padding: 6px 0 2px !important; }
+.page-fx .fx-card .knobs.fx-knobrow > .knob { flex: 0 1 72px; min-width: 0; }
+.page-fx .fx-card .knobs.fx-knobrow > .knob .kl { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.page-fx .fx-card .knobs.fx-knobrow.n5 > .knob svg { width: 44px; height: 44px; }
+.page-fx .fx-card .knobs.fx-knobrow.n6 { display: grid !important; grid-template-columns: repeat(3, 1fr); row-gap: 4px !important; justify-items: center; }   /* six knobs: two neat rows of three */
+.page-fx .fx-acts .desk-bar { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; max-width: 100%; }
+.page-fx .fx-acts .desk-bar .desk-status { flex: 1 1 100%; min-width: 0; font-size: 10px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.page-fx .fx-acts .desk-bar > button { flex: 1 1 0 !important; min-width: 0 !important; width: auto !important; height: 28px; padding: 0 6px !important; box-sizing: border-box; }
+/* MOTION: FILTER (with its display) and PSY FILTER GATE (with its step grid) are double width, side by side, so every section fills its rows */
+.page-fx > .fx-card.fx-dbl { grid-column: span 2; }
+.page-fx > .fx-card.fx-dbl canvas { width: 100% !important; }
+.page-fx > .fx-card.fx-dbl .knobs.fx-knobrow { justify-content: center !important; gap: 28px !important; }
+/* actions (HOLD buttons, MONO CHECK, MIDI desk): one row at the bottom, above the description */
+.page-fx .fx-acts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 8px; }
+.page-fx .fx-acts > button { flex: 1 1 0; height: 28px; padding: 0 10px !important; margin: 0 !important; font-size: 10px; letter-spacing: .12em; }
+.page-fx .fx-acts .desk-bar { flex: 1 1 100%; margin: 0 !important; padding: 0 !important; border: 0 !important; }
+.page-fx .fx-acts + .fx-note { margin-top: 6px !important; }
+
+/* FX MOSAIC (trial 33b): hand-laid tiles on 12 columns; tall tiles only where the contents are tall (MASTER). Narrow windows fall back to trial 32. */
+.page-fx .fx-sect { display: contents; }
+.page-fx.fx-mosaic .fx-sect { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); grid-auto-rows: auto; gap: 12px; align-items: stretch; }
+.page-fx.fx-mosaic .fx-sect > .fx-card { margin: 0 !important; min-width: 0; }
+.page-fx.fx-mosaic [data-tile="drive"] { grid-column: 1 / span 3; grid-row: 1 / span 1; }
+.page-fx.fx-mosaic [data-tile="crush"] { grid-column: 4 / span 3; grid-row: 1 / span 1; }
+.page-fx.fx-mosaic [data-tile="vinyl-lo-fi"] { grid-column: 7 / span 3; grid-row: 1 / span 1; }
+.page-fx.fx-mosaic [data-tile="analog-tape"] { grid-column: 10 / span 3; grid-row: 1 / span 1; }
+.page-fx.fx-mosaic [data-tile="filter"] { grid-column: 1 / span 3; grid-row: 1 / span 1; }
+.page-fx.fx-mosaic [data-tile="psy-filter-gate"] { grid-column: 4 / span 6; grid-row: 1 / span 1; }
+.page-fx.fx-mosaic [data-tile="envelope-filter"] { grid-column: 10 / span 3; grid-row: 1 / span 1; }
+.page-fx.fx-mosaic [data-tile="tremolo"] { grid-column: 1 / span 3; grid-row: 2 / span 1; }
+.page-fx.fx-mosaic [data-tile="phaser"] { grid-column: 4 / span 3; grid-row: 2 / span 1; }
+.page-fx.fx-mosaic [data-tile="chorus"] { grid-column: 7 / span 3; grid-row: 2 / span 1; }
+.page-fx.fx-mosaic [data-tile="ensemble"] { grid-column: 10 / span 3; grid-row: 2 / span 1; }
+.page-fx.fx-mosaic [data-tile="reso-comb"] { grid-column: 1 / span 3; grid-row: 3 / span 1; }
+.page-fx.fx-mosaic [data-tile="psy-freq-shift"] { grid-column: 4 / span 3; grid-row: 3 / span 1; }
+.page-fx.fx-mosaic [data-tile="vintage-rotary"] { grid-column: 7 / span 3; grid-row: 3 / span 1; }
+.page-fx.fx-mosaic [data-tile="vowel-morph"] { grid-column: 10 / span 3; grid-row: 3 / span 1; }
+.page-fx.fx-mosaic [data-tile="stereo-auto-pan"] { grid-column: 1 / span 4; grid-row: 4 / span 1; }
+.page-fx.fx-mosaic [data-tile="barberpole-phaser"] { grid-column: 5 / span 4; grid-row: 4 / span 1; }
+.page-fx.fx-mosaic [data-tile="warm-ring-trem"] { grid-column: 9 / span 4; grid-row: 4 / span 1; }
+.page-fx.fx-mosaic [data-tile="dub-siren"] { grid-column: 1 / span 3; grid-row: 1 / span 1; }
+.page-fx.fx-mosaic [data-tile="dub-space-echo"] { grid-column: 4 / span 3; grid-row: 1 / span 1; }
+.page-fx.fx-mosaic [data-tile="ping-pong"] { grid-column: 7 / span 3; grid-row: 1 / span 1; }
+.page-fx.fx-mosaic [data-tile="reverb"] { grid-column: 10 / span 3; grid-row: 1 / span 1; }
+.page-fx.fx-mosaic [data-tile="delay"] { grid-column: 1 / span 3; grid-row: 2 / span 1; }
+.page-fx.fx-mosaic [data-tile="multiband"] { grid-column: 4 / span 3; grid-row: 2 / span 1; }
+.page-fx.fx-mosaic [data-tile="spring-tank"] { grid-column: 7 / span 3; grid-row: 2 / span 1; }
+.page-fx.fx-mosaic [data-tile="shimmer"] { grid-column: 10 / span 3; grid-row: 2 / span 1; }
+.page-fx.fx-mosaic [data-tile="granular-cloud"] { grid-column: 1 / span 12; grid-row: 3 / span 1; }
+.page-fx.fx-mosaic [data-tile="dj-isolator"] { grid-column: 1 / span 3; grid-row: 1 / span 2; }
+.page-fx.fx-mosaic [data-tile="psy-master"] { grid-column: 4 / span 3; grid-row: 1 / span 2; }
+.page-fx.fx-mosaic [data-tile="master-tilt-mono"] { grid-column: 7 / span 3; grid-row: 1 / span 2; }
+.page-fx.fx-mosaic [data-tile="width"] { grid-column: 10 / span 3; grid-row: 1 / span 1; }
+.page-fx.fx-mosaic [data-tile="tube-console"] { grid-column: 10 / span 3; grid-row: 2 / span 1; }
+.page-fx.fx-mosaic [data-tile="compressor"] { grid-column: 1 / span 4; grid-row: 3 / span 1; }
+.page-fx.fx-mosaic [data-tile="sidechain"] { grid-column: 5 / span 4; grid-row: 3 / span 1; }
+.page-fx.fx-mosaic [data-tile="ny-parallel-glue"] { grid-column: 9 / span 4; grid-row: 3 / span 1; }
+.page-fx.fx-mosaic .fx-tall > .fx-head + * { margin-top: 0 !important; }
+/* one order in every tile: title and preset / menus and option buttons / display or steps / dials / performance buttons / description */
+.page-fx .fx-opts { justify-content: center !important; }
+.page-fx .fx-head h3 { flex: 0 0 auto !important; white-space: nowrap; overflow: visible !important; }
+.page-fx .fx-head .fx-preset-strip { min-width: 0; flex: 0 1 108px !important; margin-left: auto !important; }
+.page-fx .fx-head .fx-preset-strip + button { margin-left: 0 !important; }
+.page-fx.fx-mosaic [data-tile="granular-cloud"] .gc-row { justify-content: center; }
 </style>
 <script id="mosaic-recorder-module">
 /* CONTINUUM MOSAIC RECORDER — isolated additive workspace module.
@@ -11320,6 +11426,23 @@ function mount(stage, engine) {
     [[50, '50'], [100, '100'], [200, '200'], [500, '500'], [1000, '1k'], [2000, '2k'], [5000, '5k'], [10000, '10k']].forEach(([f, t]) => g.fillText(t, ffX(f, W) + 3, H - 5));
     [-20, -40, -60].forEach((db) => g.fillText(db + ' dB', 4, ffY(db, H) - 3));
   }
+  function ffGridSlim(g, W, H, Y, lo, hi) {       // the MACRO strip: the same grid, but the dB lines follow the zoomed window
+    g.fillStyle = '#05080d'; g.fillRect(0, 0, W, H); g.lineWidth = 1; g.strokeStyle = '#141c28'; g.beginPath();
+    for (const f of [30, 40, 60, 70, 80, 90, 300, 400, 600, 700, 800, 900, 3000, 4000, 6000, 7000, 8000, 9000]) { const x = Math.round(ffX(f, W)) + 0.5; g.moveTo(x, 0); g.lineTo(x, H); }
+    g.stroke(); g.strokeStyle = '#1f2a3a'; g.beginPath();
+    for (const f of [20, 50, 100, 200, 500, 1000, 2000, 5000, 10000]) { const x = Math.round(ffX(f, W)) + 0.5; g.moveTo(x, 0); g.lineTo(x, H); }
+    for (let db = Math.ceil(lo / 10) * 10; db <= hi; db += 10) { const y = Math.round(Y(db)) + 0.5; g.moveTo(0, y); g.lineTo(W, y); } g.stroke();
+    const xl = ffX(250, W), xh = ffX(4000, W); g.strokeStyle = 'rgba(255,255,255,0.13)'; g.setLineDash([2, 3]); g.beginPath(); [xl, xh].forEach((x) => { g.moveTo(Math.round(x) + 0.5, 0); g.lineTo(Math.round(x) + 0.5, H); }); g.stroke(); g.setLineDash([]);
+    g.font = '9px ui-monospace, Consolas, monospace'; g.fillStyle = '#4b566a';
+    [[50, '50'], [100, '100'], [200, '200'], [500, '500'], [1000, '1k'], [2000, '2k'], [5000, '5k'], [10000, '10k']].forEach(([f, t]) => g.fillText(t, ffX(f, W) + 3, H - 5));
+    let lastY = -99; for (let db = Math.ceil(lo / 20) * 20; db <= hi - 4; db += 20) { const y = Y(db) - 3; if (y > 20 && y < H - 14 && Math.abs(y - lastY) > 11) { g.fillText(db + ' dB', W - 40, y); lastY = y; } }
+    return [xl, xh];
+  }
+  function ffBandLevels(g, W, c, xl, xh) {          // LOW / MID / HIGH: the power in each range, as a quiet read-out along the top
+    const lvl = (x0, x1) => { let p = 0, n = 0; for (let x = Math.max(0, Math.floor(x0)); x < Math.min(W, x1); x++) { p += Math.pow(10, c[x] / 10); n++; } return n ? 10 * Math.log10(p / n) : -200; };
+    g.font = '9px ui-monospace, Consolas, monospace'; g.fillStyle = '#8a93a6'; g.globalAlpha = 0.9;
+    [['LOW', 0, xl], ['MID', xl, xh], ['HIGH', xh, W]].forEach(([t, x0, x1]) => { const v = lvl(x0, x1); g.fillText(t + ' ' + (v > -100 ? Math.round(v) : '—'), x0 + 5, 11); }); g.globalAlpha = 1;
+  }
   function ffFrame(now) {
     requestAnimationFrame(ffFrame);
     if (!perfOn() || document.hidden) return;
@@ -11332,7 +11455,11 @@ function mount(stage, engine) {
     const dt = Math.min(0.1, Math.max(0.001, (now - (FF.lastT || now)) / 1000)); FF.lastT = now;
     if (!ffRead()) { ffGrid(g, W, H); g.fillStyle = '#6a7488'; g.font = '11px ui-monospace, Consolas, monospace'; g.fillText('AUDIO OFF — press START or play a note', 14, H / 2); return; }
     if (W !== FF.w || H !== FF.h || !FF.lo) { ffMap(W); FF.w = W; FF.h = H; }
-    ffGrid(g, W, H); const sr = FF.ctx.sampleRate, N = FF.an.fftSize, bw = sr / N, d = FF.db, decay = FF_DECAY * dt; let mp = -200;
+    const sr = FF.ctx.sampleRate, N = FF.an.fftSize, bw = sr / N, d = FF.db, decay = FF_DECAY * dt; let mp = -200;
+    // the slim strip on MACRO zooms into a 54 dB window that follows the sound: it rises at once and sinks slowly, so a fade is seen before the view re-centres
+    const slim = sw.classList.contains('pf-vis') && !sw.classList.contains('pf-full'); let Yf = ffY, sx = null;
+    if (slim) { const want = Math.max(-46, Math.min(0, FF.top + 4)); FF.zHi = FF.zHi == null ? want : FF.zHi + (want - FF.zHi) * (want > FF.zHi ? 0.5 : 0.025);
+      const hi = FF.zHi, lo = hi - 54; Yf = (db) => H - 4 - ((Math.max(lo, Math.min(hi, db)) - lo) / 54) * (H - 18); sx = ffGridSlim(g, W, H, Yf, lo, hi); } else ffGrid(g, W, H);
     if (FF.mode === 'fft') {
       const col = ffFrame.col || (ffFrame.col = new Float32Array(0)); const c = col.length === W ? col : (ffFrame.col = new Float32Array(W));
       for (let x = 0; x < W; x++) {
@@ -11341,18 +11468,19 @@ function mount(stage, engine) {
         v = ffDb(v) + FF_CAL; c[x] = v; FF.peak[x] = Math.max(v, FF.peak[x] - decay); if (FF.peak[x] > mp) mp = FF.peak[x];
       }
       const gr = g.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, 'rgba(226,168,74,0.55)'); gr.addColorStop(1, 'rgba(226,168,74,0.02)');
-      g.beginPath(); g.moveTo(0, H); for (let x = 0; x < W; x++) g.lineTo(x, ffY(c[x], H)); g.lineTo(W, H); g.closePath(); g.fillStyle = gr; g.fill();
-      g.beginPath(); for (let x = 0; x < W; x++) { const y = ffY(c[x], H); if (x === 0) g.moveTo(x, y); else g.lineTo(x, y); } g.strokeStyle = '#e2a84a'; g.lineWidth = 1.4; g.stroke();
-      if (FF.peaks) { g.beginPath(); for (let x = 0; x < W; x++) { const y = ffY(FF.peak[x], H); if (x === 0) g.moveTo(x, y); else g.lineTo(x, y); } g.strokeStyle = 'rgba(74,214,196,0.7)'; g.lineWidth = 1; g.stroke(); }
+      g.beginPath(); g.moveTo(0, H); for (let x = 0; x < W; x++) g.lineTo(x, Yf(c[x], H)); g.lineTo(W, H); g.closePath(); g.fillStyle = gr; g.fill();
+      g.beginPath(); for (let x = 0; x < W; x++) { const y = Yf(c[x], H); if (x === 0) g.moveTo(x, y); else g.lineTo(x, y); } g.strokeStyle = '#e2a84a'; g.lineWidth = 1.4; g.stroke();
+      if (FF.peaks) { g.beginPath(); for (let x = 0; x < W; x++) { const y = Yf(FF.peak[x], H); if (x === 0) g.moveTo(x, y); else g.lineTo(x, y); } g.strokeStyle = 'rgba(74,214,196,0.7)'; g.lineWidth = 1; g.stroke(); }
     } else {                                    // 1/3-octave bars: power-averaged per band
       const B = FF.bands, bwid = Math.max(2, W / B.length - 2);
       for (let i = 0; i < B.length; i++) {
         const f0 = B[i] / Math.pow(2, 1 / 6), f1 = B[i] * Math.pow(2, 1 / 6), k0 = Math.max(1, Math.floor(f0 / bw)), k1 = Math.min(d.length - 1, Math.max(k0, Math.ceil(f1 / bw))); let p = 0, n = 0;
         for (let k = k0; k <= k1; k++) { p += Math.pow(10, d[k] / 10); n++; } const v = 10 * Math.log10(p / Math.max(1, n) * (k1 - k0 + 1)) + FF_CAL; FF.bandDb[i] = v; FF.bandPk[i] = Math.max(v, FF.bandPk[i] - decay); if (FF.bandPk[i] > mp) mp = FF.bandPk[i];
-        const x = ffX(B[i], W) - bwid / 2, y = ffY(v, H), gr = g.createLinearGradient(0, H, 0, y); gr.addColorStop(0, 'rgba(226,168,74,0.25)'); gr.addColorStop(1, 'rgba(240,236,224,0.95)'); g.fillStyle = gr; g.fillRect(x, y, bwid, H - y);
-        if (FF.peaks) { g.fillStyle = 'rgba(74,214,196,0.85)'; g.fillRect(x, ffY(FF.bandPk[i], H) - 1, bwid, 2); }
+        const x = ffX(B[i], W) - bwid / 2, y = Yf(v, H), gr = g.createLinearGradient(0, H, 0, y); gr.addColorStop(0, 'rgba(226,168,74,0.25)'); gr.addColorStop(1, 'rgba(240,236,224,0.95)'); g.fillStyle = gr; g.fillRect(x, y, bwid, H - y);
+        if (FF.peaks) { g.fillStyle = 'rgba(74,214,196,0.85)'; g.fillRect(x, Yf(FF.bandPk[i], H) - 1, bwid, 2); }
       }
     }
+    if (sx && FF.mode === 'fft') ffBandLevels(g, W, ffFrame.col, sx[0], sx[1]);
     FF.maxPeak = mp; FF.frames++; if (now - FF.lastRead > 100) { FF.lastRead = now; ffReadout(); }
   }
   function ffPaintControls() {
@@ -19274,6 +19402,62 @@ Mr98TjFROoGi5JGU/Zyijjk6Pjz+P7jopW1GcZQA
   let tries = 0; const t = setInterval(() => { if (build() || ++tries > 300) clearInterval(t); }, 200);
 })();
 
+</script>
+
+<script>
+/* FX cards: the FX PRESET menu moves up into the title row; descriptions show one line, click to read the rest (full text also on hover) */
+(function () {
+  const wire = () => { const ns = document.querySelectorAll('.page-fx .fx-card .fx-note'); if (!ns.length) return false;
+    if (!wire.on) { wire.on = true;   // one listener for every description, including cards added later (the plugin's FX Suite adds its LFO card)
+      document.addEventListener('click', (e) => { const n = e.target.closest && e.target.closest('.page-fx .fx-card .fx-note'); if (n) n.classList.toggle('open'); });
+      document.addEventListener('mouseover', (e) => { const n = e.target.closest && e.target.closest('.page-fx .fx-card .fx-note'); if (n && !n.title) n.title = n.textContent.trim() + '  (click to show it all)'; }); }
+    document.querySelectorAll('.page-fx > .fx-card').forEach((card) => {
+      if (card.dataset.tidy) return; card.dataset.tidy = '1';
+      const head = card.querySelector(':scope > .fx-head'); if (!head) return;
+      const sw = head.querySelector(':scope > button');
+      // 1. the FX PRESET menu joins the title row (also inside a wide card's control row)
+      const strip = card.querySelector(':scope > .fx-preset-strip') || card.querySelector(':scope > .gc-row > .fx-preset-strip');
+      if (strip) { head.insertBefore(strip, sw || null); head.classList.add('fx-head-preset'); const sel = strip.querySelector('select'); if (sel) { if (!sel.title) sel.title = 'FX preset'; const o = sel.options[0]; if (o && o.value === '' && /custom/i.test(o.textContent)) o.textContent = 'PRESET'; } }
+      if (card.classList.contains('fx-full')) return;   // wide cards (GRANULAR CLOUD, the plugin's LFOs) keep their own one-row layout
+      // 2. one grammar for every card: title, options, knobs, actions, description
+      const note = card.querySelector(':scope > p.fx-note'), opts = document.createElement('div'), acts = document.createElement('div'), misc = [], after = [];
+      opts.className = 'fx-opts'; acts.className = 'fx-acts';
+      const isAct = (b) => b.tagName === 'BUTTON' && /^(HOLD|MONO CHECK)/i.test(b.textContent.trim());
+      const knobRows = [...card.querySelectorAll(':scope > .knobs')], knobs = knobRows[0];
+      knobRows.slice(1).forEach((r) => { while (r.firstChild) knobs.append(r.firstChild); r.remove(); });   // REVERB and the like: one row of knobs
+      [...card.children].forEach((c) => {
+        if (c === head || c === note || c === knobs) return;
+        if (c.tagName === 'SELECT' || c.classList.contains('segs')) { opts.append(c); return; }
+        if (c.classList.contains('fx-top')) { [...c.children].forEach((x) => (isAct(x) ? acts : opts).append(x)); c.remove(); return; }
+        if (isAct(c) || c.classList.contains('desk-bar')) { acts.append(c); return; }
+        if (c.tagName === 'CANVAS') { after.push(c); return; }
+        misc.push(c);   // e.g. PSY FILTER GATE's step grid, which belongs under its pattern menu
+      });
+      const order = [head]; if (opts.children.length) order.push(opts); order.push(...misc, ...after); if (knobs) order.push(knobs);   // display or steps above the dials, always
+      if (acts.children.length) order.push(acts); if (note) order.push(note);
+      order.forEach((n) => card.append(n));
+      if (knobs) knobs.classList.add('fx-knobrow', 'n' + Math.min(6, knobs.querySelectorAll(':scope > .knob').length));
+    });
+    { const byName = (n) => [...document.querySelectorAll('.page-fx > .fx-card')].find((c) => { const h = c.querySelector('.fx-head h3'); return h && h.textContent.trim() === n; });
+      const f = byName('FILTER'), g = byName('PSY FILTER GATE');
+      if (f && g && !f.classList.contains('fx-dbl')) { f.classList.add('fx-dbl'); g.classList.add('fx-dbl'); f.after(g); } }
+    const page = document.querySelector('.page-fx');
+    if (page && !page.dataset.mosaic) { page.dataset.mosaic = '1'; let sect = null;
+      const slug = (t) => t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      const TALL = ["dj-isolator", "psy-master", "master-tilt-mono"];
+      [...page.children].forEach((c) => {
+        if (c.classList.contains('fx-group')) { sect = document.createElement('div'); sect.className = 'fx-sect'; c.after(sect); return; }
+        if (!c.classList.contains('fx-card') || c.classList.contains('fx-about')) { sect = null; return; }
+        if (c.classList.contains('mfx-lfo')) { if (sect) sect.before(c); return; }   // the FX Suite's LFO card stays a full-width strip above MOTION
+        const h = c.querySelector('.fx-head h3'); if (h) { const k = slug(h.textContent.trim()); c.dataset.tile = k; if (TALL.includes(k)) c.classList.add('fx-tall');
+}
+        if (sect) sect.append(c); });
+      const fit = () => page.classList.toggle('fx-mosaic', page.clientWidth >= 1100);
+      new ResizeObserver(fit).observe(page); fit(); }
+    return true; };
+  const go = () => { let tries = 0; const t = setInterval(() => { if (wire() || ++tries > 40) clearInterval(t); }, 250); };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();
+})();
 </script>
 </body>
 </html>
