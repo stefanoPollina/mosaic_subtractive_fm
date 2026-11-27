@@ -1118,6 +1118,181 @@ footer.bed {
 .xy-box.xy-field::after { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0; background: linear-gradient(#e2a84a38, #e2a84a38) var(--px, 50%) 0 / 1px 100% no-repeat, linear-gradient(#e2a84a38, #e2a84a38) 0 var(--py, 50%) / 100% 1px no-repeat; }
 .xy-box.xy-field .xy-ripples { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
 .xy-box.xy-field .xy-dot { z-index: 3; width: 12px; height: 12px; margin: -6px 0 0 -6px; background: radial-gradient(circle at 36% 30%, #fff1cf, #e2a84a 58%, #a8721c 100%); box-shadow: 0 0 0 1px #090a0c, 0 0 0 2px #e2a84a55, 0 0 14px #e2a84a77; }
+/* ---- MACRO · X Y performance screen (layout only) ---- */
+.page-bank.pf-moved { grid-template-columns: 1.12fr .88fr; }
+.page-perf { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); padding: 8px; }
+.page-perf > .pf { overflow: auto; padding: 0 12px 12px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.page-perf > .pf > h3 { align-self: stretch; }
+.pf-wrap { display: flex; flex-direction: column; gap: 10px; }
+.pf-stage { --pad: 300px; display: grid; grid-template-columns: 150px calc(var(--pad) * 3 + 24px) 150px; grid-template-areas: "strip strip strip" "left pads right" ". under ."; gap: 12px; }
+.pf-strip { grid-area: strip; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; height: 86px; overflow: visible; position: relative; z-index: 30; }
+.pf-vis.pf-full { position: relative; z-index: 31; background: #0b0d12; box-shadow: 0 14px 40px rgba(0, 0, 0, .65); }
+.pf-strip > .sc-win.pf-vis { margin: 0 !important; }
+.pf-vis > summary { padding-top: 5px !important; padding-bottom: 5px !important; cursor: pointer; }
+.pf-vis > summary > span::before { content: '\25B8' !important; transform: none !important; } .pf-vis.pf-full > summary > span::before { content: '\25BE' !important; }
+.pf-vis > summary::marker, .pf-vis > summary::-webkit-details-marker { display: none; content: ''; }
+.pf-vis:not(.pf-full) .sc-head, .pf-vis:not(.pf-full) .sc-read { display: none !important; }
+.pf-vis #scCv, .pf-vis #fftCv { height: 62px !important; } .pf-vis.pf-full #scCv, .pf-vis.pf-full #fftCv { height: 110px !important; }
+.pf-pads { grid-area: pads; display: grid; grid-template-columns: repeat(3, var(--pad)); gap: 12px; }
+.pf-pad { margin: 0 !important; width: var(--pad); display: flex; flex-direction: column; position: relative; }
+.pf-pad > .sc-head { height: 34px; min-height: 0; display: flex; flex-wrap: nowrap; align-items: center; gap: 5px; padding-top: 0; padding-bottom: 0; box-sizing: border-box; }
+.pf-pad > .sc-head > b { margin-right: auto; white-space: nowrap; letter-spacing: .14em; }
+.pf-pad .bk-cap { display: flex; align-items: center; gap: 4px; flex-wrap: nowrap; } .pf-pad .bk-cap > span:first-child { display: inline; font-size: 8px; letter-spacing: .12em; color: var(--dim); margin: 0 1px 0 0; } .pf-pad #bkCap button { min-width: 18px; padding: 1px 3px; height: 22px; } .pf-pad > .sc-head { overflow: hidden; }
+.pf-pad .bk-xy, .pf-pad .xy-box.xy-field { width: 100%; height: var(--pad) !important; min-height: 0; flex: none; margin: 0; border: 0; border-radius: 0 0 8px 8px; }
+.pf-pad .bk-xyread { display: none; }
+.pf-pad .sc-head button, .pf-hold { padding: 2px 7px; font-size: 9px; min-height: 0; height: 22px; line-height: 1; }
+.pf-axes { position: absolute; left: 10px; right: 10px; bottom: 6px; display: flex; justify-content: space-between; font-size: 9px; letter-spacing: .14em; color: var(--dim); pointer-events: none; z-index: 4; }
+.pf-acbox { position: relative; cursor: crosshair; touch-action: none; }
+.pf-corner { position: absolute; font-size: 9px; letter-spacing: .12em; color: var(--dim); pointer-events: none; z-index: 4; }
+.pf-tl { top: 7px; left: 9px; } .pf-tr { top: 7px; right: 9px; } .pf-bl { bottom: 7px; left: 9px; } .pf-br { bottom: 7px; right: 9px; }
+.pf-col { display: flex; flex-direction: column; gap: 7px; } .pf-left { grid-area: left; } .pf-right { grid-area: right; }
+.pf-lab { display: block; font-size: 9px; letter-spacing: .16em; color: var(--dim); margin-top: 4px; }
+.pf-col > button { width: 100%; margin: 0 !important; box-sizing: border-box; }
+.pf-tg, .pf-hold, .pf-snap, .pf-seg button, .pf-oct button, .pf-throw, .pf-col .dnb-tg, .pf-play { border: 1px solid var(--line); background: #0d0e12; color: var(--text, #ddd); border-radius: 7px; font-size: 10px; letter-spacing: .12em; cursor: pointer; }
+.pf-tg, .pf-col .dnb-tg, .pf-play { padding: 9px 6px; }
+.pf-tg.on, .pf-hold.on, .pf-seg button.on, .pf-throw.on, .pf-snap.on { background: var(--accent); color: #141210; border-color: var(--accent); }
+.pf-seg { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; } .pf-seg button { padding: 6px 0; font-size: 9px; letter-spacing: .02em; }
+.pf-oct { display: grid; grid-template-columns: 26px 1fr auto 26px; align-items: center; gap: 5px; font-size: 9px; letter-spacing: .14em; color: var(--dim); } .pf-oct b { color: var(--accent); font-size: 12px; } .pf-oct button { padding: 5px 0; }
+.pf-throw { flex: 1 1 auto; min-height: 70px; font-size: 11px; border-width: 2px; touch-action: none; user-select: none; }
+.pf-unders { grid-area: under; display: grid; grid-template-columns: repeat(3, var(--pad)); gap: 12px; }
+.pf-under { display: flex; flex-direction: column; gap: 6px; min-width: 0; } .pf-under > .pf-lab { margin: 0; text-align: center; }
+.pf-four { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.pf-snap { height: 42px; font-size: 12px; touch-action: none; user-select: none; } .pf-ath { font-size: 9px; letter-spacing: .08em; }
+.pf-snap:active { background: var(--accent); color: #141210; }
+.pf-under .pf-knobs { display: grid !important; grid-template-columns: repeat(4, 1fr); gap: 0; margin: 0; padding: 0; border: 0; background: none; justify-items: center; }
+.pf-under .pf-knobs > * { width: 100%; min-width: 0; margin: 0; }
+.pf-under .pf-knobs label, .pf-under .pf-knobs .knob-label, .pf-under .pf-knobs span, .pf-under .pf-knobs small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.pf-help { width: 0; min-width: 100%; box-sizing: border-box; border: 1px solid var(--line); border-radius: 10px; background: #0b0c0f; }
+.pf-help > summary { cursor: pointer; padding: 8px 12px; font-size: 9px; letter-spacing: .16em; color: var(--dim); }
+.pf-help-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; padding: 0 12px 12px; }
+.pf-note { font-size: 10px; line-height: 1.45; color: var(--dim); min-width: 0; } .pf-note > b { display: block; font-size: 9px; letter-spacing: .16em; color: var(--accent); margin-bottom: 4px; }
+.pf-note .sc-read { border: 0; padding: 0; background: none; display: block !important; } .pf-note em { display: block; font-style: normal; margin-top: 4px; } .pf-note .xy-read { padding: 0; color: var(--text, #ddd); } .pf-wide { grid-column: 1 / -1; } .pf-note .bk-perf { padding: 0; }
+@media (max-width: 1100px) { .pf-stage { grid-template-columns: calc(var(--pad) * 3 + 24px); grid-template-areas: "strip" "pads" "under" "left" "right"; } }
+.pf-col > .pf-lab:first-child { margin-top: 0; }
+.page-perf.pf-dnb .pf-pad { border-color: rgba(232, 168, 72, .55); } .page-perf.pf-atmos .pf-pad { border-color: rgba(110, 200, 220, .55); }
+.page-perf.pf-atmos .pf-under .pf-knobs { filter: hue-rotate(160deg); } .pf-eng.on { background: var(--accent); color: #141210; border-color: var(--accent); }
+#atmosMode.on { background: #6ec8dc; border-color: #6ec8dc; color: #0c1416; }
+.pf-corner { --w: 0; transition: color .12s; } .pf-corner i { font-style: normal; } .pf-corner em { display: block; font-style: normal; font-size: 13px; letter-spacing: .04em; color: var(--accent); }
+.pf-tr em, .pf-br em { text-align: right; } .pf-bl, .pf-br { display: flex; flex-direction: column-reverse; } .pf-corner.on { color: var(--accent); }
+.pf-acbox::after { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 1; opacity: .5; }
+.pf-acread { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 9px; letter-spacing: .08em; color: var(--dim); text-align: right; } .pf-acread.on { color: var(--accent); }
+.pf-acpad > .sc-head > b { margin-right: 0; }
+.pf-col #dnbMode.on { background: var(--accent); color: #141210; border-color: var(--accent); }
+.pf-pad #bkCap button.pf-got { border-color: var(--accent); color: var(--accent); }
+.pf-pad #bkCap button.pf-flash { animation: pfFlash .6s ease-out; } @keyframes pfFlash { 0% { background: var(--accent); color: #141210; } 100% { background: transparent; } }
+.pf-toast { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 6; padding: 8px 12px; border-radius: 8px; background: rgba(11, 12, 15, .92); border: 1px solid var(--accent); color: var(--accent); font-size: 10px; letter-spacing: .1em; text-align: center; max-width: 80%; pointer-events: none; opacity: 0; transition: opacity .25s; } .pf-toast.on { opacity: 1; }
+.pf-autorow { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: auto; } .pf-autorow .pf-tg { padding: 9px 4px; }
+.pf-auto-arm.on { background: #e5484d !important; border-color: #e5484d !important; color: #fff !important; }
+.pf-left { padding-bottom: 0; }
+.meters > .scope-gap { width: 96px; height: 36px; flex: none; }
+.meters > .status { width: 90px; flex: none; text-align: right; }   /* a fixed width: a long message wraps instead of squeezing the preset bar */
+/* ---- SEQ: STEPS | ARP switch; the ARP view sits over the steps ---- */
+.page-seq.sq-host { position: relative; }
+.sq-switch { position: absolute; z-index: 25; right: 22px; top: 72px; display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line-2); border-radius: 8px; overflow: hidden; background: #0d0e12; }
+.sq-switch button { border: 0; background: transparent; color: var(--dim); font: inherit; font-size: 10px; letter-spacing: .16em; padding: 8px 18px; cursor: pointer; }
+.sq-switch button.on { background: var(--accent); color: #141210; }
+.sq-arp { display: none; position: absolute; inset: 0; z-index: 20; margin: 0; overflow: auto; padding: 0 var(--sq-pad, 8px) 8px; background: var(--panel, #121316); }
+.page-seq.sq-show-arp > .sq-arp { display: flex; flex-direction: column; gap: 10px; }
+.sq-band { flex: none; box-sizing: border-box; min-height: 114px; margin-top: var(--sq-pad, 8px); padding: 8px 14px 10px; border: 1px solid var(--line); border-radius: 10px; background: #0b0c0f; display: flex; flex-direction: column; justify-content: center; gap: 6px; }
+.sq-band > h3 { margin: 0; padding: 0; min-height: 0; border: 0; }
+.sq-band .bk-sec { padding-right: 210px !important; display: flex !important; flex-wrap: wrap; align-items: center; gap: 6px 18px; border: 0 !important; padding: 0 !important; margin: 0 !important; }
+.sq-band .bk-sec > h4, .sq-band #bkPat { display: none !important; }
+.sq-band .bk-r2 { display: flex; align-items: center; gap: 10px; margin: 0; padding: 0; }
+.sq-band #bkArpK { display: flex; gap: 14px; margin: 0; padding: 0; }
+.ae-main { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 12px; flex: 1 0 auto; }
+.ae-ed { border: 1px solid var(--line); border-radius: 10px; background: #0b0c0f; padding: 8px 12px; display: flex; flex-direction: column; gap: 3px; }
+.ae-row { display: grid; grid-template-columns: 62px minmax(0, 1fr); gap: 8px; align-items: stretch; }
+.ae-lab, .ae-tlab { font-size: 9px; letter-spacing: .16em; color: var(--dim); align-self: center; }
+.ae-cells { display: grid; grid-template-columns: repeat(16, minmax(0, 1fr)); gap: 4px; touch-action: none; user-select: none; }
+.ae-pitch { flex: 1 1 auto; min-height: 64px; } .ae-pitch .ae-cells { cursor: ns-resize; }
+.ae-pc { position: relative; border-radius: 5px; background: linear-gradient(to top, transparent 33.2%, rgba(255,255,255,.14) 33.3%, rgba(255,255,255,.14) 33.6%, transparent 33.7%), #121419; overflow: hidden; }
+.ae-pc:nth-child(4n+1) { background-color: #171a21; }
+.ae-pc > i { position: absolute; left: 3px; right: 3px; bottom: 0; background: var(--accent); border-radius: 4px 4px 0 0; opacity: .9; transition: height .05s; }
+.ae-pc > b { position: absolute; top: 4px; left: 0; right: 0; text-align: center; font-size: 9px; color: var(--text, #ddd); font-family: var(--mono, ui-monospace, monospace); pointer-events: none; }
+.ae-pc.rest > i { opacity: .2; } .ae-pc.now { box-shadow: inset 0 0 0 2px #4ad6c4; }
+.ae-nopitch .ae-pc > i { opacity: .25; } .ae-nopitch .ae-pc > b { opacity: .4; }
+.ae-t { height: 20px; border: 1px solid var(--line); border-radius: 5px; background: #121419; color: var(--accent); font: inherit; font-size: 10px; cursor: pointer; padding: 0; }
+.ae-t.on { background: rgba(226, 168, 74, .85); color: #141210; border-color: var(--accent); } .ae-t.now { box-shadow: 0 0 0 2px #4ad6c4; }
+.ae-row.ae-tog .ae-cells .ae-t:not(.on) { color: var(--accent); }
+.ae-gate .ae-cells { height: 20px; cursor: ns-resize; } .ae-gc { position: relative; background: #121419; border-radius: 4px; overflow: hidden; } .ae-gc > i { position: absolute; left: 3px; right: 3px; bottom: 0; background: rgba(74, 214, 196, .35); border-radius: 3px 3px 0 0; } .ae-gc.set > i { background: #4ad6c4; }
+.ae-hint { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 10px; color: var(--dim); margin-top: 1px; } .ae-hint .ae-small { padding: 3px 10px; }
+.ae-tools { display: grid; grid-template-columns: 66px minmax(0, 1fr); gap: 6px 8px; align-content: start; } .ae-tools > .ae-tlab { margin: 0; align-self: center; text-align: left; } .ae-tools > .ae-tlab:has(+ .ae-g2:not(.two)) { align-self: start; padding-top: 7px; }
+.ae-g2 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; } .ae-g2.two { grid-template-columns: 1fr 1fr; }
+.ae-small { border: 1px solid var(--line-2); background: #111214; color: var(--text, #ddd); border-radius: 6px; font: inherit; font-size: 9px; letter-spacing: .08em; padding: 5px 2px; cursor: pointer; white-space: nowrap; }
+.ae-small:hover { border-color: var(--accent); } .ae-small.on { background: var(--accent); color: #141210; border-color: var(--accent); }
+.ae-sel { width: 100%; min-width: 0; background: #111214; color: var(--text, #ddd); border: 1px solid var(--line-2); border-radius: 6px; font: inherit; font-size: 10px; padding: 5px 6px; }
+.sq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; flex: none; }
+.sq-card { position: relative; border: 1px solid var(--line); border-radius: 10px; background: #0b0c0f; padding: 6px 4px 8px; min-width: 0; }
+.sq-card .bk-sec { border: 0 !important; padding: 0 6px !important; margin: 0 !important; }
+.sq-card .bk-sec > h4 { margin: 4px 2px 6px; font-size: 9px; letter-spacing: .16em; color: var(--accent); font-weight: 700; }
+.sq-card #bkPat { display: none !important; }
+.ae-ring { position: absolute; right: 8px; top: 30px; width: 68px; height: 68px; } .sq-card:has(.ae-ring) { padding-right: 80px; }
+.sq-band-row { display: flex; align-items: center; gap: 10px 22px; padding-right: 210px; flex-wrap: wrap; }
+.sq-bg { display: flex; align-items: center; gap: 8px; } .sq-bg .ae-sel { width: auto; } .sq-bg .ae-g2 { display: flex; gap: 4px; } .sq-bg .ae-small { padding: 5px 10px; }
+.sq-bg-roll { flex: 1 1 200px; min-width: 160px; } .ae-roll { display: block; flex: 1 1 auto; width: 100%; height: 26px; border-radius: 4px; }
+.page-bank.bk-split { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.hx-roll.hx-fixed { border: 0; margin: 0; } .hx-roll.hx-fixed > summary { cursor: default; pointer-events: none; list-style: none; } .hx-roll.hx-fixed > summary::-webkit-details-marker { display: none; } .hx-roll.hx-fixed > summary::before { content: none !important; }
+@media (max-width: 1100px) { .ae-main, .sq-grid, .page-bank.bk-split { grid-template-columns: minmax(0, 1fr); } }
+/* ---- SEQ step tools (STEPS view) ---- */
+.page-seq.sq-host { grid-template-rows: auto auto minmax(0, 1fr) auto auto; }
+.st-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 10px; background: #0b0c0f; }
+.st-grp { display: flex; align-items: center; gap: 8px; } .st-row { display: flex; gap: 4px; align-items: center; }
+.st-row .ae-small { padding: 5px 9px; } .st-row .ae-small:disabled { opacity: .35; cursor: default; }
+.st-sel { width: auto; padding: 4px 6px; } .st-ring { width: 34px; height: 34px; } .st-eu { margin-left: auto; }
+/* clearer step bars: on steps solid with a bright top edge, rests faint, every beat (1, 5, 9, 13) marked */
+.page-seq.sq-host .step:not(.off) .bar { background: linear-gradient(#f0bd62, #b9852f); box-shadow: inset 0 2px 0 #ffe2a6; }
+.plugin.layer-b .page-seq.sq-host .step:not(.off) .bar { background: linear-gradient(#7fa4ff, #3c5aa8); box-shadow: inset 0 2px 0 #c9d7ff; }
+.page-seq.sq-host .step.off .bar { opacity: .16; }
+.page-seq.sq-host .steps > .step:nth-child(4n+1) .lane { background: linear-gradient(#13161c, #10151e); border-color: #3a4358; }
+.ae-g2.four { grid-template-columns: repeat(4, 1fr); } .ae-g2.three { grid-template-columns: repeat(3, 1fr); }
+.ae-slots { display: grid; grid-template-columns: 70px 1fr; gap: 4px; } .ae-slot.filled { border-color: var(--accent); color: var(--accent); }
+.ae-cardtools { position: absolute; right: 12px; top: 36px; width: 46%; display: flex; flex-direction: column; gap: 6px; }
+.ae-live { margin-left: auto; display: flex; align-items: center; gap: 18px; }
+.ae-tempo, .ae-pos { display: flex; align-items: center; gap: 6px; } .ae-tempo .ae-small { padding: 4px 9px; }
+.ae-tempo b, .ae-pos b { font-family: var(--mono, ui-monospace, monospace); font-size: 13px; color: var(--accent); min-width: 34px; text-align: center; } .ae-pos b + .ae-tlab { margin-left: 8px; } .ae-pos b:first-of-type { min-width: 58px; }
+.ae-amt { display: grid; grid-template-columns: auto 1fr 22px; align-items: center; gap: 8px; } .ae-amt input { width: 100%; accent-color: var(--accent); } .ae-amt b { font-size: 11px; color: var(--accent); text-align: right; }
+.ae-amt-note { font-size: 9px; color: var(--dim); letter-spacing: .04em; }
+.ae-vel .ae-gc > i { background: rgba(226, 168, 74, .3); } .ae-vel .ae-gc.set > i { background: #e2a84a; }
+.ae-prob .ae-gc > i { background: rgba(160, 140, 255, .28); } .ae-prob .ae-gc.set > i { background: #a08cff; }
+.ae-dir { width: auto; }
+.bk-exp-note { margin: 0 10px 8px; font-size: 10px; line-height: 1.45; color: var(--dim); }
+/* ---- MOD: tidy matrix (layout only) ---- */
+.mx-tidy .mod-head { min-width: 0; } .mx-tidy .mod-head .panel { min-width: 0; display: grid !important; grid-template-columns: 78px minmax(0, 1fr) auto; grid-template-areas: "h cv k" "l sg sg"; align-items: center; gap: 6px 14px; padding: 8px 12px; }
+.mx-tidy .mod-head .panel > h3 { grid-area: h; margin: 0; white-space: nowrap; }
+.mx-lfo { grid-area: cv; width: 100%; height: 44px; border-radius: 6px; background: #0b0c0f; border: 1px solid var(--line); }
+.mx-tidy .mod-head .knobs { grid-area: k; display: flex; gap: 10px; margin: 0; padding: 0; }
+.mx-tidy .mod-head .lfo-link { grid-area: l; display: flex; align-items: center; margin: 0; } .mx-tidy .mod-head .lfo-link > :not(button) { display: none; } .mx-tidy .mod-head .lfo-link button, .mx-tidy .mod-head .lfo-link .chip { white-space: nowrap; width: auto; min-width: 74px; padding: 4px 10px; overflow: visible; }
+.mx-tidy .mod-head .segs { grid-area: sg; margin: 0; height: 28px; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; } .mx-tidy .mod-head .segs button { height: 28px; }
+.mx-tidy .matrix { display: flex; flex-direction: column; gap: 10px; padding: 10px 12px; overflow: auto; }
+.mx-top { display: flex; align-items: center; justify-content: space-between; } .mx-top h3 { margin: 0; } .mx-count { font-size: 10px; letter-spacing: .14em; color: var(--accent); }
+.mx-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; } .mx-col { display: flex; flex-direction: column; gap: 8px; }
+.mx-tidy .mod-row { min-width: 0; grid-template-columns: 18px minmax(0, 1fr) 12px minmax(0, 1fr) auto minmax(40px, 76px) 70px; gap: 8px; padding: 10px 10px; border: 1px solid var(--line-2); border-radius: 8px; background: #15171b; transition: opacity .15s; }
+.mx-tidy .mod-row > span:first-child { color: var(--accent); font-weight: 700; } .mx-tidy .mod-row select { min-width: 0; width: 100%; }
+.mx-tidy .mod-row.mx-off { opacity: .45; background: transparent; border-color: var(--line); } .mx-tidy .mod-row.mx-off:hover, .mx-tidy .mod-row.mx-off:focus-within { opacity: .9; }
+.mx-bar { position: relative; height: 8px; border-radius: 4px; border: 1px solid var(--line-2); background: linear-gradient(90deg, transparent calc(50% - .5px), rgba(255,255,255,.25) calc(50% - .5px), rgba(255,255,255,.25) calc(50% + .5px), transparent calc(50% + .5px)); overflow: hidden; }
+.mx-bar > i { position: absolute; top: 0; bottom: 0; background: var(--accent); }
+.mx-sum { display: flex; align-items: baseline; gap: 12px; border: 1px dashed var(--line-2); border-radius: 8px; padding: 8px 10px; } .mx-sum-txt { font-size: 11px; color: var(--text, #ddd); letter-spacing: .03em; }
+.mx-tidy .matrix > .note { padding: 0 2px; margin: 0; font-size: 10px; }
+@media (max-width: 1100px) { .mx-cols { grid-template-columns: 1fr; } }
+.mx-tools { display: flex; flex-direction: column; gap: 6px; } .mx-qr { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; } .mx-qr > .ae-tlab { width: 96px; flex: none; } .mx-qr .ae-small { padding: 5px 10px; } .mx-qr .ae-small:disabled { opacity: .35; }
+.mx-tidy .matrix, .mx-tidy .matrix > * { min-width: 0; } .mx-sum-txt { overflow-wrap: anywhere; }
+.mx-tidy .matrix > .note { display: none; }
+/* PRESET right column: header, tabbed box that takes the leftover space, EXTRA MODULATION always whole */
+.page-bank .bk-systems.bk-fit { display: flex !important; flex-direction: column; overflow: hidden !important; }
+.bk-fit > h3 { flex: none; } .bk-fit > .bk-sec { flex: none; }
+.bk-this { flex: 1 1 auto; min-height: 90px; display: flex; flex-direction: column; gap: 6px; padding: 0 10px 8px; }
+.bk-tabs { display: flex; align-items: center; gap: 4px; flex: none; } .bk-tabs .ae-small { padding: 5px 10px; } .bk-tabs .ae-small.on { background: var(--accent); color: #141210; border-color: var(--accent); }
+.bk-tabsum { margin-left: auto; font-size: 9px; letter-spacing: .1em; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.bk-pane { flex: 1 1 auto; min-height: 0; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; }
+.bk-pane > .bk-sim { padding: 0; } .bk-pane .hx-roll > summary { display: none !important; }
+.bk-pane[data-tab="sim"] .hx-roll, .bk-pane:not([data-tab="sim"]) > .bk-sim { display: none !important; }
+.bk-pane[data-tab="store"] .bk-check, .bk-pane[data-tab="check"] .hx-store { display: none !important; }
+#userSafety:empty { display: none; } .bk-this #userSafety { margin: 0; flex: none; }
+#userSafety .us.us-c { flex-wrap: nowrap; padding: 5px 8px; gap: 8px; } #userSafety .us.us-c > b:first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1 1 auto; }
+#userSafety .us.us-c .us-more { display: none; } #userSafety .us.us-c.open { flex-wrap: wrap; } #userSafety .us.us-c.open .us-more { display: block; flex-basis: 100%; order: 5; }
+#userSafety .us-q { width: 22px; height: 22px; padding: 0; border-radius: 50%; flex: none; }
+#userSafety .us.us-c > button { flex: none; padding: 3px 8px; }
+.bk-exp-note { margin: 0 10px 6px; } .bk-exp-more { color: var(--accent); cursor: help; }
 </style>
 <style id="mosaic-recorder-styles">
 /* Recorder-only styling; inherited Mosaic typography and palette. */
@@ -1179,7 +1354,7 @@ registerProcessor('mosaic-capture-2026',MosaicCaptureProcessor);
   const safe = (s) => String(s||'mosaic-loop').trim().replace(/[^a-zA-Z0-9 _-]+/g,'').replace(/\s+/g,'_').slice(0,70)||'mosaic-loop';
   const el = (tag, className, text) => { const e=document.createElement(tag);if(className)e.className=className;if(text!=null)e.textContent=text;return e; };
   const modules = new WeakMap();   // the capture worklet is registered once per audio context
-  function loadModule(ctx){ if(!modules.has(ctx)){ const url=URL.createObjectURL(new Blob([WORKLET],{type:'application/javascript'})); modules.set(ctx, ctx.audioWorklet.addModule(url).finally(()=>URL.revokeObjectURL(url))); } return modules.get(ctx); }
+  function loadModule(ctx){ if(!modules.has(ctx)){ const url=URL.createObjectURL(new Blob([WORKLET],{type:'application/javascript'})), data='data:application/javascript;base64,'+btoa(unescape(encodeURIComponent(WORKLET))); modules.set(ctx, ctx.audioWorklet.addModule(url).catch(()=>ctx.audioWorklet.addModule(data)).finally(()=>URL.revokeObjectURL(url))); } return modules.get(ctx); }
   function create({engine,sequencer,getState,onGesture,setTempo}) {
     const page=el('section','page page-rec');page.dataset.page='rec';
     page.innerHTML=`
@@ -1628,13 +1803,19 @@ window.onerror = function (message) {
       let guard = 0;
       while (next < adapter.now() + 0.12 && guard++ < 8) {
         const tones = held.map((h) => h.midi).sort((a, b) => a - b), order = held.map((h) => h.midi), vel = held[step % held.length].vel;
-        const note = arpNote(tones, cfg.pattern, cfg.octaves, step, cfg.mode, order);
-        if (note != null) {
-          const id = 'arp-' + (uid++); adapter.noteOn(note, vel, id, next); live.set(id, id);
-          const wait = Math.max(20, (next - adapter.now() + dur * (cfg.gate || 0.55)) * 1000);
-          setTimeout(() => { adapter.noteOff(id, undefined); live.delete(id); }, wait);
-          if (onStep) { const s0 = step; setTimeout(() => onStep(s0, note), Math.max(0, (next - adapter.now()) * 1000)); }
-        }
+        const dir = cfg.dir || 'fwd', s16 = step % 16, kd = dir === 'rev' ? 15 - s16 : dir === 'pp' ? ((step % 30) < 16 ? step % 30 : 30 - (step % 30)) : dir === 'rnd' ? Math.floor(Math.random() * 16) : s16;
+        let pv = cfg.pattern; if (kd !== s16 && Array.isArray(cfg.pattern) && cfg.pattern.length === 16) { pv = cfg.pattern.slice(); pv[s16] = cfg.pattern[kd]; }
+        const note = arpNote(tones, pv, cfg.octaves, step, cfg.mode, order);
+        const L = cfg.lanes, k = kd, rest = !!(L && L.on && L.on[k] === false) || !!(L && L.prob && L.prob[k] != null && L.prob[k] < 1 && Math.random() > L.prob[k]) || (cfg.chance != null && cfg.chance < 1 && Math.random() > cfg.chance), tb = next + (cfg.swing > 0 && step % 2 === 1 ? dur * cfg.swing : 0);
+        if (note != null && !rest) {
+          const v = L && L.acc && L.acc[k] ? 127 : (L && L.vel && L.vel[k] != null ? L.vel[k] : vel), g = L && L.gate && L.gate[k] != null ? L.gate[k] : (cfg.gate || 0.55), rat = L && L.rat ? Math.max(1, Math.min(4, L.rat[k] | 0 || 1)) : 1;
+          for (let r = 0; r < rat; r++) {
+            const t = tb + r * dur / rat, id = 'arp-' + (uid++); adapter.noteOn(note, v, id, t); live.set(id, id);
+            const wait = Math.max(20, (t - adapter.now() + (dur / rat) * g) * 1000);
+            setTimeout(() => { adapter.noteOff(id, undefined); live.delete(id); }, wait);
+          }
+          if (onStep) { const s0 = step, k0 = k; setTimeout(() => onStep(s0, note, k0), Math.max(0, (tb - adapter.now()) * 1000)); }
+        } else if (rest && onStep) { const s0 = step, k0 = k; setTimeout(() => onStep(s0, null, k0), Math.max(0, (next - adapter.now()) * 1000)); }
         next += dur; step++;
       }
     }
@@ -6501,7 +6682,7 @@ function mount(stage, engine) {
     [/^RANDOM/, 38, 'random'], [/^PRESET BROWSER/, 38, 'browser'], [/^SIGNAL/, 38, 'signal'],
     [/^TAKE/, 38, 'history'], [/^EXPORT/, 38, 'export']
   ];
-  const TH_TABS = { play: [32, 'play'], mod: [268, 'mod'], fx: [338, 'fx'], seq: [120, 'seq'], wt: [225, 'table'], bank: [45, 'browser'], rec: [0, 'rec'] };
+  const TH_TABS = { play: [32, 'play'], mod: [268, 'mod'], fx: [338, 'fx'], seq: [120, 'seq'], wt: [225, 'table'], bank: [45, 'browser'], perf: [190, 'perf'], rec: [0, 'rec'] };
   function themeDecorate() {
     themeGen++;
     plugin.querySelectorAll('.panel > h3, .mr-panel > h3, .bk-sec > h4, .wtp-card > h4, .wtp-visual-heading > h4, .wtm-head > h4, .lfo-qf-l > h5').forEach((h) => {
@@ -6755,15 +6936,15 @@ function mount(stage, engine) {
     cpu.append(cpuNode);
     midiDot = el('i', 'midi-dot');
     statusNode = el('div', 'status', 'Audio off');
-    box.append(scopeCanvas, vol, voices, cpu, midiDot, statusNode);   // full screen lives on the tab row, right of LAYER A/B; colour-theme button parked (themeButton)
+    box.append(el('div', 'scope-gap'), vol, voices, cpu, midiDot, statusNode);   // an empty space where the old waveform was, so the preset bar stays where it was   // full screen lives on the tab row, right of LAYER A/B; colour-theme button parked (themeButton)
     return box;
   }
 
   function buildTabs() {
-    [['play', 'PLAY'], ['mod', 'MOD'], ['lfo', 'LFO'], ['fx', 'FX'], ['seq', 'SEQ'], ['wt', 'TABLE'], ['bank', 'BANK'], ['rec', 'REC']].forEach(([id, label]) => {
+    [['play', 'PLAY'], ['mod', 'MOD'], ['lfo', 'LFO'], ['fx', 'FX'], ['seq', 'SEQ'], ['wt', 'TABLE'], ['bank', 'BANK'], ['perf', 'MACRO'], ['rec', 'REC']].forEach(([id, label]) => {
       const button = el('button', '', '');
       const tabMain = el('span', 'tab-main', ({ wt: 'WAVE', bank: 'PRESET' })[id] || label);
-      button.append(tabMain, el('small', 'tab-sub', ({ play: 'Voice', mod: 'Matrix', lfo: 'Sequencer', fx: 'Bus', seq: 'Notes', wt: 'Table', bank: 'Bank', rec: 'Live' })[id] || ''));
+      button.append(tabMain, el('small', 'tab-sub', ({ play: 'Voice', mod: 'Matrix', lfo: 'Sequencer', fx: 'Bus', seq: 'Notes', wt: 'Table', bank: 'Bank', perf: 'X Y', rec: 'Live' })[id] || ''));
       button.type = 'button';
       button.dataset.page = id;
       if (id === 'rec') { const lamp = el('span', 'mr-tab-lamp'); lamp.setAttribute('aria-label','recording indicator'); tabMain.append(lamp); }
@@ -7816,6 +7997,7 @@ function mount(stage, engine) {
       widgets.push({ path: 'fx.xyX', paint });
       const apply = (x, y) => {
         x = clamp(x, 0, 1); y = clamp(y, 0, 1); const f = state.fx, A = state.layers.A; f.xyX = x; f.xyY = y;
+        if (!autoReplaying) { recordAuto('fx.xyX', x); recordAuto('fx.xyY', y); }
         A.filter.cutoff = Math.round(160 + Math.pow(x, 1.7) * 1240); A.fmIndex = +(0.15 + x * 0.75).toFixed(2);
         if (y > 0.05) Object.assign(f, { dubOn: true, dubMix: 0.15 + y * 0.55, dubFb: 0.35 + y * 0.45, springOn: true, springMix: 0.1 + y * 0.45 });
         else Object.assign(f, { dubOn: false, springOn: false });
@@ -7825,12 +8007,14 @@ function mount(stage, engine) {
       const FS = { waves: [], halo: 0, level: 0, lastDraw: 0, lastRipple: 0, lastKey: 0, dirty: true, painted: false, drawn: 0 };
       const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       const fxy = () => [clamp(Number(state.fx.xyX ?? 0.35), 0, 1), clamp(Number(state.fx.xyY ?? 0.35), 0, 1)];
+      window.MosaicFxXY = { apply, get: fxy, box };
       const ripple = (x, y, key, vel) => { const X = window.MosaicXyFx; if (X && X.rippleTo && !reduce) X.rippleTo(FS, x, y, key, vel); };
       document.addEventListener('mosaic-xy-key-attack', (e) => { const now = performance.now(); if (now - FS.lastKey < 55 || !box.offsetParent) return; FS.lastKey = now; const [x, y] = fxy(); ripple(x, y, true, clamp(((e.detail && e.detail.velocity) == null ? 100 : e.detail.velocity) / 127, 0, 1)); });
       const frame = (now) => {
         requestAnimationFrame(frame);
         if (reduce || document.hidden || !box.offsetParent || !window.MosaicXyFx || !window.MosaicXyFx.field) return;
-        const raw = Math.min(1, window.MosaicFxLevel || 0); FS.level += (raw - FS.level) * (raw > FS.level ? 0.4 : 0.07); FS.halo = Math.sqrt(FS.level);
+        const sc = window.MosaicScope && window.MosaicScope.SC, scl = sc && sc.ctx && sc.stat ? sc.stat.peakM || 0 : 0;
+        const raw = Math.min(1, Math.max(box.closest('.page-perf') ? scl : 0, window.MosaicFxLevel || 0)); FS.level += (raw - FS.level) * (raw > FS.level ? 0.4 : 0.07); FS.halo = Math.sqrt(FS.level);
         if (!FS.waves.length && FS.halo < 0.02 && !FS.dirty) { if (FS.painted) { rip.getContext('2d').clearRect(0, 0, rip.width, rip.height); FS.painted = false; } return; }
         if (now - FS.lastDraw < 33) return; FS.lastDraw = now;
         const [x, y] = fxy(); window.MosaicXyFx.field(FS, rip, x, y, now);
@@ -8278,10 +8462,11 @@ function mount(stage, engine) {
     syncAuto();
   }
 
+  let autoReplaying = false;
   function applyAuto(index) {
     const auto = state.seq.auto;
     if (!auto || !auto.on || !auto.lanes) return;
-    let dirty = false;
+    let dirty = false; const hit = (p) => auto.lanes[p] && auto.lanes[p][index] != null;
     Object.keys(auto.lanes).forEach((path) => {
       const value = auto.lanes[path][index];
       if (value == null || Number.isNaN(Number(value))) return;
@@ -8290,6 +8475,11 @@ function mount(stage, engine) {
       dirty = true;
     });
     if (!dirty) return;
+    autoReplaying = true;
+    try {
+      if ((hit('fx.xyX') || hit('fx.xyY')) && window.MosaicFxXY) window.MosaicFxXY.apply(Number(state.fx.xyX), Number(state.fx.xyY));
+      if ((hit('fx.acX') || hit('fx.acY')) && window.MosaicAccent) window.MosaicAccent.play(Number(state.fx.acX), Number(state.fx.acY));
+    } catch (err) { console.error(err); } finally { autoReplaying = false; }
     widgets.forEach((widget) => {
       const resolved = widget.path.includes('$.') || widget.path.startsWith('lfoX.') ? pathOf(widget.path) : widget.path;
       if (auto.lanes[resolved] && auto.lanes[resolved][index] != null) widget.paint();
@@ -9498,9 +9688,14 @@ function mount(stage, engine) {
   }
   function openPresetMenu() {
     PM.cat = null; PM.q = '';
-    fillMenu(); menu.hidden = false; nameBtn.setAttribute('aria-expanded', 'true');
+    fillMenu(); menu.hidden = false; nameBtn.setAttribute('aria-expanded', 'true'); centreMenu();
     const cur = menu.querySelector('.pm-item.on') || menu.querySelector('.pm-item'); if (cur) cur.focus({ preventScroll: true });
   }
+  function centreMenu() {
+    try { const host = menu.offsetParent; if (!host) return; const pr = plugin.getBoundingClientRect(), hr = host.getBoundingClientRect(), s = hr.width / (host.offsetWidth || hr.width) || 1;
+      const dx = ((pr.left + pr.width / 2) - (hr.left + hr.width / 2)) / s; menu.style.left = 'calc(50% + ' + dx.toFixed(1) + 'px)'; } catch (err) { /* keep the default position */ }
+  }
+  window.addEventListener('resize', () => { if (!menu.hidden) centreMenu(); });
   function closePresetMenu() { menu.hidden = true; nameBtn.setAttribute('aria-expanded', 'false'); clearTimeout(PM.hoverT); }
 
   // Shared by catalogue ordering and dropdown rendering.
@@ -9838,6 +10033,7 @@ function mount(stage, engine) {
     setWave(osc, name) { state.layers.A.osc[osc === 'osc1' ? 0 : 1].wave = name; schedule(); paintAll(); },
     applyMacro(i, v) {
       if (state.dnbOverlay) { dnbOverlayMacro(i, v); return; }
+      if (state.atmosOverlay) { atmosMacro(i, v); return; }
       if (state.professional) proApplyMacro(i, v);
       else { proWrite(['cutoff', 'drive', 'motion', 'reverb'][i], v); schedule(); paintAll(); }
     },
@@ -9886,7 +10082,7 @@ function mount(stage, engine) {
   const bankHooks = { neutral: {
     wavetablePosition: () => MosaicWT.S.on ? MosaicWT.S.scan : clamp((Number(state.layers.A.osc[0].pwm) - 0.08) / 0.84, 0, 1),
     filterTypeA: () => state.layers.A.filter.type || 'lowpass' } };
-  const ctl = SBS.attach(bankAdapter, PROFESSIONAL_SOURCE, { hooks: bankHooks, onArpStep: () => arpFlash(), arpConfig: () => ({ rate: BK.arp.rate, octaves: BK.arp.octaves, gate: BK.arp.gate, mode: BK.arp.mode, pattern: ctl.current ? ctl.current.arp.pattern : [0] }) });
+  const ctl = SBS.attach(bankAdapter, PROFESSIONAL_SOURCE, { hooks: bankHooks, onArpStep: (s, n, k) => { if (n != null) arpFlash(); if (window.MosaicArpStep) window.MosaicArpStep(s, n, k); }, arpConfig: () => ({ rate: BK.arp.rate, octaves: BK.arp.octaves, gate: BK.arp.gate, mode: BK.arp.mode, pattern: ctl.current ? ctl.current.arp.pattern : [0], lanes: ctl.current && ctl.current.arp ? ctl.current.arp.lanes || null : null, swing: Number(BK.arp.swing) || 0, dir: ctl.current && ctl.current.arp ? ctl.current.arp.dir || 'fwd' : 'fwd', chance: BK.arp.chance == null ? 1 : Number(BK.arp.chance) }) });
   const presetsOf = () => ctl.bank.presets;
   ctl.on('xy', (e) => { BK.xy.x = e.xy.x; BK.xy.y = e.xy.y; });
 
@@ -10036,8 +10232,9 @@ function mount(stage, engine) {
   }
 
   /* ---------- BANK page ---------- */
-  let bankRoot = null;
-  const $b = (s) => bankRoot.querySelector(s);
+  let bankRoot = null, perfRoot = null;
+  const $b = (s) => bankRoot.querySelector(s) || plugin.querySelector(s);   // the MACRO · X Y page holds some of the BANK page's panels
+  const perfOn = () => !!perfRoot && perfRoot.classList.contains('on');
   const bankImported = [];             // presets from spec banks imported this session
   const vecCache = new Map();
   let bankView = [];                   // entries behind the rows currently on screen
@@ -10335,6 +10532,9 @@ function mount(stage, engine) {
     const pct = (v) => Math.round(v * 100) + '%', int = (v) => String(Math.round(v));
     ak($b('#bkArpK'), 'bk.arp.octaves', 'OCTAVES', 1, 4, 1, int, { step: 1 });
     ak($b('#bkArpK'), 'bk.arp.gate', 'GATE', 0.1, 1, 0.55, pct);
+    if (BK.arp.swing == null) BK.arp.swing = 0; if (BK.arp.chance == null) BK.arp.chance = 1;
+    ak($b('#bkArpK'), 'bk.arp.swing', 'SWING', 0, 0.5, 0, pct, { onChange: (v) => { BK.arp.swing = v; arpSave(); } });
+    ak($b('#bkArpK'), 'bk.arp.chance', 'CHANCE', 0, 1, 1, pct, { onChange: (v) => { BK.arp.chance = v; arpSave(); } });
     ak($b('#bkSeqK'), 'bk.euclid.pulses', 'PULSES', 0, 16, 5, int, { step: 1 });
     ak($b('#bkSeqK'), 'bk.euclid.steps', 'STEPS', 1, 16, 16, int, { step: 1 });
     ak($b('#bkSeqK'), 'bk.euclid.rotation', 'ROTATE', 0, 15, 0, int, { step: 1 });
@@ -10936,7 +11136,7 @@ function mount(stage, engine) {
   const clip13 = (v) => (v > 1.3 ? 1.3 : v < -1.3 ? -1.3 : v);
   function scopeTrace(g, cols, W, cy, amp, color) {       // the live trace: a soft wide pass and a crisp thin pass (no blur filter, which is costly)
     for (let pass = 0; pass < 2; pass++) {
-      g.strokeStyle = color; g.lineWidth = pass ? 1.5 : 4; g.globalAlpha = pass ? 1 : 0.16; g.beginPath();
+      g.strokeStyle = color; g.lineWidth = pass ? 1 : 2.4; g.globalAlpha = pass ? 1 : 0.16; g.beginPath();
       for (let px = 0; px < W; px++) {
         const lo = clip13(cols[px * 2] * SC.gain), hi = clip13(cols[px * 2 + 1] * SC.gain), ym = cy - ((lo + hi) / 2) * amp;
         if (px === 0) g.moveTo(px, ym); else g.lineTo(px, ym);
@@ -10968,7 +11168,7 @@ function mount(stage, engine) {
     for (const a of [1, -1]) { const y = Math.round(cy - a * SC.gain * amp) + 0.5; if (y > 0 && y < H) { g.moveTo(0, y); g.lineTo(W, y); } }
     g.stroke(); g.setLineDash([]);
     g.font = '9px ui-monospace, Consolas, monospace'; g.fillStyle = '#4b566a';
-    g.fillText((SC.ms / 10) + ' ms/div', 6, H - 6); g.fillText('0 dBFS' + (SC.gain > 1 ? ' ×' + SC.gain : ''), W - 52, Math.max(10, cy - amp * SC.gain - 3));
+    g.fillText(+(SC.ms / 10).toFixed(1) + ' ms/div', 6, H - 6); g.fillText('0 dBFS' + (SC.gain > 1 ? ' ×' + SC.gain : ''), W - 52, Math.max(10, cy - amp * SC.gain - 3));
   }
 
   function scopeSnap(tn, sum, W, n) {      // keep the echo history filling at its own pace, whether or not this frame is redrawn
@@ -10979,7 +11179,17 @@ function mount(stage, engine) {
   }
   function scopeFrame(now) {
     requestAnimationFrame(scopeFrame);
-    if (!bankRoot || !bankRoot.classList.contains('on') || document.hidden) return;
+    const sw0 = $b('#scWin'), slim = !!sw0 && sw0.classList.contains('pf-vis') && !sw0.classList.contains('pf-full');
+    if (slim !== !!SC.slim) { SC.slim = slim; SC.hist.length = 0; SC.forceDraw = true; }
+    if (!slim) { scopeFrameInner(now); return; }
+    const g0 = SC.gain, e0 = SC.echo, m0 = SC.ms; SC.gain = SC.autoGain || 1;
+    const hz = SC.stat.hz > 15 ? SC.stat.hz : (typeof FF !== 'undefined' && FF.stat && FF.stat.hz > 15 ? FF.stat.hz : 0); if (hz > 15) { const want = Math.min(80, Math.max(4, 3000 / hz)); SC.autoMs = SC.autoMs ? SC.autoMs + (want - SC.autoMs) * 0.15 : want; } SC.ms = SC.autoMs || m0;   // about three waves of whatever is playing SC.lastDraw = Math.min(SC.lastDraw, now - SC_FRAME_MS);
+    try { scopeFrameInner(now); } finally { SC.gain = g0; SC.echo = e0; SC.ms = m0; }
+    const pk = SC.aligned && SC.aligned.peak > 1e-4 ? SC.aligned.peak : 0, want = pk ? Math.min(24, Math.max(1, 0.9 / pk)) : (SC.autoGain || 1);
+    SC.autoGain = (SC.autoGain || 1) + (want - (SC.autoGain || 1)) * (want < (SC.autoGain || 1) ? 0.5 : 0.08);   // drops fast when it gets loud, rises gently
+  }
+  function scopeFrameInner(now) {
+    if (!perfOn() || document.hidden) return;
     const sw = $b('#scWin');
     if (sw && !sw.open) {                  // rolled up: no drawing at all, only a light read-out for the title bar
       if (now - SC.lastMini > 150) { SC.lastMini = now; if (scopeRead(true)) scopeSummary(); else scopeSummary(true); }
@@ -11112,7 +11322,7 @@ function mount(stage, engine) {
   }
   function ffFrame(now) {
     requestAnimationFrame(ffFrame);
-    if (!bankRoot || !bankRoot.classList.contains('on') || document.hidden) return;
+    if (!perfOn() || document.hidden) return;
     const sw = $b('#fftWin'); if (!sw) return;
     if (!sw.open) { if (now - FF.lastMini > 250) { FF.lastMini = now; if (ffRead()) ffSummary(); else ffSummary(true); } return; }      // rolled up: a light read-out only
     if (!FF.visible || FF.hold && FF.w) return;
@@ -11214,7 +11424,7 @@ function mount(stage, engine) {
   }
   function xyFxFrame(now) {
     requestAnimationFrame(xyFxFrame);
-    if (XF.reduce || !bankRoot || !bankRoot.classList.contains('on') || document.hidden || !XF.visible) return;
+    if (XF.reduce || !perfOn() || document.hidden || !XF.visible) return;
     const sc = window.MosaicScope && window.MosaicScope.SC;
     const raw = sc && sc.ctx ? Math.min(1, sc.stat.peakM || 0) : 0;      // the real output level, shared with the oscilloscope's tap
     XF.level += (raw - XF.level) * (raw > XF.level ? 0.4 : 0.07);
@@ -11323,6 +11533,7 @@ function mount(stage, engine) {
   const dnbOverlaySubGet = () => { const s = state.dnbOverlay.macros[2]; return s <= 0.5 ? 0 : (s - 0.5) * 2 * 1.2; };
   function dnbOverlayOn() {
     if (state.dnbOverlay || (state.professional && state.professional.dnb)) return;
+    if (state.atmosOverlay) atmosOff();
     const cp = ctl.current, J = (x) => JSON.parse(JSON.stringify(x));
     state.dnbOverlay = { base: dnbOverlayCapture(state), macros: [0.5, 0.5, 0.5, 0.5], prev: cp ? { names: cp.macros.map((m) => m.name), xy: J(cp.xyMorph), snaps: J(cp.morphSnapshots) } : null };
     dnbOverlayDecorate(); dnbOverlayPaint();
@@ -11334,7 +11545,49 @@ function mount(stage, engine) {
     delete state.dnbOverlay; schedule(); paintAll(); bankSync(); dnbOverlayPaint();
     statusNode.textContent = 'DnB OFF';
   }
-  function dnbOverlaySync() { if (state.dnbOverlay) dnbOverlayDecorate(); dnbOverlayPaint(); }
+  function dnbOverlaySync() { if (state.dnbOverlay) dnbOverlayDecorate(); dnbOverlayPaint(); if (state.atmosOverlay) atmosDecorate(); atmosPaint(); }
+  const ATMOS_MACROS = ['Nebula', 'Drift', 'Air', 'Infinity'];
+  const atA = (v, lo, mid, hi, log) => (v === 0.5 ? mid : dnbAnchor(v, 0.5, lo, mid, hi, log));   // 0.5 is the preset exactly as it was
+  function atmosCapture(n) {
+    const L = (id) => n.layers[id] || null, f = n.fx;
+    return { rvWet: f.reverbWet, rvDecay: f.reverbDecay, shOn: !!f.shimmerOn, shLevel: f.shimmerLevel, chOn: !!f.chorusOn, chMix: f.chorusMix, detune: n.detune,
+      cut: { A: L('A') && L('A').filter.cutoff, B: L('B') && L('B').filter.cutoff }, rel: { A: L('A') && L('A').amp.r, B: L('B') && L('B').amp.r } };
+  }
+  function atmosApply(n, b, m) {
+    const [ne, dr, ai, inf] = m.map((v) => dnbClamp(v, 0, 1)), f = n.fx, rw = Number(b.rvWet ?? 0.12), rd = Number(b.rvDecay ?? 2.1), dt = Number(b.detune || 0);
+    f.reverbWet = atA(ne, rw * 0.3, rw, Math.max(rw, 0.7));                                                  // NEBULA: the reverb cloud
+    f.reverbDecay = atA(Math.max(ne, inf), Math.max(0.3, rd * 0.5), rd, Math.max(rd, 9), true);
+    n.detune = atA(dr, dt * 0.3, dt, Math.max(dt, 28));                                                     // DRIFT: detune and chorus
+    const cm = Number(b.chMix ?? 0.25);
+    if (b.chOn) { f.chorusOn = true; f.chorusMix = atA(dr, cm * 0.3, cm, Math.max(cm, 0.6)); } else if (dr > 0.52) { f.chorusOn = true; f.chorusMix = (dr - 0.5) * 2 * 0.6; } else { f.chorusOn = false; f.chorusMix = b.chMix; }
+    const sl = Number(b.shLevel ?? 0.12);                                                                   // AIR: shimmer and brightness
+    if (b.shOn) { f.shimmerOn = true; f.shimmerLevel = atA(ai, sl * 0.3, sl, Math.max(sl, 0.45)); } else if (ai > 0.52) { f.shimmerOn = true; f.shimmerLevel = (ai - 0.5) * 2 * 0.45; } else { f.shimmerOn = false; f.shimmerLevel = b.shLevel; }
+    ['A', 'B'].forEach((id) => { const L = n.layers[id], c = b.cut[id], r = b.rel[id]; if (!L) return;
+      if (c != null) L.filter.cutoff = ai === 0.5 ? c : dnbClamp(c * Math.pow(2, (ai - 0.5) * 2.4), 40, 16000);
+      if (r != null) L.amp.r = atA(inf, Math.max(0.02, r * 0.4), r, Math.max(r, 8), true); });                   // INFINITY: long tails
+  }
+  function atmosRestore(n, b) {
+    const f = n.fx; f.reverbWet = b.rvWet; f.reverbDecay = b.rvDecay; f.shimmerOn = b.shOn; f.shimmerLevel = b.shLevel; f.chorusOn = b.chOn; f.chorusMix = b.chMix; n.detune = b.detune;
+    ['A', 'B'].forEach((id) => { const L = n.layers[id]; if (!L) return; if (b.cut[id] != null) L.filter.cutoff = b.cut[id]; if (b.rel[id] != null) L.amp.r = b.rel[id]; });
+  }
+  function atmosDecorate() { const o = state.atmosOverlay, p = ctl.current; if (!o) return; if (p && p.macros) p.macros.forEach((m, i) => { m.name = ATMOS_MACROS[i]; }); ctl.macros = o.macros.slice(); bankPaint(); }
+  function atmosPaint() {
+    const on = !!state.atmosOverlay; document.querySelectorAll('#atmosMode').forEach((b) => { b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); });
+    if (perfRoot) { perfRoot.classList.toggle('pf-atmos', on); perfRoot.classList.toggle('pf-dnb', !!state.dnbOverlay || !!(state.professional && state.professional.dnb)); }
+  }
+  function atmosMacro(i, v) { const o = state.atmosOverlay; if (!o) return; o.macros[i] = v; atmosApply(state, o.base, o.macros); ctl.macros[i] = v; bank.macroSeen(i, v); schedule(); paintAll(); }
+  function atmosOn() {
+    if (state.atmosOverlay) return; if (state.dnbOverlay) dnbOverlayOff();
+    const p = ctl.current; state.atmosOverlay = { base: atmosCapture(state), macros: [0.5, 0.5, 0.5, 0.5], prevMacros: (ctl.macros || []).slice(), prev: p && p.macros ? { names: p.macros.map((m) => m.name) } : null };
+    atmosDecorate(); atmosPaint(); statusNode.textContent = 'ATMOS ON';
+  }
+  function atmosOff() {
+    const o = state.atmosOverlay; if (!o) return; atmosRestore(state, o.base);
+    if (o.prev && ctl.current && ctl.current.macros) ctl.current.macros.forEach((m, i) => { if (o.prev.names[i]) m.name = o.prev.names[i]; });
+    delete state.atmosOverlay; if (o.prevMacros && o.prevMacros.length) ctl.macros = o.prevMacros.slice();
+    schedule(); paintAll(); bankSync(); bankPaint(); atmosPaint(); statusNode.textContent = 'ATMOS OFF';
+  }
+
   function dnbWire() { new MutationObserver(() => { statusNode.title = statusNode.textContent; }).observe(statusNode, { childList: true, characterData: true, subtree: true });
     const btn = $b('#dnbMode'); if (!btn) return; btn.addEventListener('click', () => { if (state.dnbOverlay) dnbOverlayOff(); else dnbOverlayOn(); }); dnbOverlayPaint(); }
   window.MosaicDnB = { engine: DNB_ENGINE, macros: DNB_MACROS, steppa: DNB_STEPPA, growl: dnbGrowl, compute: dnbCompute, loadSteppa: dnbLoadSteppa, overlay: { on: dnbOverlayOn, off: dnbOverlayOff, compute: dnbOverlayCompute } };
@@ -11469,6 +11722,516 @@ function mount(stage, engine) {
   const useqPageNode = buildUseqPage();
   lfoBookMount(lfoPage, useqPageNode);
   pages.append(play.page, modPage, lfoPage, fxPage.page, seqPage.page, recorder.page, (() => { try { return MosaicWT.buildPage(); } catch (err) { console.error('Wavetable panel failed to build; Mosaic continues without it.', err); return document.createElement('div'); } })(), buildBank());
+  (function buildPerformPage() {
+    // MACRO · X Y: a performance screen. Layout and UI only: the same pads, displays, knobs and buttons (moved, so their wiring comes with them),
+    // plus new buttons and an ACCENT pad that set existing FX settings (the same ones the FX page sets). Nothing here touches the sound engine.
+    try {
+      if (document.documentElement.classList.contains('mosaic-fx-only')) return;
+      const perform = bankRoot.querySelector('.bk-perform'); if (!perform) return;
+      const page = el('div', 'page page-perf'); page.dataset.page = 'perf';
+      const root = el('section', 'panel pf'); root.append(el('h3', '', 'MACRO · X Y'));
+      const bkxy = perform.querySelector('.bk-xywin'), sc = perform.querySelector('#scWin'), ff = perform.querySelector('#fftWin');
+      const btn = (cls, label, title) => { const b = el('button', cls, label); b.type = 'button'; if (title) b.title = title; return b; };
+      const lab = (t) => el('span', 'pf-lab', t);
+      const tween = (from, to, ms, step, done) => { const t0 = performance.now(); const go = (now) => { const k = Math.min(1, (now - t0) / ms), e = 1 - Math.pow(1 - k, 3); step(from.map((f, i) => f + (to[i] - f) * e)); if (k < 1) requestAnimationFrame(go); else if (done) done(); }; requestAnimationFrame(go); };
+      const holdBtn = (on, title, onChange) => { const b = btn('pf-hold' + (on ? ' on' : ''), 'HOLD', title); b.setAttribute('aria-pressed', String(on)); b.addEventListener('click', () => { const v = !b.classList.contains('on'); b.classList.toggle('on', v); b.setAttribute('aria-pressed', String(v)); if (onChange) onChange(v); }); return b; };
+      const isOn = (b) => b.classList.contains('on');
+
+      // top: the oscilloscope and spectrum, each its own collapsible panel with all its controls
+      const strip = el('div', 'pf-strip');
+      // folded: a slim live display; unfolded (click its title): the full panel with every control and the readout
+      [sc, ff].forEach((w) => { if (!w) return; w.open = true; w.classList.add('pf-vis'); strip.append(w);
+        const sm = w.querySelector(':scope > summary'); if (sm) { sm.title = 'Show or hide this display\'s controls'; sm.addEventListener('click', (e) => { if (!w.closest('.page-perf')) return; e.preventDefault(); w.open = true; w.classList.toggle('pf-full'); requestAnimationFrame(fit); }, true); }
+        w.addEventListener('toggle', () => { if (!w.open && w.closest('.page-perf')) w.open = true; }); });
+
+      // the three pads
+      const pads = el('div', 'pf-pads');
+      // 1) SOUND MORPH (the PRESET page's pad)
+      let soundHold = null;
+      if (bkxy) {
+        bkxy.classList.add('pf-pad'); const head = bkxy.querySelector('.sc-head'), t = head && head.querySelector('b'); if (t) t.textContent = 'SOUND MORPH';
+        const cap = head && head.querySelector('.bk-cap'); if (cap) { cap.title = 'CAPTURE: store the current sound in corner A, B, C or D'; const w = cap.querySelector('span'); if (w) w.textContent = 'CAP'; }
+        soundHold = holdBtn(true, 'On: the pad stays where you leave it. Off: it glides back to the centre when you let go.'); if (head) head.append(soundHold);
+        const pad = bkxy.querySelector('#bkXY');
+        const toast = el('div', 'pf-toast'); bkxy.append(toast); let tt = 0;
+        [...bkxy.querySelectorAll('#bkCap button')].forEach((b) => b.addEventListener('click', () => {
+          b.classList.add('pf-got'); b.classList.remove('pf-flash'); void b.offsetWidth; b.classList.add('pf-flash');
+          toast.textContent = 'CORNER ' + b.textContent + ' CAPTURED · SNAP ' + b.textContent + ' or drag there to hear it'; toast.classList.add('on'); clearTimeout(tt); tt = setTimeout(() => toast.classList.remove('on'), 1800); }));
+        const setSound = (x, y) => { ctl.setXY(x, y); bankPuck(); recordAuto('bk.xy.x', ctl.xy.x); recordAuto('bk.xy.y', ctl.xy.y); };
+        if (pad) ['pointerup', 'pointercancel'].forEach((ev) => pad.addEventListener(ev, () => { if (!isOn(soundHold) && pad.closest('.page-perf')) tween([ctl.xy.x, ctl.xy.y], [0.5, 0.5], 260, ([x, y]) => setSound(x, y)); }));
+        bkxy._snap = (x, y) => tween([ctl.xy.x, ctl.xy.y], [x, y], 220, ([a, b]) => setSound(a, b));
+        pads.append(bkxy);
+      }
+      // 2) ACCENT MORPH (new): a send pad. Drag toward a corner to throw that effect in; let go and everything returns to how it was.
+      const AC = { keys: ['tremOn', 'tremDepth', 'springOn', 'springMix', 'dubOn', 'dubMix', 'dubFb', 'delayWet', 'delayFb'], snap: null, x: 0.5, y: 0.5, held: false };
+      const acBegin = () => { if (!AC.snap) { AC.snap = {}; AC.keys.forEach((k) => { AC.snap[k] = state.fx[k]; }); } };
+      const acWeights = (x, y) => [[1, 1], [1, 0], [0, 0], [0, 1]].map(([cx, cy]) => { const d = Math.hypot(x - cx, y - cy); return Math.pow(clamp(1 - d / 0.72, 0, 1), 1.2); });   // A top right, B bottom right, C bottom left, D top left
+      const acApply = (w) => {
+        acBegin(); const f = state.fx, s = AC.snap, on = (k) => !!s[k + 'On'], n = (v, d) => Number(v ?? d);
+        if (w[0] > 0.03) { f.tremOn = true; f.tremDepth = Math.max(on('trem') ? n(s.tremDepth, 0.5) : 0, w[0] * 0.9); } else { f.tremOn = s.tremOn; f.tremDepth = s.tremDepth; }
+        if (w[1] > 0.03) { f.springOn = true; f.springMix = Math.max(on('spring') ? n(s.springMix, 0.32) : 0, w[1] * 0.6); } else { f.springOn = s.springOn; f.springMix = s.springMix; }
+        if (w[2] > 0.03) { f.dubOn = true; f.dubMix = Math.max(on('dub') ? n(s.dubMix, 0.38) : 0, w[2] * 0.7); f.dubFb = Math.max(on('dub') ? n(s.dubFb, 0.58) : 0, 0.45 + w[2] * 0.4); } else { f.dubOn = s.dubOn; f.dubMix = s.dubMix; f.dubFb = s.dubFb; }
+        if (w[3] > 0.03) { f.delayWet = Math.max(n(s.delayWet, 0), w[3] * 0.6); f.delayFb = Math.max(n(s.delayFb, 0.32), 0.3 + w[3] * 0.4); } else { f.delayWet = s.delayWet; f.delayFb = s.delayFb; }
+        acShow(w); schedule(); paintAll();
+      };
+      const acShow = (w) => { const on = []; w.forEach((v, i) => { const s = acCorner[i]; if (!s) return; s.style.setProperty('--w', v.toFixed(3)); s.classList.toggle('on', v > 0.03); s.lastChild.textContent = v > 0.03 ? Math.round(v * 100) + '%' : ''; if (v > 0.03) on.push(['TREM', 'SPRING', 'DUB', 'ECHO'][i] + ' ' + Math.round(v * 100) + '%'); }); acRead.textContent = on.length ? on.join(' · ') : 'OFF'; acRead.classList.toggle('on', on.length > 0); };
+      const acEnd = () => { acShow([0, 0, 0, 0]); if (!AC.snap) return; AC.keys.forEach((k) => { state.fx[k] = AC.snap[k]; }); AC.snap = null; schedule(); paintAll(); };
+      const acw = el('div', 'sc-win pf-pad pf-acpad'); const ah = el('div', 'sc-head'); ah.append(el('b', '', 'ACCENT MORPH'));
+      const acHold = holdBtn(false, 'Off: let go and the effects drop back to how they were (a send). On: they stay where you leave the pad.', (v) => { if (!v && !AC.drag) acRelease(); });
+      ah.append(acHold);
+      const abox = el('div', 'xy-box xy-field pf-acbox'), adot = el('div', 'xy-dot'), arip = el('canvas', 'xy-ripples'); arip.setAttribute('aria-hidden', 'true'); abox.append(arip, adot);
+      const acCorner = [['A', 'TREMOLO', 'tr'], ['B', 'SPRING', 'br'], ['C', 'DUB DELAY', 'bl'], ['D', 'ECHO', 'tl']].map(([c, n, pos]) => { const s = el('span', 'pf-corner pf-' + pos); s.append(el('i', '', c + ' · ' + n), el('em', '', '')); abox.append(s); return s; });
+      const acRead = el('span', 'pf-acread', 'OFF'); ah.insertBefore(acRead, acHold);
+      acw.append(ah, abox); pads.append(acw);
+      const AS = { waves: [], halo: 0, level: 0, lastDraw: 0, lastRipple: 0, lastKey: 0, dirty: true, painted: false, drawn: 0 };
+      const acPaint = () => { adot.style.left = (AC.x * 100).toFixed(1) + '%'; adot.style.top = ((1 - AC.y) * 100).toFixed(1) + '%'; abox.style.setProperty('--px', (AC.x * 100).toFixed(1) + '%'); abox.style.setProperty('--py', ((1 - AC.y) * 100).toFixed(1) + '%'); AS.dirty = true; };
+      const acRec = () => { state.fx.acX = AC.x; state.fx.acY = AC.y; recordAuto('fx.acX', AC.x); recordAuto('fx.acY', AC.y); };
+      const acMove = (x, y) => { AC.x = clamp(x, 0, 1); AC.y = clamp(y, 0, 1); acPaint(); acApply(acWeights(AC.x, AC.y)); acRec(); };
+      const acRelease = () => tween([AC.x, AC.y], [0.5, 0.5], 300, ([x, y]) => { AC.x = x; AC.y = y; acPaint(); if (AC.snap) acApply(acWeights(x, y)); acRec(); }, acEnd);
+      window.MosaicAccent = { play: (x, y) => { if (AC.drag || !Number.isFinite(x) || !Number.isFinite(y)) return; AC.x = clamp(x, 0, 1); AC.y = clamp(y, 0, 1); acPaint(); const w = acWeights(AC.x, AC.y); if (w.every((v) => v <= 0.03)) acEnd(); else acApply(w); } };
+      const acAt = (e) => { const r = abox.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = 1 - (e.clientY - r.top) / r.height; acMove(x, y); const now = performance.now(); const X = window.MosaicXyFx; if (X && X.rippleTo && now - AS.lastRipple >= 42) { AS.lastRipple = now; X.rippleTo(AS, AC.x, AC.y, false, 1); } };
+      abox.addEventListener('pointerdown', (e) => { AC.drag = true; abox.setPointerCapture(e.pointerId); acAt(e); });
+      abox.addEventListener('pointermove', (e) => { if (AC.drag) acAt(e); });
+      ['pointerup', 'pointercancel'].forEach((ev) => abox.addEventListener(ev, () => { if (!AC.drag) return; AC.drag = false; if (!isOn(acHold)) acRelease(); }));
+      document.addEventListener('mosaic-xy-key-attack', (e) => { const now = performance.now(); if (now - AS.lastKey < 55 || !abox.offsetParent) return; AS.lastKey = now; const X = window.MosaicXyFx; if (X && X.rippleTo) X.rippleTo(AS, AC.x, AC.y, true, clamp(((e.detail && e.detail.velocity) == null ? 100 : e.detail.velocity) / 127, 0, 1)); });
+      const acFrame = (now) => {
+        requestAnimationFrame(acFrame); const X = window.MosaicXyFx;
+        if (document.hidden || !abox.offsetParent || !X || !X.field) return;
+        const s = window.MosaicScope && window.MosaicScope.SC, raw = Math.min(1, s && s.ctx && s.stat ? s.stat.peakM || 0 : 0);
+        AS.level += (raw - AS.level) * (raw > AS.level ? 0.4 : 0.07); AS.halo = Math.sqrt(AS.level);
+        if (!AS.waves.length && AS.halo < 0.02 && !AS.dirty) { if (AS.painted) { arip.getContext('2d').clearRect(0, 0, arip.width, arip.height); AS.painted = false; } return; }
+        if (now - AS.lastDraw < 33) return; AS.lastDraw = now; X.field(AS, arip, AC.x, AC.y, now);
+      };
+      requestAnimationFrame(acFrame); acPaint();
+      // 3) FX MORPH (the FX page's pad)
+      const F = window.MosaicFxXY; let fxHold = null;
+      if (F && F.box) {
+        const card = F.box.closest('.fx-card');
+        const fxw = el('div', 'sc-win pf-pad pf-fxpad'); const head = el('div', 'sc-head'); head.append(el('b', '', 'FX MORPH'));
+        const row = card && card.querySelector('.xy-row'), centre = row && row.querySelector('button'); if (centre) head.append(centre);
+        fxHold = holdBtn(true, 'On: the pad stays where you leave it. Off: it glides back to CENTER when you let go.'); head.append(fxHold);
+        const axes = el('div', 'pf-axes'); axes.append(el('span', '', 'TONE →'), el('span', '', '↑ DUB WASH'));
+        fxw.append(head, F.box, axes); pads.append(fxw);
+        ['pointerup', 'pointercancel'].forEach((ev) => F.box.addEventListener(ev, () => { if (!isOn(fxHold) && F.box.closest('.page-perf')) tween(F.get(), [0.35, 0.25], 260, ([x, y]) => F.apply(x, y)); }));
+        page._fxCard = card; page._fxRow = row;
+      }
+
+      // left of the pads: layers, engine, sequencer
+      const left = el('div', 'pf-col pf-left');
+      const lyBtn = {};
+      ['A', 'B'].forEach((id) => { const b = btn('pf-tg', 'LAYER ' + id, 'Layer ' + id + ' on / off (the same as the switch on PLAY)'); b.addEventListener('click', () => { const sw = plugin.querySelector('.page-play [data-learn="layers.' + id + '.enabled"]') || plugin.querySelector('[data-learn="layers.' + id + '.enabled"]'); if (sw) sw.click(); recordAuto('layers.' + id + '.enabled', state.layers[id] && state.layers[id].enabled ? 1 : 0); paint(); }); lyBtn[id] = b; left.append(b); });
+      left.append(lab('ENGINE')); const dnb = perform.querySelector('#dnbMode'); if (dnb) { dnb.addEventListener('click', () => setTimeout(atmosPaint, 0)); left.append(dnb); }
+      const atm = btn('dnb-tg pf-eng', 'ATMOS ENGINE', 'Atmospheric macros on this preset: NEBULA (reverb cloud), DRIFT (detune and chorus), AIR (shimmer and brightness), INFINITY (long tails). Off puts everything back.'); atm.id = 'atmosMode'; atm.setAttribute('aria-pressed', 'false');
+      atm.addEventListener('click', () => { if (state.atmosOverlay) atmosOff(); else atmosOn(); }); left.append(atm);
+      const wt = btn('dnb-tg pf-eng', 'WT ENGINE', 'The wavetable kit on or off (the same switch as on the WAVE page)'); wt.setAttribute('aria-pressed', 'false');
+      wt.addEventListener('click', () => { const b = document.getElementById('wt-on'); if (b) b.click(); paint(); }); left.append(wt);
+      left.append(lab('SEQUENCER')); const play = transportButton(); play.classList.add('pf-play'); left.append(play);
+      const autoRow = el('div', 'pf-autorow'), autoB = {};
+      [['on', 'AUTO', 'Play back the recorded moves (the same as AUTO on SEQ)'], ['arm', 'ARM', 'Record your moves into the sequence while it plays (the same as ARM on SEQ)']].forEach(([k, l, t]) => {
+        const b = btn('pf-tg pf-auto-' + k, l, t); b.addEventListener('click', () => { const sw = plugin.querySelector('[data-learn="seq.auto.' + k + '"]'); if (sw) sw.click(); paint(); }); autoB[k] = b; autoRow.append(b); });
+      left.append(autoRow);
+      // right of the pads: arp and the dub throw
+      const right = el('div', 'pf-col pf-right');
+      const press = (sel) => { const b = arpBarRoot && arpBarRoot.querySelector(sel); if (b) b.click(); paint(); };
+      const arpOn = btn('pf-tg', 'ARP ON', 'Arpeggiator on / off (Q)'); arpOn.addEventListener('click', () => press('#abOn'));
+      const rates = el('div', 'pf-seg'); const rateBtn = {};
+      [[0, '1/4'], [1, '1/8'], [3, '1/16'], [5, '1/32']].forEach(([i, l]) => { const b = btn('', l, 'Arp rate ' + l); b.addEventListener('click', () => press('[data-r="' + i + '"]')); rateBtn[i] = b; rates.append(b); });
+      const oct = el('div', 'pf-oct'); const dn = btn('', '−', 'Fewer octaves'), up = btn('', '+', 'More octaves'), ov = el('b', '', '1');
+      dn.addEventListener('click', () => press('#abOctDn')); up.addEventListener('click', () => press('#abOctUp')); oct.append(dn, el('span', '', 'OCT'), ov, up);
+      right.append(arpOn, rates, oct);
+      const thr = btn('pf-throw', 'DUB THROW', 'Hold to throw the dub echo and spring right up; let go and they return to where they were');
+      {
+        // a pure send: while held, the dub echo and spring go up (never down); on release every value goes back exactly as it was. Nothing else is touched.
+        const KEYS = ['dubOn', 'dubMix', 'dubFb', 'springOn', 'springMix']; let saved = null, held = false;
+        const rec = () => KEYS.forEach((k) => recordAuto('fx.' + k, typeof state.fx[k] === 'boolean' ? (state.fx[k] ? 1 : 0) : Number(state.fx[k])));
+        const set = (t) => { const f = state.fx, s = saved, n = (v, d) => Number(v ?? d), mix = (a, b) => a + (b - a) * t;
+          f.dubOn = true; f.springOn = true;
+          f.dubMix = mix(s.dubOn ? n(s.dubMix, 0.38) : 0, Math.max(s.dubOn ? n(s.dubMix, 0.38) : 0, 0.67));
+          f.dubFb = mix(n(s.dubFb, 0.58), Math.max(n(s.dubFb, 0.58), 0.78));
+          f.springMix = mix(s.springOn ? n(s.springMix, 0.32) : 0, Math.max(s.springOn ? n(s.springMix, 0.32) : 0, 0.53));
+          schedule(); paintAll(); rec(); };
+        const restore = () => { if (!saved) return; KEYS.forEach((k) => { state.fx[k] = saved[k]; }); saved = null; schedule(); paintAll(); rec(); };
+        thr.addEventListener('pointerdown', (e) => { e.preventDefault(); if (thr.setPointerCapture) thr.setPointerCapture(e.pointerId); if (!saved) { saved = {}; KEYS.forEach((k) => { saved[k] = state.fx[k]; }); } held = true; thr.classList.add('on'); tween([0], [1], 90, ([t]) => { if (held && saved) set(t); }); });
+        const upf = () => { if (!held) return; held = false; thr.classList.remove('on'); if (!saved) return; tween([1], [0], 420, ([t]) => { if (!held && saved) set(t); }, () => { if (!held) restore(); }); };
+        ['pointerup', 'pointercancel', 'lostpointercapture'].forEach((ev) => thr.addEventListener(ev, upf));
+      }
+      right.append(lab('SEND'), thr);
+
+      // under each pad: SNAP under SOUND, the accent throws under ACCENT, the MACROS under FX
+      const snaps = el('div', 'pf-under'); snaps.append(lab('SNAP'));
+      const sRow = el('div', 'pf-four');
+      [['A', 0, 0], ['B', 1, 0], ['C', 0, 1], ['D', 1, 1]].forEach(([c, x, y]) => { const b = btn('pf-snap', c, 'Glide the sound pad to corner ' + c + ' (CAPTURE stores a sound there)'); b.addEventListener('click', () => { if (bkxy && bkxy._snap) bkxy._snap(x, y); }); sRow.append(b); });
+      snaps.append(sRow);
+      const throws = el('div', 'pf-under'); throws.append(lab('ACCENT THROW · HOLD'));
+      const tRow = el('div', 'pf-four');
+      [['A', 'TREM', 0], ['B', 'SPRING', 1], ['C', 'DUB', 2], ['D', 'ECHO', 3]].forEach(([c, n, i]) => {
+        const b = btn('pf-snap pf-ath', n, 'Hold to throw ' + n.toLowerCase() + ' in; let go and it drops back'); let down = false;
+        const corner = [[1, 1], [1, 0], [0, 0], [0, 1]][i]; let back = null;
+        b.addEventListener('pointerdown', (e) => { e.preventDefault(); if (b.setPointerCapture) b.setPointerCapture(e.pointerId); down = true; b.classList.add('on'); back = [AC.x, AC.y]; acMove(corner[0], corner[1]); });
+        const off = () => { if (!down) return; down = false; b.classList.remove('on'); const [bx, by] = back || [0.5, 0.5]; acMove(bx, by); if (bx === 0.5 && by === 0.5) acEnd(); };
+        ['pointerup', 'pointercancel', 'lostpointercapture'].forEach((ev) => b.addEventListener(ev, off)); tRow.append(b); });
+      throws.append(tRow);
+      const macs = el('div', 'pf-under'); macs.append(lab('MACROS'));
+      const mk = perform.querySelector('#bkMacros'); if (mk) { mk.classList.add('pf-knobs'); macs.append(mk); }
+      const unders = el('div', 'pf-unders'); unders.append(snaps, throws, macs);
+
+      // help, folded away
+      const help = el('details', 'pf-help'); help.append(el('summary', '', '? HOW THIS SCREEN WORKS'));
+      const hg = el('div', 'pf-help-grid');
+      const n1 = el('div', 'pf-note'); n1.append(el('b', '', 'SOUND MORPH')); const rd1 = bkxy && bkxy.querySelector('.bk-xyread'); if (rd1) n1.append(rd1);
+      const n5 = el('div', 'pf-note'); n5.append(el('b', '', 'ACCENT MORPH'), el('em', '', 'A send pad. Drag toward a corner to throw in TREMOLO (A, top right), SPRING TANK (B, bottom right), DUB DELAY (C, bottom left) or ECHO (D, top left); the closer to the corner, the more. In the middle nothing is added. Let go and everything drops back to how it was, unless HOLD is on. The ACCENT THROW buttons do the same for one effect while held. It only ever adds: an effect you already have on keeps at least its own level.'));
+      const n2 = el('div', 'pf-note'); n2.append(el('b', '', 'FX MORPH')); const rd2 = page._fxRow && page._fxRow.querySelector('.xy-read'); if (rd2) n2.append(rd2);
+      const about = page._fxCard && page._fxCard.querySelector('.fx-note'); if (about) n2.append(el('em', '', about.textContent));
+      const n4 = el('div', 'pf-note pf-wide'); n4.append(el('b', '', 'BUTTONS'), el('em', '', 'HOLD off: SOUND and FX glide back to their centre when you let go. SNAP A-D: glide the sound pad to a corner. DUB THROW: hold to push the dub echo and spring right up; let go and they return exactly to how they were (nothing else changes). With AUTO and ARM on (under PLAY, or on the SEQ page) while the sequencer plays, every move here is recorded into the sequence: all three pads, SNAP, the throws, the macros, LAYER A / B and the arp buttons. LAYER A / B, ARP, OCT and PLAY are the same controls as on PLAY and the arp bar. ENGINE: DnB and ATMOS each turn the four macros into their own set (ATMOS: NEBULA reverb cloud, DRIFT detune and chorus, AIR shimmer and brightness, INFINITY long tails); only one is on at a time, and switching it off puts the preset back exactly. WT switches the wavetable kit, as on the WAVE page. Fold the OSCILLOSCOPE and SPECTRUM away to make the pads bigger.'));
+      const n3 = el('div', 'pf-note pf-wide'); n3.append(el('b', '', 'PERFORMANCE MAP')); const map = perform.querySelector('#bkPerf'); if (map) n3.append(map);
+      hg.append(n1, n5, n2, n4, n3); help.append(hg);
+      if (page._fxCard) page._fxCard.remove();
+      [...perform.querySelectorAll(':scope > .bk-lab')].forEach((n) => n.remove());
+
+      const stage = el('div', 'pf-stage'); stage.append(strip, left, pads, right, unders);
+      const wrap = el('div', 'pf-wrap'); wrap.append(stage, help); root.append(wrap); page.append(root);
+      perform.remove(); bankRoot.classList.add('pf-moved');
+      pages.append(page); perfRoot = page;
+
+      // the pads are square and the same size, as big as the space allows
+      const fit = () => {
+        if (!perfOn()) return; const h3 = root.querySelector(':scope > h3');
+        const freeH = root.clientHeight - (h3 ? h3.offsetHeight : 0) - 10 - strip.offsetHeight - unders.offsetHeight - 34 - 12 * 2 - 14;
+        const freeW = root.clientWidth - 24 - 2 * 150 - 4 * 12;
+        const p = Math.round(Math.max(190, Math.min(400, freeH, freeW / 3)));
+        if (Math.abs((stage._p || 0) - p) > 1) { stage._p = p; stage.style.setProperty('--pad', p + 'px'); }
+      };
+      window.addEventListener('resize', () => requestAnimationFrame(fit));
+      // size the pads the moment the page is shown, before it is drawn, so nothing jumps when it opens
+      new MutationObserver(() => { if (perfOn()) fit(); }).observe(page, { attributes: true, attributeFilter: ['class', 'hidden', 'style'] });
+      function paint() {
+        try {
+          ['A', 'B'].forEach((id) => { const on = !!(state.layers[id] && state.layers[id].enabled); lyBtn[id].classList.toggle('on', on); lyBtn[id].setAttribute('aria-pressed', String(on)); });
+          arpOn.classList.toggle('on', !!BK.arp.on); arpOn.setAttribute('aria-pressed', String(!!BK.arp.on));
+          Object.entries(rateBtn).forEach(([i, b]) => b.classList.toggle('on', Number(i) === Number(BK.arp.rateIdx)));
+          ov.textContent = String(BK.arp.octaves);
+          const au = state.seq && state.seq.auto; ['on', 'arm'].forEach((k) => { const v = !!(au && au[k]); autoB[k].classList.toggle('on', v); autoB[k].setAttribute('aria-pressed', String(v)); });
+          const wb = document.getElementById('wt-on'), won = !!(wb && wb.classList.contains('on')); wt.classList.toggle('on', won); wt.setAttribute('aria-pressed', String(won)); page.classList.toggle('pf-wt', won); atmosPaint();
+        } catch (e) { /* not ready yet */ }
+      }
+      setInterval(() => { if (perfOn() && !document.hidden) { paint(); fit(); } }, 250);
+      setTimeout(() => { paint(); const b = tabs.querySelector('[data-page="perf"]'); if (b) b.addEventListener('click', () => { if (sc) sc.open = true; if (ff) ff.open = true; paint(); requestAnimationFrame(fit); setTimeout(fit, 120); }); }, 0);
+    } catch (err) { console.error('Mosaic: the MACRO · X Y page failed to build; the PRESET page keeps its panels.', err); }
+  })();
+  (function regroupSeqPreset() {
+    // SEQ gets a STEPS | ARP switch. ARP is a programming screen: a 16-step arp pattern editor (pitch, on, accent, gate, ratchet), pattern tools,
+    // a link that drives a step gate from the arp, and the arpeggiator, sequence and randomise controls (moved from PRESET) in one compact row.
+    // Switching views never changes what plays. PRESET becomes the list on the left and this preset plus EXPANSION on the right.
+    try {
+      if (document.documentElement.classList.contains('mosaic-fx-only')) return;
+      const sys = bankRoot.querySelector('.bk-systems'); if (!sys) return;
+      const secs = [...sys.querySelectorAll(':scope > .bk-sec')], head = (n) => ((n.querySelector('h4') || {}).textContent || '').trim();
+      const gen = secs.filter((n) => !/^EXPANSION/i.test(head(n)));
+      const sp = seqPage.page; sp.classList.add('sq-host');
+      const view = el('section', 'panel sq-arp'); view.setAttribute('aria-label', 'Arp pattern editor');
+      const band = el('div', 'sq-band'), row2 = el('div', 'sq-band-row'); view.append(band);
+      const bgrp = (label, ...kids) => { const g = el('div', 'sq-bg'); g.append(el('span', 'ae-tlab', label), ...kids); row2.append(g); return g; };
+      const btn = (cls, label, title) => { const b = el('button', cls, label); b.type = 'button'; if (title) b.title = title; return b; };
+      const N = 16, LO = -12, HI = 24, RANGE = HI - LO;
+      const A = () => (ctl.current && ctl.current.arp) || null;
+      const origs = new WeakMap();
+      const keep = () => { const a = A(); if (a && !origs.has(a)) origs.set(a, { pattern: a.pattern.slice(), lanes: a.lanes ? JSON.parse(JSON.stringify(a.lanes)) : null, dir: a.dir || 'fwd' }); };
+      const lanes = () => { const a = A(); if (!a) return null; keep(); if (!a.lanes) a.lanes = { on: Array(N).fill(true), acc: Array(N).fill(false), gate: Array(N).fill(null), rat: Array(N).fill(1) }; const L = a.lanes; if (!L.vel) L.vel = Array(N).fill(null); if (!L.prob) L.prob = Array(N).fill(1); return L; };
+      const pat = () => { const a = A(); if (!a) return Array(N).fill(0); keep(); while (a.pattern.length < N) a.pattern.push(0); return a.pattern; };
+      const SCALES = { off: null, major: [0, 2, 4, 5, 7, 9, 11], minor: [0, 2, 3, 5, 7, 8, 10], dorian: [0, 2, 3, 5, 7, 9, 10], phrygian: [0, 1, 3, 5, 7, 8, 10], hijaz: [0, 1, 4, 5, 7, 8, 10], penta: [0, 3, 5, 7, 10] };
+      let scale = 'off';
+      const snap = (v) => { v = Math.round(clamp(v, LO, HI)); const s = SCALES[scale]; if (!s) return v; let best = v, d = 99; for (let o = -2; o <= 3; o++) s.forEach((x) => { const c = x + o * 12; if (c >= LO && c <= HI && Math.abs(c - v) < d) { d = Math.abs(c - v); best = c; } }); return best; };
+      const changed = () => { if (link.on) linkWrite(); paintEd(); };
+
+      const dirSel = el('select', 'ae-sel ae-dir'); [['fwd', 'FORWARD'], ['rev', 'REVERSE'], ['pp', 'PING-PONG'], ['rnd', 'RANDOM']].forEach(([v, l]) => { const o = el('option', '', l); o.value = v; dirSel.append(o); }); dirSel.title = 'Which way the arp reads its 16 steps';
+      dirSel.addEventListener('change', () => { const a = A(); if (!a) return; keep(); a.dir = dirSel.value; changed(); });
+      // ---- editor
+      const main = el('div', 'ae-main'), ed = el('div', 'ae-ed');
+      const row = (label, cls) => { const r = el('div', 'ae-row ' + cls); r.append(el('span', 'ae-lab', label)); const cells = el('div', 'ae-cells'); r.append(cells); ed.append(r); return cells; };
+      const pitchCells = row('PITCH', 'ae-pitch'), onCells = row('ON', 'ae-tog'), accCells = row('ACC', 'ae-tog'), gateCells = row('GATE', 'ae-gate'), velCells = row('VEL', 'ae-gate ae-vel'), probCells = row('CHANCE', 'ae-gate ae-prob'), ratCells = row('RATCHET', 'ae-tog');
+      const P = [], O = [], C = [], G = [], R = [], V = [], Q = [];
+      for (let i = 0; i < N; i++) {
+        const c = el('div', 'ae-pc'); const bar = el('i'); const v = el('b'); c.append(bar, v); pitchCells.append(c); P.push(c);
+        const o = btn('ae-t', '', 'Step ' + (i + 1) + ': on / rest'); o.addEventListener('click', () => { const L = lanes(); if (!L) return; L.on[i] = L.on[i] === false; changed(); }); onCells.append(o); O.push(o);
+        const a = btn('ae-t', '', 'Step ' + (i + 1) + ': accent'); a.addEventListener('click', () => { const L = lanes(); if (!L) return; L.acc[i] = !L.acc[i]; changed(); }); accCells.append(a); C.push(a);
+        const g = el('div', 'ae-gc'); g.append(el('i')); gateCells.append(g); G.push(g);
+        const vv = el('div', 'ae-gc'); vv.append(el('i')); vv.title = 'Step ' + (i + 1) + ': velocity (unset = how hard you play; ACC = full)'; velCells.append(vv); V.push(vv);
+        const q = el('div', 'ae-gc'); q.append(el('i')); q.title = 'Step ' + (i + 1) + ': chance this step plays'; probCells.append(q); Q.push(q);
+        const r = btn('ae-t', '', 'Step ' + (i + 1) + ': ratchet (1 to 4 quick repeats)'); r.addEventListener('click', () => { const L = lanes(); if (!L) return; L.rat[i] = ((L.rat[i] || 1) % 4) + 1; changed(); }); ratCells.append(r); R.push(r);
+      }
+      const dragLane = (cells, apply) => {
+        let down = false; const at = (e) => { const r = cells.getBoundingClientRect(), i = clamp(Math.floor((e.clientX - r.left) / r.width * N), 0, N - 1), y = clamp(1 - (e.clientY - r.top) / r.height, 0, 1); apply(i, y); };
+        cells.addEventListener('pointerdown', (e) => { down = true; cells.setPointerCapture(e.pointerId); at(e); });
+        cells.addEventListener('pointermove', (e) => { if (down) at(e); });
+        ['pointerup', 'pointercancel'].forEach((ev) => cells.addEventListener(ev, () => { down = false; }));
+      };
+      dragLane(pitchCells, (i, y) => { const p = pat(); p[i] = snap(LO + y * RANGE); changed(); });
+      dragLane(velCells, (i, y) => { const L = lanes(); if (!L) return; L.vel[i] = Math.round(clamp(1 + y * 126, 1, 127)); changed(); });
+      dragLane(probCells, (i, y) => { const L = lanes(); if (!L) return; L.prob[i] = Math.round(clamp(y, 0, 1) * 20) / 20; changed(); });
+      dragLane(gateCells, (i, y) => { const L = lanes(); if (!L) return; L.gate[i] = Math.round(clamp(0.05 + y * 0.95, 0.05, 1) * 100) / 100; changed(); });
+      const hint = el('div', 'ae-hint'); const usePat = btn('ae-small', 'USE PATTERN MODE', 'Set the arp MODE to BANK PATTERN so the pitch steps play');
+      let prevMode = 1; const MODES = ['pattern', 'up', 'down', 'updown', 'random', 'order'], MNAME = ['BANK PATTERN', 'UP', 'DOWN', 'UP & DOWN', 'RANDOM', 'AS PLAYED'];
+      usePat.addEventListener('click', () => { const cur = MODES.indexOf(BK.arp.mode); const to = cur === 0 ? prevMode : 0; if (cur > 0) prevMode = cur; BK_APPLY['bk.arp.mode'](to); recordAuto('bk.arp.mode', to); bankArpPaint(); paintEd(); });
+      const hintTxt = el('span'); hint.append(hintTxt, usePat); ed.append(hint);
+
+      // ---- tools
+      const tools = el('div', 'ae-tools'); const tl = (t) => tools.append(el('span', 'ae-tlab', t));
+      const SH = {
+        UP: { p: [0, 2, 3, 5, 7, 8, 10, 12, 14, 15, 17, 19, 20, 22, 24, 24] }, DOWN: { p: [24, 22, 20, 19, 17, 15, 14, 12, 10, 8, 7, 5, 3, 2, 0, 0] },
+        OCTAVES: { p: [0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12] }, FIFTHS: { p: [0, 7, 12, 19, 0, 7, 12, 19, 0, 7, 12, 19, 0, 7, 12, 19] },
+        'PSY ROLL': { p: [0, 0, 12, 0, 0, 0, 12, 7, 0, 0, 12, 0, 0, 0, 12, 10], on: [0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1], acc: [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0] },
+        SKANK: { p: [0, 0, 7, 0, 0, 0, 12, 0, 0, 0, 7, 0, 0, 0, 10, 0], on: [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0], acc: [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0], gate: 0.25 }
+      };
+      tl('SHAPES'); const shg = el('div', 'ae-g2');
+      Object.entries(SH).forEach(([n, s]) => { const b = btn('ae-small', n, 'Load the ' + n.toLowerCase() + ' shape'); b.addEventListener('click', () => {
+        const p = pat(), L = lanes(); if (!L) return; s.p.forEach((v, i) => { p[i] = snap(v); });
+        L.on = s.on ? s.on.map(Boolean) : Array(N).fill(true); L.acc = s.acc ? s.acc.map(Boolean) : Array(N).fill(false); L.gate = Array(N).fill(s.gate || null); L.rat = Array(N).fill(1); L.vel = Array(N).fill(null); L.prob = Array(N).fill(1); changed(); }); shg.append(b); });
+      tools.append(shg);
+      tl('EDIT'); const edg = el('div', 'ae-g2');
+      const rot = (d) => { const p = pat(), L = lanes(); if (!L) return; const r = (a) => { const c = a.slice(0, N); const o = d > 0 ? [c[N - 1], ...c.slice(0, N - 1)] : [...c.slice(1), c[0]]; o.forEach((v, i) => { a[i] = v; }); }; r(p); r(L.on); r(L.acc); r(L.gate); r(L.rat); r(L.vel); r(L.prob); changed(); };
+      [['◀ SHIFT', () => rot(-1)], ['SHIFT ▶', () => rot(1)], ['REVERSE', () => { const p = pat(), L = lanes(); if (!L) return; [p, L.on, L.acc, L.gate, L.rat, L.vel, L.prob].forEach((a) => { const c = a.slice(0, N).reverse(); c.forEach((v, i) => { a[i] = v; }); }); changed(); }],
+        ['RANDOM', () => { const p = pat(), L = lanes(); if (!L) return; for (let i = 0; i < N; i++) { p[i] = snap(Math.random() < 0.35 ? 0 : LO / 2 + Math.random() * (HI - LO / 2)); L.on[i] = Math.random() < 0.8; L.acc[i] = Math.random() < 0.2; } changed(); }],
+        ['RESET', () => { const a = A(); const o = a && origs.get(a); if (!o) return; o.pattern.forEach((v, i) => { a.pattern[i] = v; }); if (o.lanes) a.lanes = JSON.parse(JSON.stringify(o.lanes)); else delete a.lanes; a.dir = o.dir; dirSel.value = a.dir; changed(); }]
+      ].forEach(([l, f]) => { const b = btn('ae-small', l, l === 'RESET' ? 'Back to this preset\'s own arp pattern' : ''); b.addEventListener('click', f); edg.append(b); });
+      tools.append(edg);
+      const sc = el('select', 'ae-sel'); Object.keys(SCALES).forEach((k) => { const o = el('option', '', k === 'off' ? 'OFF (chromatic)' : k.toUpperCase()); o.value = k; sc.append(o); });
+      sc.addEventListener('change', () => { scale = sc.value; if (SCALES[scale]) { const p = pat(); for (let i = 0; i < N; i++) p[i] = snap(p[i]); } changed(); }); bgrp('SCALE', sc); bgrp('DIRECTION', dirSel);
+      const sqg = el('div', 'ae-g2 two');
+      const toSeq = btn('ae-small', '→ SEQ', 'Write this arp pattern into the SEQ steps (16 steps, from the first note already in SEQ)');
+      toSeq.addEventListener('click', () => { const p = pat(), L = A() && A().lanes, s = state.seq, first = (s.steps || []).find((x) => x && x.on), base = first ? first.note : 48;
+        for (let i = 0; i < N; i++) { const on = !L || L.on[i] !== false, acc = !!(L && L.acc[i]); s.steps[i] = Object.assign({}, s.steps[i] || {}, { on, note: clamp(base + (p[i] || 0), 0, 127), accent: acc, vel: acc ? 124 : 100, slide: false }); }
+        s.length = N; schedule(); if (typeof syncSteps === 'function') syncSteps(); paintAll(); statusNode.textContent = 'Arp pattern written to SEQ'; });
+      const fromSeq = btn('ae-small', '← SEQ', 'Take the first 16 SEQ steps as the arp pattern');
+      fromSeq.addEventListener('click', () => { const p = pat(), L = lanes(); if (!L) return; const st = state.seq.steps || [], first = st.slice(0, N).find((x) => x && x.on), base = first ? first.note : 48;
+        for (let i = 0; i < N; i++) { const x = st[i] || {}; p[i] = x.on ? snap(x.note - base) : p[i]; L.on[i] = !!x.on; L.acc[i] = !!x.accent; } changed(); statusNode.textContent = 'SEQ steps taken into the arp pattern'; });
+      sqg.append(toSeq, fromSeq); bgrp('SEQ', sqg);
+      // LINK → GATE: the arp's on / rest steps also drive a step gate (reversible: switching it off puts the gate back)
+      const link = { on: false, target: 'fg', snap: null };
+      const lg = el('div', 'ae-g2 two'); const lt = el('select', 'ae-sel'); [['fg', 'FILTER GATE'], ['rhythm', 'RHYTHM GATE']].forEach(([v, l]) => { const o = el('option', '', l); o.value = v; lt.append(o); });
+      const lb = btn('ae-small ae-link', 'LINK', 'The arp\'s ON steps also open and close the chosen gate, so the arp rhythm chops the whole sound. Off puts the gate back as it was.');
+      function linkWrite() { const L = A() && A().lanes, on = (i) => !L || L.on[i % N] !== false;
+        if (link.target === 'fg') { state.fx.fgSteps = Array.from({ length: N }, (_, i) => (on(i) ? 1 : 0)); state.fx.fgOn = true; }
+        else { const g = state.seq.gates || (state.seq.gates = []); for (let i = 0; i < 512; i++) g[i] = on(i); state.seq.gateOn = true; }
+        schedule(); paintAll(); }
+      function linkOff() { const s = link.snap; if (!s) return; if (s.t === 'fg') { state.fx.fgSteps = s.steps; state.fx.fgOn = s.on; } else { state.seq.gates = s.gates; state.seq.gateOn = s.on; } link.snap = null; schedule(); paintAll(); }
+      lb.addEventListener('click', () => { link.on = !link.on; lb.classList.toggle('on', link.on); lb.setAttribute('aria-pressed', String(link.on));
+        if (link.on) { link.target = lt.value; link.snap = link.target === 'fg' ? { t: 'fg', steps: (state.fx.fgSteps || []).slice(), on: !!state.fx.fgOn } : { t: 'rhythm', gates: (state.seq.gates || []).slice(), on: !!state.seq.gateOn }; linkWrite(); }
+        else linkOff(); });
+      lt.addEventListener('change', () => { if (link.on) { linkOff(); link.target = lt.value; link.snap = link.target === 'fg' ? { t: 'fg', steps: (state.fx.fgSteps || []).slice(), on: !!state.fx.fgOn } : { t: 'rhythm', gates: (state.seq.gates || []).slice(), on: !!state.seq.gateOn }; linkWrite(); } });
+      lg.append(lt, lb); bgrp('LINK → GATE', lg);
+      // SLOTS A-D: store and recall whole arp patterns (pitch and every lane), kept with this preset
+      tl('SLOTS'); const slg = el('div', 'ae-g2 four'); let storeArmed = false; const slotB = {};
+      const storeB = btn('ae-small', 'STORE', 'Arm, then press A, B, C or D to store the pattern there');
+      storeB.addEventListener('click', () => { storeArmed = !storeArmed; storeB.classList.toggle('on', storeArmed); });
+      ['A', 'B', 'C', 'D'].forEach((k) => { const b = btn('ae-small ae-slot', k, 'Recall slot ' + k + ' (STORE first to save into it)'); slotB[k] = b; b.addEventListener('click', () => {
+        const a = A(); if (!a) return; a.slots = a.slots || {};
+        if (storeArmed) { keep(); a.slots[k] = { pattern: pat().slice(0, N), lanes: a.lanes ? JSON.parse(JSON.stringify(a.lanes)) : null, dir: a.dir || 'fwd' }; storeArmed = false; storeB.classList.remove('on'); statusNode.textContent = 'Arp pattern stored in slot ' + k; }
+        else if (a.slots[k]) { keep(); const s = a.slots[k]; s.pattern.forEach((v, i) => { a.pattern[i] = v; }); if (s.lanes) a.lanes = JSON.parse(JSON.stringify(s.lanes)); else delete a.lanes; a.dir = s.dir || 'fwd'; dirSel.value = a.dir; statusNode.textContent = 'Arp slot ' + k; }
+        changed(); }); slg.append(b); });
+      const slw = el('div', 'ae-slots'); slw.append(storeB, slg); tools.append(slw);
+      tl('TRANSPOSE'); const trg = el('div', 'ae-g2 four');
+      [[-12, '−12'], [-1, '−1'], [1, '+1'], [12, '+12']].forEach(([d, l]) => { trg.append(btn('ae-small', l, 'Move every pitch step ' + l + ' semitone' + (Math.abs(d) > 1 ? 's' : ''))); trg.lastChild.addEventListener('click', () => { const p = pat(); for (let i = 0; i < N; i++) p[i] = clamp(p[i] + d, LO, HI); if (SCALES[scale] && Math.abs(d) === 1) for (let i = 0; i < N; i++) p[i] = snap(p[i] + (d > 0 ? 0.6 : -0.6)); changed(); }); });
+      tools.append(trg);
+      tl('MORE'); const mog = el('div', 'ae-g2');
+      const inv = btn('ae-small', 'INVERT', 'Mirror the pitch steps: high becomes low'); inv.addEventListener('click', () => { const p = pat(), hi = Math.max(...p.slice(0, N)), lo = Math.min(...p.slice(0, N)); for (let i = 0; i < N; i++) p[i] = snap(hi + lo - p[i]); changed(); });
+      const dbl = btn('ae-small', '1–8 → 9–16', 'Copy the first half of the pattern over the second half'); dbl.addEventListener('click', () => { const p = pat(), L = lanes(); if (!L) return; for (let i = 0; i < 8; i++) { p[i + 8] = p[i]; L.on[i + 8] = L.on[i]; L.acc[i + 8] = L.acc[i]; L.gate[i + 8] = L.gate[i]; L.rat[i + 8] = L.rat[i]; L.vel[i + 8] = L.vel[i]; L.prob[i + 8] = L.prob[i]; } changed(); });
+      const acb = btn('ae-small', 'ACCENT BEATS', 'Accent steps 1, 5, 9 and 13 only'); acb.addEventListener('click', () => { const L = lanes(); if (!L) return; L.acc = Array.from({ length: N }, (_, i) => i % 4 === 0); changed(); });
+      mog.append(inv, dbl, acb); tools.append(mog);
+      main.append(ed, tools);
+
+      // ---- the existing controls, one compact row, with a euclid ring and a held-note roll
+      const grid = el('div', 'sq-grid');
+      const ring = el('canvas', 'ae-ring'), roll = el('canvas', 'ae-roll');
+      const apt = el('div', 'ae-cardtools'); apt.append(el('span', 'ae-tlab', 'ARP PATTERN'));
+      const aptRow = el('div', 'ae-g2 three');
+      aptRow.append(btn('ae-small', 'MUTATE', 'Nudge three steps up or down within the scale', () => {}), btn('ae-small', 'RESTS', 'Scatter some rests (step 1 always plays; AMOUNT sets how many at most)'), btn('ae-small', 'CLEAR LANES', 'All steps on, no accents, gates back to the GATE knob, velocity as played, 100% chance, no ratchets'));
+      aptRow.children[0].addEventListener('click', () => { const p = pat(); keep(); for (let n = 0; n < Number(amt.value); n++) { const i = Math.floor(Math.random() * N), d = (Math.random() < 0.5 ? -1 : 1) * (SCALES[scale] ? 2 : 1 + Math.floor(Math.random() * 3)); p[i] = snap(clamp(p[i] + d, LO, HI)); } changed(); });
+      aptRow.children[1].addEventListener('click', () => { const L = lanes(); if (!L) return; L.on = Array(N).fill(true); const k = 1 + Math.floor(Math.random() * Number(amt.value)); for (let n = 0; n < k; n++) L.on[1 + Math.floor(Math.random() * (N - 1))] = false; changed(); });
+      aptRow.children[2].addEventListener('click', () => { const L = lanes(); if (!L) return; L.on = Array(N).fill(true); L.acc = Array(N).fill(false); L.gate = Array(N).fill(null); L.rat = Array(N).fill(1); L.vel = Array(N).fill(null); L.prob = Array(N).fill(1); changed(); });
+      apt.append(aptRow);
+      const amtRow = el('label', 'ae-amt'); const amt = el('input'); amt.type = 'range'; amt.min = '1'; amt.max = '8'; amt.step = '1'; amt.value = '3'; const amtV = el('b', '', '3');
+      amt.addEventListener('input', () => { amtV.textContent = amt.value; }); amtRow.append(el('span', 'ae-tlab', 'AMOUNT'), amt, amtV); apt.append(amtRow);
+      apt.append(el('span', 'ae-amt-note', 'MUTATE moves this many steps; RESTS rests up to this many.'));
+      const NN = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'], nn = (m) => NN[m % 12] + (Math.floor(m / 12) - 1);
+      const live = el('div', 'ae-live'), tempo = el('div', 'ae-tempo'), tDn = btn('ae-small', '−', 'Slower (the same tempo as SEQ and the arp bar)'), tUp = btn('ae-small', '+', 'Faster'), tV = el('b', '', '120');
+      tDn.addEventListener('click', () => { const b0 = arpBarRoot && arpBarRoot.querySelector('#abBpmDn'); if (b0) b0.click(); }); tUp.addEventListener('click', () => { const b0 = arpBarRoot && arpBarRoot.querySelector('#abBpmUp'); if (b0) b0.click(); });
+      tempo.append(el('span', 'ae-tlab', 'TEMPO'), tDn, tV, tUp);
+      const pos = el('div', 'ae-pos'), posStep = el('b', '', '—'), posNote = el('b', '', '—'); pos.append(el('span', 'ae-tlab', 'STEP'), posStep, el('span', 'ae-tlab', 'NOTE'), posNote);
+      live.append(tempo, pos);
+      gen.forEach((n) => { if (/^ARPEGGIATOR/i.test(head(n))) { n.classList.add('sq-band-sec'); n.append(live); band.append(n, row2); const hg = bgrp('HELD → ARP', roll); hg.classList.add('sq-bg-roll'); return; } const card = el('div', 'sq-card'); card.append(n); if (/^SEQUENCE/i.test(head(n))) card.append(ring); if (/^RANDOMISE/i.test(head(n))) card.append(apt);  grid.append(card); });
+      view.append(main, grid);
+      sp.append(view);
+
+      // ---- STEPS | ARP switch
+      const sw = el('div', 'sq-switch'); sw.setAttribute('role', 'group'); sw.setAttribute('aria-label', 'SEQ view');
+      const mk = (id, label) => { const b = btn('', label); b.dataset.v = id; b.addEventListener('click', () => setView(id)); sw.append(b); };
+      mk('steps', 'STEPS'); mk('arp', 'ARP'); sp.append(sw);
+      function setView(v) { sp.classList.toggle('sq-show-arp', v === 'arp'); sw.querySelectorAll('button').forEach((b) => { const on = b.dataset.v === v; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); }); paintEd(); }
+
+      // ---- painting
+      let cur = -1, curT = 0, lastNote = null;
+      window.MosaicArpStep = (s, n, k) => { cur = k != null ? k : s % N; curT = performance.now(); if (n != null) lastNote = n; };
+      function paintEd() {
+        const a = A(), p = a ? a.pattern : [], L = a && a.lanes, mode = BK.arp.mode;
+        for (let i = 0; i < N; i++) {
+          const v = clamp(Number(p[i] || 0), LO, HI), on = !L || L.on[i] !== false;
+          P[i].firstChild.style.height = (((v - LO) / RANGE) * 100).toFixed(1) + '%'; P[i].lastChild.textContent = (v > 0 ? '+' : '') + v; P[i].classList.toggle('rest', !on);
+          O[i].classList.toggle('on', on); C[i].classList.toggle('on', !!(L && L.acc[i]));
+          const g = L && L.gate[i] != null ? L.gate[i] : BK.arp.gate || 0.55; G[i].firstChild.style.height = (g * 100).toFixed(0) + '%'; G[i].classList.toggle('set', !!(L && L.gate[i] != null));
+          const vl = L && L.vel && L.vel[i] != null ? L.vel[i] : null; V[i].firstChild.style.height = ((vl == null ? 100 : vl) / 127 * 100).toFixed(0) + '%'; V[i].classList.toggle('set', vl != null); V[i].lastChild && (V[i].dataset.v = vl == null ? '' : vl);
+          const pr = L && L.prob && L.prob[i] != null ? L.prob[i] : 1; Q[i].firstChild.style.height = (pr * 100).toFixed(0) + '%'; Q[i].classList.toggle('set', pr < 1);
+          const r = L ? L.rat[i] || 1 : 1; R[i].textContent = r > 1 ? '×' + r : ''; R[i].classList.toggle('on', r > 1);
+        }
+        const pm = mode === 'pattern'; hintTxt.textContent = pm ? 'PITCH steps are playing (BANK PATTERN mode): semitones above the note you hold.' : 'MODE is ' + String(mode).toUpperCase() + ': the arp picks its own notes, so PITCH steps are ignored. ON, ACC, GATE and RATCHET still apply.';
+        const mi = MODES.indexOf(mode); if (mi > 0) prevMode = mi; usePat.textContent = pm ? 'BACK TO ' + MNAME[prevMode] : 'USE PATTERN MODE'; usePat.title = pm ? 'Switch the arp MODE back to ' + MNAME[prevMode] + ' (pitch steps are then ignored)' : 'Set the arp MODE to BANK PATTERN so the pitch steps play'; view.classList.toggle('ae-nopitch', !pm);
+        if (document.activeElement !== dirSel) dirSel.value = (a && a.dir) || 'fwd';
+        const sl = (a && a.slots) || {}; Object.entries(slotB).forEach(([k, b]) => b.classList.toggle('filled', !!sl[k]));
+      }
+      function paintVis() {
+        const live = performance.now() - curT < 600;
+        tV.textContent = String(Math.round(state.seq.bpm || 120)); posStep.textContent = live && cur >= 0 ? String(cur + 1).padStart(2, '0') + ' / 16' : '— / 16'; posNote.textContent = live && lastNote != null ? nn(lastNote) : '—'; P.forEach((c, i) => c.classList.toggle('now', live && i === cur)); O.forEach((c, i) => c.classList.toggle('now', live && i === cur));
+        // euclid ring
+        const E = BK.euclid, st = Math.max(1, Math.round(E.steps)), pu = clamp(Math.round(E.pulses), 0, st), rot = Math.round(E.rotation);
+        const pt = []; let bucket = 0; for (let i = 0; i < st; i++) { bucket += pu; if (bucket >= st) { bucket -= st; pt.push(1); } else pt.push(0); }
+        const pr = Array.from({ length: st }, (_, i) => pt[((i - rot) % st + st) % st]);
+        const W = ring.clientWidth, H = ring.clientHeight; if (W && H) { const d = window.devicePixelRatio || 1; if (ring.width !== W * d) { ring.width = W * d; ring.height = H * d; } const g = ring.getContext('2d'); g.setTransform(d, 0, 0, d, 0, 0); g.clearRect(0, 0, W, H);
+          const cx = W / 2, cy = H / 2, rr = Math.min(W, H) / 2 - 8; g.strokeStyle = 'rgba(255,255,255,.12)'; g.beginPath(); g.arc(cx, cy, rr, 0, Math.PI * 2); g.stroke();
+          pr.forEach((v, i) => { const an = -Math.PI / 2 + i / st * Math.PI * 2, x = cx + Math.cos(an) * rr, y = cy + Math.sin(an) * rr; g.beginPath(); g.arc(x, y, v ? 5 : 3, 0, Math.PI * 2); g.fillStyle = v ? (E.on ? '#e2a84a' : 'rgba(226,168,74,.45)') : 'rgba(255,255,255,.18)'; g.fill(); });
+          g.fillStyle = '#8a93a6'; g.font = '10px ui-monospace, Consolas, monospace'; g.textAlign = 'center'; g.fillText(pu + ' / ' + st + (E.on ? ' LIVE' : ''), cx, cy + 4); }
+        // held → arp roll (C2 to C6)
+        const W2 = roll.clientWidth, H2 = roll.clientHeight; if (W2 && H2) { const d = window.devicePixelRatio || 1; if (roll.width !== W2 * d) { roll.width = W2 * d; roll.height = H2 * d; } const g = roll.getContext('2d'); g.setTransform(d, 0, 0, d, 0, 0); g.clearRect(0, 0, W2, H2);
+          const lo = 36, hi = 84, n = hi - lo + 1, kw = W2 / n, held = (ctl.arp && ctl.arp.held) || [], blk = (m) => [1, 3, 6, 8, 10].includes(m % 12);
+          for (let m = lo; m <= hi; m++) { const x = (m - lo) * kw; g.fillStyle = held.includes(m) ? '#e2a84a' : (live && m === lastNote ? '#4ad6c4' : (blk(m) ? '#1a1c22' : '#2a2d35')); g.fillRect(x + 0.5, blk(m) ? 0 : 0, kw - 1, blk(m) ? H2 * 0.62 : H2); }
+        }
+      }
+      let lastPaint = 0; const loop = (now) => { requestAnimationFrame(loop); if (document.hidden || !sp.classList.contains('on') || !sp.classList.contains('sq-show-arp')) return; if (now - lastPaint < 60) return; lastPaint = now; paintVis(); if (now - (loop.t || 0) > 400) { loop.t = now; paintEd(); } };
+      requestAnimationFrame(loop);
+      setView('steps');   // SEQ always opens on STEPS: at start, and each time you come to the SEQ tab from another page
+      setTimeout(() => { const t = tabs.querySelector('[data-page="seq"]'); if (t) t.addEventListener('pointerdown', () => { if (!sp.classList.contains('on')) setView('steps'); }, true); }, 0);
+
+      // PRESET: this preset (similar sounds, storage, versions) at the top of the right-hand column, EXPANSION under it
+      const h3 = sys.querySelector(':scope > h3'); if (h3) h3.textContent = 'THIS PRESET';
+      // THIS PRESET: one tabbed box (SIMILAR · STORAGE · BANK CHECK) that takes the space left over, so EXTRA MODULATION underneath is always fully visible
+      const top = el('div', 'bk-this'); const sim = bankRoot.querySelector('.bk-sim'), rollD = bankRoot.querySelector('#hxRoll');
+      const tabsRow = el('div', 'bk-tabs'), pane = el('div', 'bk-pane');
+      const TABS = [['sim', 'SIMILAR SOUNDS'], ['store', 'STORAGE · VERSIONS'], ['check', 'BANK CHECK']];
+      const setTab = (t) => { pane.dataset.tab = t; tabsRow.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.t === t)); try { localStorage.setItem('mosaic-preset-tab', t); } catch (e) { /* ignore */ } };
+      TABS.forEach(([t, l]) => { const b = btn('ae-small', l); b.dataset.t = t; b.addEventListener('click', () => setTab(t)); tabsRow.append(b); });
+      if (sim) pane.append(sim);
+      if (rollD) { rollD.open = true; rollD.classList.add('hx-fixed'); rollD.addEventListener('toggle', () => { if (!rollD.open) rollD.open = true; }); pane.append(rollD);
+        const hs = rollD.querySelector('#hxSum'); if (hs) { const s = el('span', 'bk-tabsum'); tabsRow.append(s); const sync = () => { s.textContent = hs.textContent; }; sync(); new MutationObserver(sync).observe(hs, { childList: true, characterData: true, subtree: true }); } }
+      // the user-bank notice: one line (headline and buttons); ? shows the full explanation
+      let us = bankRoot.querySelector('#userSafety') || document.getElementById('userSafety'); if (!us) { us = el('div'); us.id = 'userSafety'; }
+      const compact = () => us.querySelectorAll('.us:not(.us-c)').forEach((d) => { d.classList.add('us-c'); d.title = d.textContent.replace(/\s+/g, ' ').trim();
+        const more = el('span', 'us-more'); [...d.childNodes].slice(1).filter((n) => !(n.tagName === 'BUTTON')).forEach((n) => more.append(n)); const q = btn('us-q', '?', 'Show or hide the full explanation'); q.addEventListener('click', () => d.classList.toggle('open')); d.firstChild.after(more, q); });
+      compact(); new MutationObserver(compact).observe(us, { childList: true });
+      top.append(tabsRow, us, pane);
+      let t0 = 'sim'; try { t0 = localStorage.getItem('mosaic-preset-tab') || 'sim'; } catch (e) { /* ignore */ } setTab(TABS.some((x) => x[0] === t0) ? t0 : 'sim');
+      if (h3) h3.after(top); else sys.prepend(top);
+      sys.classList.add('bk-fit');
+      // EXPANSION stays here, labelled for what it is: extra modulation that belongs to this preset
+      const exp = secs.find((n) => /^EXPANSION/i.test(head(n)));
+      if (exp) { const h = exp.querySelector('h4'); if (h) h.textContent = 'EXTRA MODULATION · THIS PRESET'; const note = el('p', 'bk-exp-note', 'Extra movement saved with this preset: LFO 3, LFO 4 and CHAOS each push the destination you pick, plus a filter type for each layer and MPE. With the LFO 3 and LFO 4 DEPTH and CHAOS AMT at 0, nothing extra moves.'); if (h) h.after(note); else exp.prepend(note); const ems = [...exp.querySelectorAll(':scope > em.bk-note')]; if (ems.length) { note.title = ems.map((e) => e.textContent.trim()).join('\n\n'); note.append(el('span', 'bk-exp-more', ' (hover for more)')); ems.forEach((e) => e.remove()); } }
+      bankRoot.classList.add('bk-split');
+    } catch (err) { console.error('Mosaic: the SEQ / PRESET regroup failed; the panels stay where they were.', err); }
+  })();
+  (function seqStepTools() {
+    // STEPS view tools: shapes, shift, reverse, random, scale lock, undo and a euclid ring. They only rewrite the existing steps
+    // (note, on, accent, slide), so playback, bounce, MIDI export and the plugin need nothing new.
+    try {
+      if (document.documentElement.classList.contains('mosaic-fx-only')) return;
+      const sp = seqPage.page, steps = sp.querySelector(':scope > .steps'); if (!steps) return;
+      const bar = el('div', 'st-tools'); const btn = (label, title, f) => { const b = el('button', 'ae-small', label); b.type = 'button'; if (title) b.title = title; b.addEventListener('click', f); return b; };
+      const grp = (label, ...kids) => { const g = el('div', 'st-grp'); g.append(el('span', 'ae-tlab', label), ...kids); bar.append(g); return g; };
+      const NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+      const SCALES = { major: [0, 2, 4, 5, 7, 9, 11], minor: [0, 2, 3, 5, 7, 8, 10], dorian: [0, 2, 3, 5, 7, 9, 10], phrygian: [0, 1, 3, 5, 7, 8, 10], hijaz: [0, 1, 4, 5, 7, 8, 10], penta: [0, 3, 5, 7, 10] };
+      let undo = null;
+      const len = () => Math.max(1, Math.min(512, state.seq.length || 16));
+      const S = () => { const s = state.seq; for (let i = 0; i < len(); i++) if (!s.steps[i]) s.steps[i] = { on: false, note: 48, vel: 100, accent: false, slide: false }; return s.steps; };
+      const done = (msg) => { schedule(); if (typeof syncSteps === 'function') syncSteps(); paintAll(); if (msg) statusNode.textContent = msg; undoB.disabled = !undo; };
+      const save = () => { undo = { steps: JSON.parse(JSON.stringify(state.seq.steps.slice(0, 512))), length: state.seq.length }; };
+      const base = () => { const f = S().slice(0, len()).find((x) => x && x.on); return f ? f.note : 48 + Number(rootSel.value); };
+      const snapNote = (n) => { const sc = SCALES[scaleSel.value]; if (!sc) return n; const r = Number(rootSel.value); let best = n, d = 99; for (let o = -1; o <= 1; o++) sc.forEach((x) => { const c = Math.floor((n - r) / 12) * 12 + r + x + o * 12; if (Math.abs(c - n) < d) { d = Math.abs(c - n); best = c; } }); return clamp(best, 0, 127); };
+      const SH = {
+        UP: { p: [0, 2, 3, 5, 7, 8, 10, 12, 14, 15, 17, 19, 20, 22, 24, 24] }, DOWN: { p: [24, 22, 20, 19, 17, 15, 14, 12, 10, 8, 7, 5, 3, 2, 0, 0] },
+        OCTAVES: { p: [0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12] }, FIFTHS: { p: [0, 7, 12, 19, 0, 7, 12, 19, 0, 7, 12, 19, 0, 7, 12, 19] },
+        'PSY ROLL': { p: [0, 0, 12, 0, 0, 0, 12, 7, 0, 0, 12, 0, 0, 0, 12, 10], on: [0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1], acc: [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0] },
+        SKANK: { p: [0, 0, 7, 0, 0, 0, 12, 0, 0, 0, 7, 0, 0, 0, 10, 0], on: [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0], acc: [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0] }
+      };
+      const shapes = el('div', 'st-row');
+      Object.entries(SH).forEach(([n, s]) => shapes.append(btn(n, 'Write the ' + n.toLowerCase() + ' shape over the steps, from the first note', () => {
+        save(); const st = S(), b = base();
+        for (let i = 0; i < len(); i++) { const k = i % 16; st[i] = Object.assign({}, st[i], { on: s.on ? !!s.on[k] : true, note: snapNote(clamp(b + s.p[k], 0, 127)), accent: s.acc ? !!s.acc[k] : false, slide: false }); }
+        done('SEQ: ' + n.toLowerCase() + ' shape'); })));
+      const rot = (d) => { save(); const st = S(), L = len(), c = st.slice(0, L); for (let i = 0; i < L; i++) st[i] = c[((i - d) % L + L) % L]; done(); };
+      const edit = el('div', 'st-row');
+      edit.append(btn('◀', 'Shift every step one to the left', () => rot(-1)), btn('▶', 'Shift every step one to the right', () => rot(1)),
+        btn('REVERSE', 'Play the steps backwards', () => { save(); const st = S(), c = st.slice(0, len()).reverse(); c.forEach((x, i) => { st[i] = x; }); done('SEQ reversed'); }),
+        btn('RANDOM', 'New notes in the chosen scale and key (rests, accents and slides too)', () => {
+          save(); const st = S(), sc = SCALES[scaleSel.value] || SCALES.minor, r = 48 + Number(rootSel.value);
+          for (let i = 0; i < len(); i++) { const deg = sc[Math.floor(Math.random() * sc.length)] + (Math.random() < 0.3 ? 12 : 0); st[i] = Object.assign({}, st[i], { on: Math.random() < 0.78, note: clamp(r + deg, 0, 127), accent: Math.random() < 0.2, slide: Math.random() < 0.12 }); }
+          done('SEQ randomised in ' + NAMES[Number(rootSel.value)] + ' ' + (scaleSel.value === 'off' ? 'minor' : scaleSel.value)); }));
+      const undoB = btn('UNDO', 'Undo the last tool', () => { if (!undo) return; state.seq.steps.splice(0, undo.steps.length, ...undo.steps); state.seq.length = undo.length; undo = null; done('SEQ: undone'); }); undoB.disabled = true; edit.append(undoB);
+      const rootSel = el('select', 'ae-sel st-sel'); NAMES.forEach((n, i) => { const o = el('option', '', n); o.value = i; rootSel.append(o); }); rootSel.value = '9';
+      const scaleSel = el('select', 'ae-sel st-sel'); [['off', 'NO SCALE'], ...Object.keys(SCALES).map((k) => [k, k.toUpperCase()])].forEach(([v, l]) => { const o = el('option', '', l); o.value = v; scaleSel.append(o); });
+      const lock = btn('SNAP', 'Move every note to the nearest note of the chosen key and scale', () => { if (scaleSel.value === 'off') { statusNode.textContent = 'Choose a scale first'; return; } save(); const st = S(); for (let i = 0; i < len(); i++) st[i] = Object.assign({}, st[i], { note: snapNote(st[i].note) }); done('SEQ snapped to ' + NAMES[Number(rootSel.value)] + ' ' + scaleSel.value); });
+      scaleSel.addEventListener('change', () => { if (scaleSel.value !== 'off') lock.click(); });
+      const keyRow = el('div', 'st-row'); keyRow.append(rootSel, scaleSel, lock);
+      const ring = el('canvas', 'st-ring'); ring.title = 'Euclid: pulses, steps and rotation (set them on SEQ → ARP, SEQUENCE)';
+      grp('SHAPES', shapes); grp('EDIT', edit); grp('KEY · SCALE', keyRow); const eg = grp('EUCLID', ring); eg.classList.add('st-eu');
+      steps.before(bar);
+      const draw = () => { const E = BK.euclid, st = Math.max(1, Math.round(E.steps)), pu = clamp(Math.round(E.pulses), 0, st), rt = Math.round(E.rotation); const pt = []; let bk = 0; for (let i = 0; i < st; i++) { bk += pu; if (bk >= st) { bk -= st; pt.push(1); } else pt.push(0); }
+        const W = ring.clientWidth, H = ring.clientHeight; if (!W || !H) return; const d = window.devicePixelRatio || 1; if (ring.width !== W * d) { ring.width = W * d; ring.height = H * d; } const g = ring.getContext('2d'); g.setTransform(d, 0, 0, d, 0, 0); g.clearRect(0, 0, W, H);
+        const cx = W / 2, cy = H / 2, rr = Math.min(W, H) / 2 - 4; for (let i = 0; i < st; i++) { const v = pt[((i - rt) % st + st) % st], an = -Math.PI / 2 + i / st * Math.PI * 2; g.beginPath(); g.arc(cx + Math.cos(an) * rr, cy + Math.sin(an) * rr, v ? 3 : 1.8, 0, Math.PI * 2); g.fillStyle = v ? (E.on ? '#e2a84a' : 'rgba(226,168,74,.5)') : 'rgba(255,255,255,.2)'; g.fill(); } };
+      setInterval(() => { if (sp.classList.contains('on') && !sp.classList.contains('sq-show-arp') && !document.hidden) draw(); }, 300);
+    } catch (err) { console.error('Mosaic: the SEQ step tools failed to build; the steps work as before.', err); }
+  })();
+  (function tidyModMatrix() {
+    // MOD: the same LFO 1 / 2 controls and the same 8 routes, laid out compactly. Routes doing nothing dim down; live ones show an amount bar.
+    try {
+      const mp = modPage, matrix = mp && mp.querySelector('.matrix'); if (!matrix) return;
+      mp.classList.add('mx-tidy');
+      mp.querySelectorAll('.mod-head .panel > h3').forEach((h, i) => { h.textContent = 'LFO ' + (i + 1); });
+      const rows = [...matrix.querySelectorAll('.mod-row')], note = matrix.querySelector('.note'), oldHead = matrix.querySelector('header');
+      const top = el('div', 'mx-top'); const count = el('span', 'mx-count', ''); top.append(el('h3', '', 'MOD MATRIX'), count);
+      const cols = el('div', 'mx-cols'), c1 = el('div', 'mx-col'), c2 = el('div', 'mx-col'); cols.append(c1, c2);
+      const bars = rows.map((r, i) => { const bar = el('div', 'mx-bar'); bar.append(el('i')); bar.title = 'Amount: centre is 0, left is negative, right is positive'; r.children[4].after(bar); (i < 4 ? c1 : c2).append(r); return bar; });
+      const sum = el('div', 'mx-sum'); sum.title = 'Sources: either LFO, either envelope, velocity, the mod wheel or key track. Destinations: pitch, filter, pulse width, FM, oscillator levels and more, on layer A, B or both.'; sum.append(el('span', 'ae-tlab', "WHAT'S MOVING")); const sumTxt = el('span', 'mx-sum-txt', ''); sum.append(sumTxt);
+      if (oldHead) oldHead.remove();
+      // room left over: quick routes into the first free slot, whole-matrix edits with undo, and a live picture of each LFO
+      const tools = el('div', 'mx-tools'); let undo = null;
+      const snapM = () => { undo = JSON.parse(JSON.stringify(state.mod || [])); undoB.disabled = false; };
+      const commit = (msg) => { schedule(); paintAll(); paint(); if (msg) statusNode.textContent = msg; };
+      const mbtn = (label, title, f) => { const b = el('button', 'ae-small', label); b.type = 'button'; b.title = title; b.addEventListener('click', f); return b; };
+      const QUICK = [['WOBBLE', 'lfo1', 'cutoff', 0.5, 'LFO 1 sweeps the filter'], ['VIBRATO', 'lfo2', 'pitch', 0.08, 'LFO 2 wobbles the pitch slightly'], ['VELOCITY BITE', 'vel', 'cutoff', 0.4, 'Harder playing opens the filter'],
+        ['WHEEL FM', 'wheel', 'fm', 0.5, 'The mod wheel adds FM growl'], ['KEY BRIGHT', 'key', 'cutoff', 0.3, 'Higher notes are brighter'], ['PWM SWEEP', 'lfo1', 'pwm', 0.4, 'LFO 1 moves the pulse width']];
+      const qr = el('div', 'mx-qr'); qr.append(el('span', 'ae-tlab', 'QUICK ROUTES'));
+      QUICK.forEach(([l, src, dest, amt, t]) => qr.append(mbtn(l, t + ' (goes into the first slot with amount 0)', () => {
+        const M = state.mod || []; const i = M.findIndex((m) => !m || !(Math.abs(Number(m.amount) || 0) > 0.001));
+        if (i < 0) { statusNode.textContent = 'All 8 routes are in use: set one to 0 first'; return; }
+        snapM(); M[i] = Object.assign({}, M[i], { src, dest, amount: amt, target: 'both' }); commit(l + ' → route ' + (i + 1)); })));
+      const ed = el('div', 'mx-qr'); ed.append(el('span', 'ae-tlab', 'MATRIX'));
+      ed.append(mbtn('INVERT ALL', 'Flip every amount (positive becomes negative)', () => { snapM(); (state.mod || []).forEach((m) => { if (m) m.amount = -(Number(m.amount) || 0); }); commit('Matrix inverted'); }),
+        mbtn('HALVE ALL', 'Halve every amount', () => { snapM(); (state.mod || []).forEach((m) => { if (m) m.amount = Math.round((Number(m.amount) || 0) * 50) / 100; }); commit('Matrix halved'); }),
+        mbtn('ZERO ALL', 'Set every amount to 0 (the routes keep their source and destination)', () => { snapM(); (state.mod || []).forEach((m) => { if (m) m.amount = 0; }); commit('Matrix zeroed'); }));
+      const undoB = mbtn('UNDO', 'Undo the last matrix tool', () => { if (!undo) return; state.mod = undo; undo = null; undoB.disabled = true; commit('Matrix: undone'); }); undoB.disabled = true; ed.append(undoB);
+      tools.append(qr, ed);
+      matrix.replaceChildren(top, cols, tools, sum); if (note) matrix.append(note);
+      const lfoCv = [...mp.querySelectorAll('.mod-head .panel')].map((p, i) => { const c = el('canvas', 'mx-lfo'); c.dataset.i = String(i); p.querySelector('h3').after(c); return c; });
+      let lastL = 0; const lfoLoop = (now) => { requestAnimationFrame(lfoLoop); if (!mp.classList.contains('on') || document.hidden || now - lastL < 33) return; lastL = now; lfoCv.forEach((c, i) => { try { drawLfo(c, editLayer === 'B' && state.lfoB && state.lfoB[i] ? state.lfoB[i] : state.lfo[i], lfoVis[i]); } catch (e) { /* skip a frame */ } }); };
+      requestAnimationFrame(lfoLoop);
+      const txt = (sel) => (sel && sel.selectedOptions && sel.selectedOptions[0] ? sel.selectedOptions[0].textContent : '');
+      const paint = () => {
+        let n = 0; const live = [];
+        rows.forEach((r, i) => { const m = (state.mod || [])[i] || {}, a = Number(m.amount) || 0, on = Math.abs(a) > 0.001;
+          r.classList.toggle('mx-off', !on); const b = bars[i].firstChild, w = Math.min(1, Math.abs(a)) * 50;
+          b.style.left = (a < 0 ? 50 - w : 50) + '%'; b.style.width = w + '%';
+          if (on) { n++; const s = r.querySelectorAll('select'); live.push(txt(s[0]) + ' → ' + txt(s[1]) + ' ' + (a > 0 ? '+' : '') + a.toFixed(2) + (txt(s[2]) ? ' (' + txt(s[2]) + ')' : '')); } });
+        count.textContent = n + ' of ' + rows.length + ' active'; sumTxt.textContent = live.length ? live.join('   ·   ') : 'Nothing routed: every amount is 0.';
+      };
+      paint(); setInterval(() => { if (mp.classList.contains('on') && !document.hidden) paint(); }, 250);
+    } catch (err) { console.error('Mosaic: the MOD tidy failed; the matrix stays as it was.', err); }
+  })();
   buildBed();
   buildOverlay();
   buildModal();
@@ -11487,6 +12250,7 @@ function mount(stage, engine) {
   fftWire();
   xyFxWire();
   dnbWire();
+  try { if (state.dnbOverlay) dnbOverlayOff(); if (state.atmosOverlay) atmosOff(); } catch (err) { console.error(err); }
   helixInit();
   function loadPreset(id) {
     sequencer.stop();
@@ -11971,7 +12735,7 @@ function mount(stage, engine) {
         drawLfo(canvas, (editLayer === 'B' && state.lfoB && state.lfoB[index] ? state.lfoB[index] : state.lfo[index]), lfoVis[index]);
       });
     }
-    if (scopeCanvas && scope) drawScope(scopeCanvas, scope);
+    if (scopeCanvas && scopeCanvas.isConnected && scope) drawScope(scopeCanvas, scope);
     requestAnimationFrame(frame);
   }
 
